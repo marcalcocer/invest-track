@@ -1,4 +1,3 @@
 package com.investTrack.repository;
 
-public class InvestmentRepository {
-}
+public class InvestmentRepository {}

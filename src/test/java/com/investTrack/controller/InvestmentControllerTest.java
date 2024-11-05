@@ -1,4 +1,3 @@
 package com.investTrack.controller;
 
-public class InvestmentControllerTest {
-}
+public class InvestmentControllerTest {}

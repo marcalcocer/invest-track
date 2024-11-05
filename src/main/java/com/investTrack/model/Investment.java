@@ -1,4 +1,3 @@
 package com.investTrack.model;
 
-public class Investment {
-}
+public class Investment {}

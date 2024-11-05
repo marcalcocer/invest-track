@@ -1,4 +1,3 @@
 package com.investTrack.service;
 
-public class InvestmentServiceTest {
-}
+public class InvestmentServiceTest {}
