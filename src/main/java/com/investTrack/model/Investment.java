@@ -8,9 +8,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import lombok.Builder;
+import lombok.Data;
 
 @Entity
 @Table(name = "investments")
+@Data
+@Builder
 public class Investment {
   @Id
   @GeneratedValue(strategy = IDENTITY)
