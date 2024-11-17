@@ -18,7 +18,7 @@ public class InvestmentController {
 
   @PostMapping
   public ResponseEntity<Investment> createInvestment(@RequestBody Investment investment) {
-    Investment savedInvestment = investmentService.createInvestment(investment);
+    var savedInvestment = investmentService.createInvestment(investment);
     return new ResponseEntity<>(savedInvestment, HttpStatus.CREATED);
   }
 }
