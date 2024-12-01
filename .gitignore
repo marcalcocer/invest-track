@@ -31,3 +31,6 @@ replay_pid*
 
 # Build folder
 build/
+
+# Credentials folder
+src/main/resources/credentials/
