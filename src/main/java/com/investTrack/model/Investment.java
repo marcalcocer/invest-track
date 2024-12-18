@@ -6,13 +6,11 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
 
 @Entity
-@Table(name = "investments")
 @Data
 @Builder
 public class Investment {
@@ -26,8 +24,8 @@ public class Investment {
   @Column(length = 500)
   private String description;
 
-  @Column(name = "platform_name", nullable = false)
-  private String platformName;
+  @Column(length = 3)
+  private String currency; // TODO (Marc. A): Create currency enum
 
   @Column(name = "start_datetime", nullable = false)
   private LocalDateTime startDateTime;
@@ -38,8 +36,22 @@ public class Investment {
   @Column(name = "is_active", nullable = false)
   private boolean isActive;
 
-  @Column(name = "is_reinvested")
+  @Column(name = "is_reinvested", nullable = false)
   private boolean isReinvested;
 
-  private String currency;
+  @Column private double initialInvestedAmount;
+
+  @Column private double reinvestedAmount;
+
+  @Column private double totalInvestedAmount;
+
+  @Column private double profitability;
+
+  @Column private double totalObtained;
+
+  @Column private double totalBenefit;
+
+  @Column private double benefitFromInitialAmount;
+
+  @Column private double profitabilityFromInitialAmount;
 }
