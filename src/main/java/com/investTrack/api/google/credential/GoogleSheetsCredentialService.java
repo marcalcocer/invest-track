@@ -1,4 +1,4 @@
-package com.investTrack.api.google;
+package com.investTrack.api.google.credential;
 
 import static com.google.api.client.googleapis.javanet.GoogleNetHttpTransport.newTrustedTransport;
 import static java.util.Collections.singletonList;
@@ -29,8 +29,9 @@ public class GoogleSheetsCredentialService {
 
   private static final String CREDENTIALS_RES_PATH = "credentials";
   private static final String CREDENTIALS_FILE_NAME = "credentials.json";
+  private static final String URL_SEPARATOR = "/";
 
-  private static final List<String> SCOPES = singletonList(SheetsScopes.SPREADSHEETS_READONLY);
+  private static final List<String> SCOPES = singletonList(SheetsScopes.SPREADSHEETS);
 
   public Sheets createSheetsService(String applicationName)
       throws GeneralSecurityException, IOException {
@@ -69,7 +70,8 @@ public class GoogleSheetsCredentialService {
   }
 
   private InputStreamReader getCredentialsInputStreamReader() throws FileNotFoundException {
-    var credentialsFullPath = "/" + CREDENTIALS_RES_PATH + "/" + CREDENTIALS_FILE_NAME;
+    var credentialsFullPath =
+        URL_SEPARATOR + CREDENTIALS_RES_PATH + URL_SEPARATOR + CREDENTIALS_FILE_NAME;
     var in = getCredentialsInputStream(credentialsFullPath);
     if (in == null) {
       throw new FileNotFoundException("Resource not found: " + credentialsFullPath);
