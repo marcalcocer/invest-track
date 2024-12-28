@@ -17,12 +17,18 @@ import org.springframework.stereotype.Service;
 public class InvestmentService {
   private final GoogleSheetsService googleSheetsService;
   private final InvestmentRepository repository;
+  private boolean areInvestmentsLoaded = false;
 
-  public List<Investment> loadInvestments() {
+  public List<Investment> getInvestments() {
+    if (areInvestmentsLoaded) {
+      log.debug("Investments already loaded, returning from cache");
+      return repository.findAll();
+    }
     List<Investment> investments;
     try {
       investments = googleSheetsService.getInvestmentData();
       saveInvestments(investments);
+      areInvestmentsLoaded = true;
     } catch (Exception e) {
       log.error("Failed to load investments list", e);
       return null;
@@ -33,5 +39,31 @@ public class InvestmentService {
   @Transactional
   private void saveInvestments(List<Investment> investments) {
     repository.saveAll(investments);
+  }
+
+  public Investment createInvestment(Investment investment) {
+    List<Investment> investments = getInvestments();
+    if (investments == null) {
+      log.error("Failed to load investments list");
+      return null;
+    }
+
+    investments.add(investment);
+
+    try {
+      repository.save(investment);
+    } catch (Exception e) {
+      log.error("Failed to save investment", e);
+      return null;
+    }
+
+    try {
+      googleSheetsService.writeInvestmentData(investments);
+    } catch (Exception e) {
+      log.error("Failed to write investments into Google Sheets due to", e);
+      return null;
+    }
+
+    return investment;
   }
 }
