@@ -47,6 +47,19 @@ public class GoogleSheetsServiceTest {
   }
 
   @Test
+  public void testGetInvestmentData_ShouldReturnEmptyList_WhenSheetIsEmpty() throws IOException {
+    doReturn(null).when(mockClient).readSheet(any(), any());
+
+    var investments = service.getInvestmentData();
+
+    assertEquals(new ArrayList<>(), investments);
+
+    verify(mockClient).readSheet(eq("Investments List"), eq("A2:P"));
+
+    verifyNoMoreInteractions(allMocks());
+  }
+
+  @Test
   public void testGetInvestmentData_ShouldReturnAValidList() throws IOException {
     var sampleInvestments = getSampleInvestments();
     var sampleInvestment1 = sampleInvestments.get(0);
