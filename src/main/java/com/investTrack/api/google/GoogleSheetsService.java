@@ -1,5 +1,7 @@
 package com.investTrack.api.google;
 
+import static java.util.Collections.emptyList;
+
 import com.investTrack.model.Investment;
 import com.investTrack.model.InvestmentAdapter;
 import java.io.IOException;
@@ -22,6 +24,9 @@ public class GoogleSheetsService {
 
   public List<Investment> getInvestmentData() throws IOException {
     var rows = client.readSheet(INVESTMENTS_LIST, INVESTMENTS_LIST_RANGE);
+    if (rows == null) {
+      return emptyList();
+    }
 
     var investments = new ArrayList<Investment>();
     for (var row : rows) {
