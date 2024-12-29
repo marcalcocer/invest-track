@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -15,6 +16,7 @@ import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.Sheets.Spreadsheets;
 import com.google.api.services.sheets.v4.Sheets.Spreadsheets.Values;
 import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest;
+import com.google.api.services.sheets.v4.model.ClearValuesRequest;
 import com.google.api.services.sheets.v4.model.Sheet;
 import com.google.api.services.sheets.v4.model.SheetProperties;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
@@ -39,6 +41,7 @@ public class GoogleSheetsClientTest {
   @Mock private Spreadsheets mockSpreadSheets;
   @Mock private Values mockValues;
   @Mock private Spreadsheets.BatchUpdate mockBatchUpdate;
+  @Mock private Values.Clear mockValuesClear;
 
   @Mock private Sheets mockSheets;
 
@@ -53,6 +56,7 @@ public class GoogleSheetsClientTest {
       mockSpreadSheets,
       mockValues,
       mockBatchUpdate,
+      mockValuesClear,
       mockSheets
     };
   }
@@ -96,12 +100,34 @@ public class GoogleSheetsClientTest {
   }
 
   @Test
+  public void testWriteToSheet_ShouldThrowAnIOException_ErrorsClearingData() throws IOException {
+    doThrow(new IOException("test")).when(mockValues).clear(any(), any(), any());
+    doReturn(mockValues).when(mockSpreadSheets).values();
+    doReturn(mockSpreadSheets).when(mockSheets).spreadsheets();
+
+    var exception =
+        assertThrows(
+            IOException.class,
+            () -> client.writeToSheet("1", "sheet", "A1:Z100", getSampleValuesRange()));
+
+    assertEquals("test", exception.getMessage());
+
+    verify(mockSheets).spreadsheets();
+    verify(mockSpreadSheets).values();
+    verify(mockValues).clear(eq("1"), eq("sheet!A1:Z100"), any());
+    verify(mockValues, times(0)).update(any(), any(), any());
+
+    verifyNoMoreInteractions(allMocks());
+  }
+
+  @Test
   public void testWriteToSheet_ShouldThrowAnIOException_ErrorsWritingData() throws IOException {
     var sampleValueRange = getSampleValuesRange();
 
-    doThrow(new IOException("test")).when(mockValues).update(any(), any(), any());
+    doReturn(mockValuesClear).when(mockValues).clear(any(), any(), any());
     doReturn(mockValues).when(mockSpreadSheets).values();
     doReturn(mockSpreadSheets).when(mockSheets).spreadsheets();
+    doThrow(new IOException("test")).when(mockValues).update(any(), any(), any());
 
     var exception =
         assertThrows(
@@ -110,8 +136,10 @@ public class GoogleSheetsClientTest {
 
     assertEquals("test", exception.getMessage());
 
-    verify(mockSheets).spreadsheets();
-    verify(mockSpreadSheets).values();
+    verify(mockSheets, times(2)).spreadsheets();
+    verify(mockSpreadSheets, times(2)).values();
+    verify(mockValues).clear(eq("1"), eq("sheet!A1:Z100"), any(ClearValuesRequest.class));
+    verify(mockValuesClear).execute();
     verify(mockValues)
         .update(eq("1"), eq("sheet!A1:Z100"), assertValueRangeContent(sampleValueRange));
 
@@ -123,6 +151,7 @@ public class GoogleSheetsClientTest {
     var values = getSampleValuesRange();
     var valueRange = new ValueRange().setValues(values);
 
+    doReturn(mockValuesClear).when(mockValues).clear(any(), any(), any());
     doReturn(mockValuesUpdate).when(mockValuesUpdate).setValueInputOption(any());
     doReturn(mockValuesUpdate).when(mockValues).update(any(), any(), any());
     doReturn(mockValues).when(mockSpreadSheets).values();
@@ -130,8 +159,11 @@ public class GoogleSheetsClientTest {
 
     client.writeToSheet("1", "sheet", "A1:Z100", values);
 
-    verify(mockSheets).spreadsheets();
-    verify(mockSpreadSheets).values();
+    verify(mockSheets, times(2)).spreadsheets();
+    verify(mockSpreadSheets, times(2)).values();
+    verify(mockValues).clear(eq("1"), eq("sheet!A1:Z100"), any(ClearValuesRequest.class));
+    verify(mockValuesClear).execute();
+
     verify(mockValues).update(eq("1"), eq("sheet!A1:Z100"), eq(valueRange));
     verify(mockValuesUpdate).setValueInputOption("RAW");
     verify(mockValuesUpdate).execute();

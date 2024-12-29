@@ -9,7 +9,9 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,7 +30,7 @@ public class InvestmentController {
    */
   @GetMapping("/reload")
   public ResponseEntity<List<Investment>> loadInvestments() {
-    log.debug("Load investment endpoint called");
+    log.info("Load investment endpoint called");
     List<Investment> investments = investmentService.getInvestments();
 
     if (investments == null) {
@@ -46,7 +48,7 @@ public class InvestmentController {
 
   @PostMapping
   public ResponseEntity<Investment> createInvestment(@RequestBody Investment investment) {
-    log.debug("Create investment endpoint called");
+    log.info("Create investment endpoint called");
     var savedInvestment = investmentService.createInvestment(investment);
 
     if (savedInvestment == null) {
@@ -55,5 +57,18 @@ public class InvestmentController {
     }
 
     return new ResponseEntity<>(savedInvestment, CREATED);
+  }
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Investment> deleteInvestment(@PathVariable Long id) {
+    log.info("Delete investment endpoint called");
+    var deletedInvestment = investmentService.deleteInvestment(id);
+
+    if (deletedInvestment == null) {
+      log.debug("Answering with no content to delete investment call");
+      return ResponseEntity.noContent().build();
+    }
+
+    return new ResponseEntity<>(deletedInvestment, OK);
   }
 }

@@ -89,6 +89,32 @@ public class InvestmentControllerTest {
     verifyNoMoreInteractions(investmentService);
   }
 
+  @Test
+  public void testDeleteInvestment_ShouldReturnNull_WhenInvestmentNotFound() {
+    doReturn(null).when(investmentService).deleteInvestment(eq(1L));
+
+    var response = controller.deleteInvestment(1L);
+
+    assertEquals(NO_CONTENT, response.getStatusCode());
+
+    verify(investmentService).deleteInvestment(eq(1L));
+    verifyNoMoreInteractions(investmentService);
+  }
+
+  @Test
+  public void testDeleteInvestment_ShouldReturnDeletedInvestment_WhenInvestmentDeleted() {
+    var investment = newInvestmentWithId(1L);
+    doReturn(investment).when(investmentService).deleteInvestment(eq(1L));
+
+    var response = controller.deleteInvestment(1L);
+
+    assertEquals(OK, response.getStatusCode());
+    assertEquals(investment, response.getBody());
+
+    verify(investmentService).deleteInvestment(eq(1L));
+    verifyNoMoreInteractions(investmentService);
+  }
+
   private Investment newInvestmentWithId(Long id) {
     return Investment.builder().id(id).build();
   }

@@ -3,6 +3,7 @@ package com.investTrack.api.google;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.AddSheetRequest;
 import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest;
+import com.google.api.services.sheets.v4.model.ClearValuesRequest;
 import com.google.api.services.sheets.v4.model.Request;
 import com.google.api.services.sheets.v4.model.SheetProperties;
 import com.google.api.services.sheets.v4.model.ValueRange;
@@ -40,12 +41,19 @@ public class GoogleSheetsClient {
   public void writeToSheet(
       String spreadSheetId, String name, String range, List<List<Object>> values)
       throws IOException {
+    log.debug("Cleaning up the sheet before writing data");
+    sheets
+        .spreadsheets()
+        .values()
+        .clear(spreadSheetId, getRangeFormat(name, range), new ClearValuesRequest())
+        .execute();
+
+    var rangeFormat = getRangeFormat(name, range);
+
     var msg = "Writing data to spread sheet id \"{}\", sheet name \"{}\", and range \"{}\"";
     log.debug(msg, spreadSheetId, name, range);
 
-    var rangeFormat = getRangeFormat(name, range);
     var body = new ValueRange().setValues(values);
-
     sheets
         .spreadsheets()
         .values()
