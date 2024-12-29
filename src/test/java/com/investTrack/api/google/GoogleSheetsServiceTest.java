@@ -1,5 +1,6 @@
 package com.investTrack.api.google;
 
+import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -14,9 +15,9 @@ import com.investTrack.model.InvestmentAdapter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -26,35 +27,59 @@ public class GoogleSheetsServiceTest {
   @Mock private InvestmentAdapter mockInvestmentAdapter;
   @Mock private GoogleSheetsAdapter mockSheetsAdapter;
 
-  @InjectMocks private GoogleSheetsService service;
+  private GoogleSheetsService service;
+
+  @BeforeEach
+  public void setUp() {
+    service = new GoogleSheetsService("1", mockClient, mockInvestmentAdapter, mockSheetsAdapter);
+  }
 
   private Object[] allMocks() {
     return new Object[] {mockClient, mockInvestmentAdapter, mockSheetsAdapter};
   }
 
   @Test
+  public void testGetInvestmentData_ShouldReturnAnEmptyList_WhenSheetDoesNotExist()
+      throws IOException {
+    doReturn(false).when(mockClient).existSheet(any(), any());
+
+    var investments = service.getInvestmentData();
+
+    assertEquals(emptyList(), investments);
+
+    verify(mockClient).existSheet(eq("1"), eq("Investments List"));
+    verify(mockClient).createSheet(eq("1"), eq("Investments List"));
+
+    verifyNoMoreInteractions(allMocks());
+  }
+
+  @Test
   public void testGetInvestmentData_ShouldThrowIOException_WhenErrorsReadingSheet()
       throws IOException {
-    doThrow(new IOException("test")).when(mockClient).readSheet(any(), any());
+    doReturn(true).when(mockClient).existSheet(any(), any());
+    doThrow(new IOException("test")).when(mockClient).readSheet(any(), any(), any());
 
     var exception = assertThrows(IOException.class, () -> service.getInvestmentData());
 
     assertEquals("test", exception.getMessage());
 
-    verify(mockClient).readSheet(eq("Investments List"), eq("A2:P"));
+    verify(mockClient).existSheet(eq("1"), eq("Investments List"));
+    verify(mockClient).readSheet(eq("1"), eq("Investments List"), eq("A2:P"));
 
     verifyNoMoreInteractions(allMocks());
   }
 
   @Test
   public void testGetInvestmentData_ShouldReturnEmptyList_WhenSheetIsEmpty() throws IOException {
-    doReturn(null).when(mockClient).readSheet(any(), any());
+    doReturn(true).when(mockClient).existSheet(any(), any());
+    doReturn(null).when(mockClient).readSheet(any(), any(), any());
 
     var investments = service.getInvestmentData();
 
     assertEquals(new ArrayList<>(), investments);
 
-    verify(mockClient).readSheet(eq("Investments List"), eq("A2:P"));
+    verify(mockClient).existSheet(eq("1"), eq("Investments List"));
+    verify(mockClient).readSheet(eq("1"), eq("Investments List"), eq("A2:P"));
 
     verifyNoMoreInteractions(allMocks());
   }
@@ -69,7 +94,8 @@ public class GoogleSheetsServiceTest {
     var sampleValueRange1 = sampleValuesRange.get(0);
     var sampleValueRange2 = sampleValuesRange.get(1);
 
-    doReturn(sampleValuesRange).when(mockClient).readSheet(any(), any());
+    doReturn(true).when(mockClient).existSheet(any(), any());
+    doReturn(sampleValuesRange).when(mockClient).readSheet(any(), any(), any());
     doReturn(sampleInvestment1)
         .when(mockInvestmentAdapter)
         .fromSheetValueRange(eq(sampleValueRange1));
@@ -81,7 +107,8 @@ public class GoogleSheetsServiceTest {
 
     assertEquals(sampleInvestments, investments);
 
-    verify(mockClient).readSheet(eq("Investments List"), eq("A2:P"));
+    verify(mockClient).existSheet(eq("1"), eq("Investments List"));
+    verify(mockClient).readSheet(eq("1"), eq("Investments List"), eq("A2:P"));
     verify(mockInvestmentAdapter).fromSheetValueRange(eq(sampleValueRange1));
     verify(mockInvestmentAdapter).fromSheetValueRange(eq(sampleValueRange2));
 
@@ -91,14 +118,14 @@ public class GoogleSheetsServiceTest {
   @Test
   public void testWriteInvestmentData_ShouldThrowIOException_WhenErrorsWritingToSheet()
       throws IOException {
-    doThrow(new IOException("test")).when(mockClient).writeToSheet(any(), any(), any());
+    doThrow(new IOException("test")).when(mockClient).writeToSheet(any(), any(), any(), any());
 
     var exception =
         assertThrows(IOException.class, () -> service.writeInvestmentData(new ArrayList<>()));
 
     assertEquals("test", exception.getMessage());
 
-    verify(mockClient).writeToSheet(eq("Investments List"), eq("A2:P"), any());
+    verify(mockClient).writeToSheet(eq("1"), eq("Investments List"), eq("A2:P"), any());
 
     verifyNoMoreInteractions(allMocks());
   }
@@ -123,7 +150,8 @@ public class GoogleSheetsServiceTest {
     verify(mockSheetsAdapter).toSheetValueRange(eq(sampleInvestment1));
     verify(mockSheetsAdapter).toSheetValueRange(eq(sampleInvestment2));
 
-    verify(mockClient).writeToSheet(eq("Investments List"), eq("A2:P"), eq(sampleValuesRange));
+    verify(mockClient)
+        .writeToSheet(eq("1"), eq("Investments List"), eq("A2:P"), eq(sampleValuesRange));
 
     verifyNoMoreInteractions(allMocks());
   }

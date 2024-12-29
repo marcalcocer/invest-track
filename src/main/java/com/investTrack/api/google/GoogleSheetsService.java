@@ -10,12 +10,15 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-// Provides access to Google Sheets API for investment data and orchestrates client operations
+/*
+ * Provides access to Google Sheets API for investment data,  orchestrates and adapts client operations
+ */
 
 @Slf4j
 @RequiredArgsConstructor
 public class GoogleSheetsService {
-  private static final String INVESTMENTS_LIST = "Investments List";
+  private final String spreadSheetId;
+  private static final String INVESTMENTS_LIST_SHEET_NAME = "Investments List";
   private static final String INVESTMENTS_LIST_RANGE = "A2:P";
 
   private final GoogleSheetsClient client;
@@ -23,8 +26,16 @@ public class GoogleSheetsService {
   private final GoogleSheetsAdapter googleSheetsAdapter;
 
   public List<Investment> getInvestmentData() throws IOException {
-    var rows = client.readSheet(INVESTMENTS_LIST, INVESTMENTS_LIST_RANGE);
+    var existSheet = client.existSheet(spreadSheetId, INVESTMENTS_LIST_SHEET_NAME);
+    if (!existSheet) {
+      log.info("Sheet \"{}\" does not exist, creating it", INVESTMENTS_LIST_SHEET_NAME);
+      client.createSheet(spreadSheetId, INVESTMENTS_LIST_SHEET_NAME);
+      return emptyList();
+    }
+
+    var rows = client.readSheet(spreadSheetId, INVESTMENTS_LIST_SHEET_NAME, INVESTMENTS_LIST_RANGE);
     if (rows == null) {
+      log.debug("Investment data not found");
       return emptyList();
     }
 
@@ -43,6 +54,6 @@ public class GoogleSheetsService {
       values.add(row);
     }
 
-    client.writeToSheet(INVESTMENTS_LIST, INVESTMENTS_LIST_RANGE, values);
+    client.writeToSheet(spreadSheetId, INVESTMENTS_LIST_SHEET_NAME, INVESTMENTS_LIST_RANGE, values);
   }
 }
