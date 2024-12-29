@@ -22,8 +22,11 @@ public class InvestmentService {
 
   public List<Investment> getInvestments() {
     if (areInvestmentsLoaded) {
-      log.debug("Investments already loaded, returning from cache");
-      return repository.findAll();
+      var loadedInvestments = repository.findAll();
+      var msg = "Investments already loaded, returning from the database these investments:\n{}";
+      log.debug(msg, loadedInvestments);
+
+      return loadedInvestments;
     }
     List<Investment> investments = new ArrayList<>();
     try {
@@ -47,7 +50,7 @@ public class InvestmentService {
   public Investment createInvestment(Investment investment) {
     List<Investment> investments = getInvestments();
     if (investments == null) {
-      log.error("Failed to load investments list");
+      log.error("Failed to load investments list while creating a new one");
       return null;
     }
 
@@ -62,10 +65,45 @@ public class InvestmentService {
     try {
       googleSheetsService.writeInvestmentData(investments);
     } catch (Exception e) {
-      log.error("Failed to write investments into Google Sheets due to", e);
+      log.error("Failed to write investments into Google Sheets while creating one due to", e);
       return null;
     }
 
     return investment;
+  }
+
+  public Investment deleteInvestment(Long id) {
+    List<Investment> investments = getInvestments();
+    if (investments == null) {
+      log.error("Failed to load investments list while deleting one");
+      return null;
+    }
+
+    Investment investmentToDelete;
+    try {
+      investmentToDelete =
+          investments.stream().filter(i -> i.getId().equals(id)).findFirst().orElse(null);
+
+      if (investmentToDelete == null) {
+        log.error("Could not be found investment with id {}", id);
+        return null;
+      }
+
+      log.debug("Deleting investment {} from the database", investmentToDelete);
+      repository.delete(investmentToDelete);
+      investments.remove(investmentToDelete);
+
+    } catch (Exception e) {
+      log.error("Failed to delete investment", e);
+      return null;
+    }
+
+    try {
+      googleSheetsService.writeInvestmentData(investments);
+    } catch (Exception e) {
+      log.error("Failed to write investments into Google Sheets while deleting one due to", e);
+      return null;
+    }
+    return investmentToDelete;
   }
 }
