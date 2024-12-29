@@ -31,10 +31,11 @@ public class GoogleSheetsConfiguration {
 
   @Bean
   public GoogleSheetsService googleSheetService(Sheets sheets) {
-    var googleSheetsClient = new GoogleSheetsClient(sheets, spreadSheetId);
+    var googleSheetsClient = new GoogleSheetsClient(sheets);
     var investmentAdapter = new InvestmentAdapter();
     var googleSheetsAdapter = new GoogleSheetsAdapter();
 
-    return new GoogleSheetsService(googleSheetsClient, investmentAdapter, googleSheetsAdapter);
+    return new GoogleSheetsService(
+        spreadSheetId, googleSheetsClient, investmentAdapter, googleSheetsAdapter);
   }
 }
