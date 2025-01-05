@@ -2,6 +2,7 @@ package com.investTrack.service;
 
 import com.investTrack.api.google.GoogleSheetsService;
 import com.investTrack.model.Investment;
+import com.investTrack.model.Summary;
 import com.investTrack.repository.InvestmentRepository;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 public class InvestmentService {
   private final GoogleSheetsService googleSheetsService;
   private final InvestmentRepository repository;
+  private final SummaryService summaryService;
   private boolean areInvestmentsLoaded = false;
 
   public List<Investment> getInvestments() {
@@ -108,5 +110,17 @@ public class InvestmentService {
       return null;
     }
     return investmentToDelete;
+  }
+
+  public Summary getSummary() {
+    List<Investment> investments = getInvestments();
+    if (investments == null) {
+      log.error("Failed to load investments list while calculating the summary");
+      return null;
+    }
+
+    var summary = summaryService.calculateSummary(investments);
+    log.info("Calculated summary: {}", summary);
+    return summary;
   }
 }

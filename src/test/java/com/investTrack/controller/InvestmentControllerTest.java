@@ -11,6 +11,7 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import com.investTrack.model.Investment;
+import com.investTrack.model.Summary;
 import com.investTrack.service.InvestmentService;
 import java.util.List;
 import java.util.stream.Stream;
@@ -112,6 +113,32 @@ public class InvestmentControllerTest {
     assertEquals(investment, response.getBody());
 
     verify(investmentService).deleteInvestment(eq(1L));
+    verifyNoMoreInteractions(investmentService);
+  }
+
+  @Test
+  public void testGetSummary_ShouldReturnInternalServerError_WhenNullSummary() {
+    doReturn(null).when(investmentService).getSummary();
+
+    var response = controller.getSummary();
+
+    assertEquals(INTERNAL_SERVER_ERROR, response.getStatusCode());
+
+    verify(investmentService).getSummary();
+    verifyNoMoreInteractions(investmentService);
+  }
+
+  @Test
+  public void testGetSummary_ShouldReturnSummary() {
+    var summary = Summary.builder().build();
+    doReturn(summary).when(investmentService).getSummary();
+
+    var response = controller.getSummary();
+
+    assertEquals(OK, response.getStatusCode());
+    assertEquals(summary, response.getBody());
+
+    verify(investmentService).getSummary();
     verifyNoMoreInteractions(investmentService);
   }
 
