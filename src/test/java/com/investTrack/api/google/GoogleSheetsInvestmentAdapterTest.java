@@ -7,8 +7,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-public class GoogleSheetsAdapterTest {
-  private final GoogleSheetsAdapter adapter = new GoogleSheetsAdapter();
+public class GoogleSheetsInvestmentAdapterTest {
+  private final GoogleSheetsInvestmentAdapter adapter = new GoogleSheetsInvestmentAdapter();
 
   @Test
   public void testToSheetValueRange_ShouldThrowDateTimeException_WhenErrorsFormatingDatetime() {
