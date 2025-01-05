@@ -30,7 +30,8 @@ public class InvestmentService {
     }
     List<Investment> investments = new ArrayList<>();
     try {
-      var loadedInvestments = googleSheetsService.getInvestmentData();
+      var loadedInvestments = googleSheetsService.readInvestmentsData();
+      log.debug("Loaded {} investments from Google Sheets", loadedInvestments.size());
       investments.addAll(loadedInvestments);
 
       saveInvestments(investments);
@@ -44,7 +45,9 @@ public class InvestmentService {
 
   @Transactional
   private void saveInvestments(List<Investment> investments) {
+    log.debug("Saving investments into the database: {}", investments);
     repository.saveAll(investments);
+    log.trace("Saved investments into the database");
   }
 
   public Investment createInvestment(Investment investment) {
@@ -63,7 +66,7 @@ public class InvestmentService {
     }
 
     try {
-      googleSheetsService.writeInvestmentData(investments);
+      googleSheetsService.writeInvestmentsData(investments);
     } catch (Exception e) {
       log.error("Failed to write investments into Google Sheets while creating one due to", e);
       return null;
@@ -99,7 +102,7 @@ public class InvestmentService {
     }
 
     try {
-      googleSheetsService.writeInvestmentData(investments);
+      googleSheetsService.writeInvestmentsData(investments);
     } catch (Exception e) {
       log.error("Failed to write investments into Google Sheets while deleting one due to", e);
       return null;

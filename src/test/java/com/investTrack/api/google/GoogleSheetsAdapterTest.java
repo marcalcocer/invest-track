@@ -13,36 +13,11 @@ public class GoogleSheetsAdapterTest {
   @Test
   public void testToSheetValueRange_ShouldThrowDateTimeException_WhenErrorsFormatingDatetime() {
     var startDate = LocalDateTime.of(2021, 1, 1, 0, 0, 0);
-    var investment =
-        Investment.builder()
-            .id(1L)
-            .name("")
-            .description("")
-            .currency("")
-            .startDateTime(startDate)
-            .endDateTime(null)
-            .build();
+    var investment = new Investment(1L, "", "", "", startDate, null, false, 0.0, 0.0, 0.0);
 
     var valueRange = adapter.toSheetValueRange(investment);
 
-    var expectedValueRange =
-        List.of(
-            1L,
-            "",
-            "",
-            "",
-            "01/01/2021 00:00:00",
-            "",
-            false,
-            false,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0);
-    assertEquals(expectedValueRange, valueRange);
+    var expectedRange = List.of(1L, "", "", "", "01/01/2021 00:00:00", "", false, 0.0, 0.0, 0.0);
+    assertEquals(expectedRange, valueRange);
   }
 }

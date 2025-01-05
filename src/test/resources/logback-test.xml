@@ -7,7 +7,7 @@
         </encoder>
     </appender>
 
-    <logger name="com.investTrack" level="DEBUG"/>
+    <logger name="com.investTrack" level="TRACE"/>
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />

@@ -1,70 +1,44 @@
 package com.investTrack.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-import java.time.DateTimeException;
+import com.investTrack.model.adapter.AdapterUtils;
+import com.investTrack.model.adapter.InvestmentAdapter;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
 public class InvestmentAdapterTest {
-  private final InvestmentAdapter adapter = new InvestmentAdapter();
+
+  private final AdapterUtils adapterUtils = new AdapterUtils();
+
+  private final InvestmentAdapter adapter = new InvestmentAdapter(adapterUtils);
 
   @Test
-  public void testFromSheetValueRange_ShouldThrowNumberFormatException_WhenParsingALong() {
-    List<Object> values = List.of("not-a-long");
-    assertThrows(NumberFormatException.class, () -> adapter.fromSheetValueRange(values));
-  }
-
-  @Test
-  public void testFromSheetValueRange_ShouldThrowNumberFormatException_WhenParsingADateTime() {
-    List<Object> values = List.of(1L, "", "", "", "not-a-datetime");
-    assertThrows(DateTimeException.class, () -> adapter.fromSheetValueRange(values));
-  }
-
-  @Test
-  public void testFromSheetValueRange_ShouldThrowNumberFormatException_WhenParsingADouble() {
-    List<Object> values =
-        List.of(
-            1L,
-            "",
-            "",
-            "",
-            "20/12/2023 10:00:00",
-            "20/12/2023 10:00:00",
-            true,
-            false,
-            "not-a-double");
-    assertThrows(NumberFormatException.class, () -> adapter.fromSheetValueRange(values));
+  public void testFromSheetValueRange_ShouldReturnNullWhenValueRangeIsEmpty() {
+    var investment = adapter.fromSheetValueRange(List.of());
+    assertNull(investment);
   }
 
   @Test
   public void testFromSheetValueRange_ShouldReturnAValidInvestment() {
     var investment = adapter.fromSheetValueRange(getSampleInvestmentValueRange());
 
-    assertEquals(getExpectedInvestment(), investment);
-  }
-
-  private Investment getExpectedInvestment() {
-    return Investment.builder()
-        .id(1L)
-        .name("name")
-        .description("description")
-        .currency("USD")
-        .startDateTime(LocalDateTime.parse("2023-12-20T10:00:00"))
-        .endDateTime(null)
-        .isActive(true)
-        .isReinvested(false)
-        .initialInvestedAmount(250.00)
-        .reinvestedAmount(0.00)
-        .totalInvestedAmount(250.00)
-        .profitability(20.06)
-        .totalObtained(1300.15)
-        .totalBenefit(50.15)
-        .benefitFromInitialAmount(50.15)
-        .profitabilityFromInitialAmount(20.06)
-        .build();
+    assertEquals(1L, investment.getId());
+    assertEquals("name", investment.getName());
+    assertEquals("description", investment.getDescription());
+    assertEquals("USD", investment.getCurrency());
+    assertEquals(LocalDateTime.parse("2023-12-20T10:00:00"), investment.getStartDateTime());
+    assertNull(investment.getEndDateTime());
+    assertFalse(investment.isReinvested());
+    assertEquals(1.0, investment.getInitialInvestedAmount());
+    assertEquals(2.0, investment.getReinvestedAmount());
+    assertEquals(3.00, investment.getTotalInvestedAmount());
+    assertEquals(0.1, investment.getProfitability());
+    assertEquals(3.3, investment.getObtained());
+    assertEquals(0.3, investment.getBenefit(), 0.0001);
   }
 
   private List<Object> getSampleInvestmentValueRange() {
@@ -75,15 +49,10 @@ public class InvestmentAdapterTest {
         "USD",
         "20/12/2023 10:00:00",
         "",
-        true,
         false,
-        "250,00",
-        "0,00",
-        "250,00",
-        "20,06",
-        "1.300,15",
-        "50,15 ",
-        "50,15 ",
+        "1,00",
+        "2,00",
+        "0,1",
         "20,06");
   }
 }

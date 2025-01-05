@@ -23,14 +23,19 @@ public class GoogleSheetsClient {
 
   public List<List<Object>> readSheet(String spreadSheetId, String sheetName, String range)
       throws IOException {
-    var msg = "Getting data for spread sheet id \"{}\", sheet name \"{}\", and range \"{}\"";
+    var msg = "Getting data for spread sheet id \"{}\", name \"{}\", and range \"{}\"";
     log.debug(msg, spreadSheetId, sheetName, range);
 
     var rangeFormat = getRangeFormat(sheetName, range);
     var response = sheets.spreadsheets().values().get(spreadSheetId, rangeFormat).execute();
 
     var values = response.getValues();
-    log.debug("Obtained values: {}", values);
+    log.debug(
+        "Obtained values for spread sheet id \"{}\", name \"{}\", and range \"{}\": {}",
+        spreadSheetId,
+        sheetName,
+        range,
+        values);
 
     return values;
   }
