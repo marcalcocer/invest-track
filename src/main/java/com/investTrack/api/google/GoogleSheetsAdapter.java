@@ -26,16 +26,10 @@ public class GoogleSheetsAdapter {
         investment.getCurrency(),
         startDateTime,
         endDateTime,
-        investment.isActive(),
         investment.isReinvested(),
         investment.getInitialInvestedAmount(),
         investment.getReinvestedAmount(),
-        investment.getTotalInvestedAmount(),
-        investment.getProfitability(),
-        investment.getTotalObtained(),
-        investment.getTotalBenefit(),
-        investment.getBenefitFromInitialAmount(),
-        investment.getProfitabilityFromInitialAmount());
+        investment.getProfitability());
   }
 
   private String parseDateTime(LocalDateTime dateTime) {

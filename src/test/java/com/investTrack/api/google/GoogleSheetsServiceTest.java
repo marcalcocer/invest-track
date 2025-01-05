@@ -11,7 +11,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import com.investTrack.model.Investment;
-import com.investTrack.model.InvestmentAdapter;
+import com.investTrack.model.InvestmentEntry;
+import com.investTrack.model.adapter.InvestmentAdapter;
+import com.investTrack.model.adapter.InvestmentEntryAdapter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,13 +27,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class GoogleSheetsServiceTest {
   @Mock private GoogleSheetsClient mockClient;
   @Mock private InvestmentAdapter mockInvestmentAdapter;
+  @Mock private InvestmentEntryAdapter mockInvestmentEntryAdapter;
   @Mock private GoogleSheetsAdapter mockSheetsAdapter;
 
   private GoogleSheetsService service;
 
   @BeforeEach
   public void setUp() {
-    service = new GoogleSheetsService("1", mockClient, mockInvestmentAdapter, mockSheetsAdapter);
+    service =
+        new GoogleSheetsService(
+            "1", mockClient, mockSheetsAdapter, mockInvestmentAdapter, mockInvestmentEntryAdapter);
   }
 
   private Object[] allMocks() {
@@ -39,11 +44,11 @@ public class GoogleSheetsServiceTest {
   }
 
   @Test
-  public void testGetInvestmentData_ShouldReturnAnEmptyList_WhenSheetDoesNotExist()
+  public void testReadInvestmentsData_ShouldReturnAnEmptyList_WhenSheetDoesNotExist()
       throws IOException {
     doReturn(false).when(mockClient).existSheet(any(), any());
 
-    var investments = service.getInvestmentData();
+    var investments = service.readInvestmentsData();
 
     assertEquals(emptyList(), investments);
 
@@ -54,12 +59,12 @@ public class GoogleSheetsServiceTest {
   }
 
   @Test
-  public void testGetInvestmentData_ShouldThrowIOException_WhenErrorsReadingSheet()
+  public void testReadInvestmentsData_ShouldThrowIOException_WhenErrorsReadingSheet()
       throws IOException {
     doReturn(true).when(mockClient).existSheet(any(), any());
     doThrow(new IOException("test")).when(mockClient).readSheet(any(), any(), any());
 
-    var exception = assertThrows(IOException.class, () -> service.getInvestmentData());
+    var exception = assertThrows(IOException.class, () -> service.readInvestmentsData());
 
     assertEquals("test", exception.getMessage());
 
@@ -70,11 +75,11 @@ public class GoogleSheetsServiceTest {
   }
 
   @Test
-  public void testGetInvestmentData_ShouldReturnEmptyList_WhenSheetIsEmpty() throws IOException {
+  public void testReadInvestmentsData_ShouldReturnEmptyList_WhenSheetIsEmpty() throws IOException {
     doReturn(true).when(mockClient).existSheet(any(), any());
     doReturn(null).when(mockClient).readSheet(any(), any(), any());
 
-    var investments = service.getInvestmentData();
+    var investments = service.readInvestmentsData();
 
     assertEquals(new ArrayList<>(), investments);
 
@@ -85,43 +90,114 @@ public class GoogleSheetsServiceTest {
   }
 
   @Test
-  public void testGetInvestmentData_ShouldReturnAValidList() throws IOException {
-    var sampleInvestments = getSampleInvestments();
-    var sampleInvestment1 = sampleInvestments.get(0);
-    var sampleInvestment2 = sampleInvestments.get(1);
-
-    var sampleValuesRange = getSampleValuesRange();
-    var sampleValueRange1 = sampleValuesRange.get(0);
-    var sampleValueRange2 = sampleValuesRange.get(1);
+  public void testReadInvestmentsData_ShouldStopReading_WhenAnInvestmentIsNull()
+      throws IOException {
+    var listRows = getSampleInvestmentListRows();
 
     doReturn(true).when(mockClient).existSheet(any(), any());
-    doReturn(sampleValuesRange).when(mockClient).readSheet(any(), any(), any());
-    doReturn(sampleInvestment1)
-        .when(mockInvestmentAdapter)
-        .fromSheetValueRange(eq(sampleValueRange1));
-    doReturn(sampleInvestment2)
-        .when(mockInvestmentAdapter)
-        .fromSheetValueRange(eq(sampleValueRange2));
+    doReturn(listRows).when(mockClient).readSheet(any(), any(), any());
+    doReturn(null).when(mockInvestmentAdapter).fromSheetValueRange(any());
 
-    var investments = service.getInvestmentData();
-
-    assertEquals(sampleInvestments, investments);
+    var investments = service.readInvestmentsData();
+    assertEquals(emptyList(), investments);
 
     verify(mockClient).existSheet(eq("1"), eq("Investments List"));
     verify(mockClient).readSheet(eq("1"), eq("Investments List"), eq("A2:P"));
-    verify(mockInvestmentAdapter).fromSheetValueRange(eq(sampleValueRange1));
-    verify(mockInvestmentAdapter).fromSheetValueRange(eq(sampleValueRange2));
+    verify(mockInvestmentAdapter).fromSheetValueRange(eq(listRows.get(0)));
 
     verifyNoMoreInteractions(allMocks());
   }
 
   @Test
-  public void testWriteInvestmentData_ShouldThrowIOException_WhenErrorsWritingToSheet()
+  public void testReadInvestmentsData_ShouldCreateInvestmentEntriesSheet_WhenItDoesNotExist()
+      throws IOException {
+    var listRows = getSampleInvestmentListRows();
+    var investment = newInvestment();
+
+    doReturn(true).when(mockClient).existSheet(any(), eq("Investments List"));
+    doReturn(listRows).when(mockClient).readSheet(any(), any(), any());
+    doReturn(investment).when(mockInvestmentAdapter).fromSheetValueRange(any());
+
+    doReturn(false).when(mockClient).existSheet(any(), eq("Investment entries - test"));
+
+    var investments = service.readInvestmentsData();
+    assertEquals(List.of(investment), investments);
+
+    verify(mockClient).existSheet(eq("1"), eq("Investments List"));
+    verify(mockClient).readSheet(eq("1"), eq("Investments List"), eq("A2:P"));
+    verify(mockInvestmentAdapter).fromSheetValueRange(eq(listRows.get(0)));
+
+    verify(mockClient).existSheet(eq("1"), eq("Investment entries - test"));
+    verify(mockClient).createSheet(eq("1"), eq("Investment entries - test"));
+
+    verifyNoMoreInteractions(allMocks());
+  }
+
+  @Test
+  public void testReadInvestmentsData_ShouldReturnEmptyInvestmentEntries_WhenNoDataReadingThem()
+      throws IOException {
+    var listRows = getSampleInvestmentListRows();
+    var investment = newInvestment();
+
+    doReturn(true).when(mockClient).existSheet(any(), eq("Investments List"));
+    doReturn(listRows).when(mockClient).readSheet(any(), any(), any());
+    doReturn(investment).when(mockInvestmentAdapter).fromSheetValueRange(any());
+
+    doReturn(true).when(mockClient).existSheet(any(), eq("Investment entries - test"));
+    doReturn(null).when(mockClient).readSheet(any(), eq("Investment entries - test"), any());
+
+    var investments = service.readInvestmentsData();
+    assertEquals(List.of(investment), investments);
+
+    verify(mockClient).existSheet(eq("1"), eq("Investments List"));
+    verify(mockClient).readSheet(eq("1"), eq("Investments List"), eq("A2:P"));
+    verify(mockInvestmentAdapter).fromSheetValueRange(eq(listRows.get(0)));
+
+    verify(mockClient).existSheet(eq("1"), eq("Investment entries - test"));
+    verify(mockClient).readSheet(eq("1"), eq("Investment entries - test"), eq("A2:P"));
+
+    verifyNoMoreInteractions(allMocks());
+  }
+
+  @Test
+  public void testReadInvestmentsData_ShouldReturnInvestmentEntries_WhenData() throws IOException {
+    var investmentListRows = getSampleInvestmentListRows();
+    List<List<Object>> investmentEntriesListRows = List.of(List.of("test1 investment entry"));
+    var investment = newInvestment();
+    var investmentEntry = new InvestmentEntry(1L, null, 0.0, 0.0, 0.0, null, "");
+
+    doReturn(true).when(mockClient).existSheet(any(), eq("Investments List"));
+    doReturn(investmentListRows).when(mockClient).readSheet(any(), any(), any());
+    doReturn(investment).when(mockInvestmentAdapter).fromSheetValueRange(any());
+
+    doReturn(true).when(mockClient).existSheet(any(), eq("Investment entries - test"));
+    doReturn(investmentEntriesListRows)
+        .when(mockClient)
+        .readSheet(any(), eq("Investment entries - test"), any());
+    doReturn(investmentEntry).when(mockInvestmentEntryAdapter).fromSheetValueRange(any(), any());
+
+    var investments = service.readInvestmentsData();
+    assertEquals(List.of(investment), investments);
+
+    verify(mockClient).existSheet(eq("1"), eq("Investments List"));
+    verify(mockClient).readSheet(eq("1"), eq("Investments List"), eq("A2:P"));
+    verify(mockInvestmentAdapter).fromSheetValueRange(eq(investmentListRows.get(0)));
+
+    verify(mockClient).existSheet(eq("1"), eq("Investment entries - test"));
+    verify(mockClient).readSheet(eq("1"), eq("Investment entries - test"), eq("A2:P"));
+    verify(mockInvestmentEntryAdapter)
+        .fromSheetValueRange(eq(investmentEntriesListRows.get(0)), eq(investment));
+
+    verifyNoMoreInteractions(allMocks());
+  }
+
+  @Test
+  public void testWriteInvestmentsData_ShouldThrowIOException_WhenErrorsWritingToSheet()
       throws IOException {
     doThrow(new IOException("test")).when(mockClient).writeToSheet(any(), any(), any(), any());
 
     var exception =
-        assertThrows(IOException.class, () -> service.writeInvestmentData(new ArrayList<>()));
+        assertThrows(IOException.class, () -> service.writeInvestmentsData(new ArrayList<>()));
 
     assertEquals("test", exception.getMessage());
 
@@ -136,7 +212,8 @@ public class GoogleSheetsServiceTest {
     var sampleInvestment1 = sampleInvestments.get(0);
     var sampleInvestment2 = sampleInvestments.get(1);
 
-    var sampleValuesRange = getSampleValuesRange();
+    List<List<Object>> sampleValuesRange =
+        List.of(List.of("test1 investment"), List.of("test2 investment"));
 
     doReturn(sampleValuesRange.get(0))
         .when(mockSheetsAdapter)
@@ -145,7 +222,7 @@ public class GoogleSheetsServiceTest {
         .when(mockSheetsAdapter)
         .toSheetValueRange(eq(sampleInvestment2));
 
-    service.writeInvestmentData(sampleInvestments);
+    service.writeInvestmentsData(sampleInvestments);
 
     verify(mockSheetsAdapter).toSheetValueRange(eq(sampleInvestment1));
     verify(mockSheetsAdapter).toSheetValueRange(eq(sampleInvestment2));
@@ -156,17 +233,18 @@ public class GoogleSheetsServiceTest {
     verifyNoMoreInteractions(allMocks());
   }
 
-  private List<List<Object>> getSampleValuesRange() {
-    List<List<Object>> valueRange = new ArrayList<>(new ArrayList<>());
-    valueRange.add(List.of(("test1")));
-    valueRange.add(List.of(("test2")));
-    return valueRange;
+  private List<List<Object>> getSampleInvestmentListRows() {
+    return List.of(List.of("test1 investment"));
   }
 
   private List<Investment> getSampleInvestments() {
     List<Investment> investments = new ArrayList<>();
-    investments.add(Investment.builder().id(1L).build());
-    investments.add(Investment.builder().id(2L).build());
+    investments.add(new Investment(1L, "test1", "test1", "USD", null, null, false, 0.0, 0.0, 0.0));
+    investments.add(new Investment(2L, "test2", "test2", "USD", null, null, false, 0.0, 0.0, 0.0));
     return investments;
+  }
+
+  private Investment newInvestment() {
+    return new Investment(1L, "test", "desc", "USD", null, null, false, 0.0, 0.0, 0.0);
   }
 }

@@ -50,7 +50,7 @@ public class InvestmentControllerTest {
 
   @Test
   public void testLoadInvestments_ShouldReturnInvestments_WhenLoadedInvestments() {
-    var investments = List.of(newInvestmentWithId(1L), newInvestmentWithId(2L));
+    var investments = List.of(newInvestmentWithId(), newInvestmentWithId());
     doReturn(investments).when(investmentService).getInvestments();
 
     var response = controller.loadInvestments();
@@ -64,7 +64,7 @@ public class InvestmentControllerTest {
 
   @Test
   public void testCreateInvestment_ShouldReturnInternalServerError_WhenNullInvestment() {
-    var investment = newInvestmentWithId(1L);
+    var investment = newInvestmentWithId();
     doReturn(null).when(investmentService).createInvestment(any());
 
     var response = controller.createInvestment(investment);
@@ -77,7 +77,7 @@ public class InvestmentControllerTest {
 
   @Test
   public void testCreateInvestment_ShouldReturnCreatedInvestment_WhenInvestmentCreated() {
-    var investment = newInvestmentWithId(1L);
+    var investment = newInvestmentWithId();
     doReturn(investment).when(investmentService).createInvestment(any());
 
     var response = controller.createInvestment(investment);
@@ -103,7 +103,7 @@ public class InvestmentControllerTest {
 
   @Test
   public void testDeleteInvestment_ShouldReturnDeletedInvestment_WhenInvestmentDeleted() {
-    var investment = newInvestmentWithId(1L);
+    var investment = newInvestmentWithId();
     doReturn(investment).when(investmentService).deleteInvestment(eq(1L));
 
     var response = controller.deleteInvestment(1L);
@@ -115,7 +115,7 @@ public class InvestmentControllerTest {
     verifyNoMoreInteractions(investmentService);
   }
 
-  private Investment newInvestmentWithId(Long id) {
-    return Investment.builder().id(id).build();
+  private Investment newInvestmentWithId() {
+    return new Investment();
   }
 }

@@ -5,7 +5,9 @@ import com.investTrack.api.google.GoogleSheetsAdapter;
 import com.investTrack.api.google.GoogleSheetsClient;
 import com.investTrack.api.google.GoogleSheetsService;
 import com.investTrack.api.google.credential.GoogleSheetsCredentialService;
-import com.investTrack.model.InvestmentAdapter;
+import com.investTrack.model.adapter.AdapterUtils;
+import com.investTrack.model.adapter.InvestmentAdapter;
+import com.investTrack.model.adapter.InvestmentEntryAdapter;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,10 +34,17 @@ public class GoogleSheetsConfiguration {
   @Bean
   public GoogleSheetsService googleSheetService(Sheets sheets) {
     var googleSheetsClient = new GoogleSheetsClient(sheets);
-    var investmentAdapter = new InvestmentAdapter();
     var googleSheetsAdapter = new GoogleSheetsAdapter();
 
+    var adapterUtils = new AdapterUtils();
+    var investmentAdapter = new InvestmentAdapter(adapterUtils);
+    var investmentEntryAdapter = new InvestmentEntryAdapter(adapterUtils);
+
     return new GoogleSheetsService(
-        spreadSheetId, googleSheetsClient, investmentAdapter, googleSheetsAdapter);
+        spreadSheetId,
+        googleSheetsClient,
+        googleSheetsAdapter,
+        investmentAdapter,
+        investmentEntryAdapter);
   }
 }

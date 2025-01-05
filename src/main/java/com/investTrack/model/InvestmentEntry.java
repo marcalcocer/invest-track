@@ -2,41 +2,90 @@ package com.investTrack.model;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import java.math.BigDecimal;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
+@Data
+@Table(name = "investment_entries")
+@NoArgsConstructor(force = true) // Default constructor required by JPA
 public class InvestmentEntry {
+  public InvestmentEntry(
+      Long id,
+      LocalDateTime datetime,
+      double initialInvestedAmount,
+      double reinvestedAmount,
+      double profitability,
+      Investment investment,
+      String comments) {
+    this.id = id;
+    this.datetime = datetime;
+    this.investment = investment;
+    this.comments = comments;
+
+    // TODO: Treat common behavior in a separated class
+    this.initialInvestedAmount = initialInvestedAmount;
+    this.reinvestedAmount = reinvestedAmount;
+    this.profitability = profitability;
+
+    calculateTotalInvestedAmount();
+    calculateObtained();
+    calculateBenefit();
+  }
 
   @Id
   @GeneratedValue(strategy = IDENTITY)
-  private Integer id;
-
-  @Column(length = 500)
-  private String comments;
+  // We explicitly need to declare it here and not in the superclass because JPA required each
+  // @Entity to have an @Id
+  private Long id;
 
   @ManyToOne
   @JoinColumn(name = "investment_id", nullable = false)
-  private Investment investment;
+  @JsonBackReference
+  private final Investment investment;
 
-  @Column(name = "entry_datetime")
-  private LocalDateTime entryDatetime;
+  @Column(name = "datetime", nullable = false)
+  private final LocalDateTime datetime;
 
-  @Column(name = "initial_investment_amount", precision = 10, scale = 2)
-  private BigDecimal initialInvestmentAmount;
+  @Column(length = 500)
+  private final String comments;
 
-  @Column(name = "reinvested_amount", precision = 10, scale = 2)
-  private BigDecimal reinvestedAmount;
+  @Column(name = "initial_investment_amount", nullable = false)
+  private double initialInvestedAmount;
 
-  @Column(name = "return_rate", precision = 5, scale = 2)
-  private BigDecimal returnRate;
+  @Column(name = "reinvested_amount", nullable = false)
+  private double reinvestedAmount;
 
-  @Column(name = "total_value", precision = 10, scale = 2)
-  private BigDecimal totalValue;
+  @Column(name = "total_invested_amount", nullable = false)
+  private double totalInvestedAmount;
+
+  @Column(nullable = false)
+  private double profitability;
+
+  @Column(name = "obtained", nullable = false)
+  private double obtained;
+
+  @Column(name = "benefit", nullable = false)
+  private double benefit;
+
+  private void calculateTotalInvestedAmount() {
+    totalInvestedAmount = initialInvestedAmount + reinvestedAmount;
+  }
+
+  private void calculateObtained() {
+    obtained = totalInvestedAmount + totalInvestedAmount * profitability;
+  }
+
+  private void calculateBenefit() {
+    benefit = totalInvestedAmount * profitability;
+  }
 }
