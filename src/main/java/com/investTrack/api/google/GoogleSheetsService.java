@@ -25,7 +25,8 @@ public class GoogleSheetsService {
   private static final String INVESTMENT_SHEET_NAME_PATTERN = "Investment entries - ";
 
   private final GoogleSheetsClient client;
-  private final GoogleSheetsAdapter googleSheetsAdapter;
+  private final GoogleSheetsInvestmentAdapter googleSheetsInvestmentAdapter;
+  private final GoogleSheetsInvestmentEntryAdapter googleSheetsInvestmentEntryAdapter;
   private final InvestmentAdapter investmentAdapter;
   private final InvestmentEntryAdapter investmentEntryAdapter;
 
@@ -88,10 +89,29 @@ public class GoogleSheetsService {
   public void writeInvestmentsData(List<Investment> investments) throws IOException {
     var values = new ArrayList<List<Object>>();
     for (var investment : investments) {
-      var row = googleSheetsAdapter.toSheetValueRange(investment);
+      var row = googleSheetsInvestmentAdapter.toSheetValueRange(investment);
+      values.add(row);
+
+      var entries = investment.getEntries();
+      if (entries == null || entries.isEmpty()) {
+        log.debug("No investment entries found for investment {}", investment.getName());
+        continue;
+      }
+      writeInvestmentEntriesData(entries, INVESTMENT_SHEET_NAME_PATTERN + investment.getName());
+    }
+
+    log.debug("Writing investments data to Google Sheets");
+    client.writeToSheet(spreadSheetId, INVESTMENTS_LIST_SHEET_NAME, SHEET_RANGE, values);
+  }
+
+  private void writeInvestmentEntriesData(List<InvestmentEntry> entries, String sheetName)
+      throws IOException {
+    var values = new ArrayList<List<Object>>();
+    for (var entry : entries) {
+      var row = googleSheetsInvestmentEntryAdapter.toSheetValueRange(entry);
       values.add(row);
     }
 
-    client.writeToSheet(spreadSheetId, INVESTMENTS_LIST_SHEET_NAME, SHEET_RANGE, values);
+    client.writeToSheet(spreadSheetId, sheetName, SHEET_RANGE, values);
   }
 }

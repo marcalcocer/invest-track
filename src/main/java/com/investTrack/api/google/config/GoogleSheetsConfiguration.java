@@ -1,8 +1,9 @@
 package com.investTrack.api.google.config;
 
 import com.google.api.services.sheets.v4.Sheets;
-import com.investTrack.api.google.GoogleSheetsAdapter;
 import com.investTrack.api.google.GoogleSheetsClient;
+import com.investTrack.api.google.GoogleSheetsInvestmentAdapter;
+import com.investTrack.api.google.GoogleSheetsInvestmentEntryAdapter;
 import com.investTrack.api.google.GoogleSheetsService;
 import com.investTrack.api.google.credential.GoogleSheetsCredentialService;
 import com.investTrack.model.adapter.AdapterUtils;
@@ -34,7 +35,9 @@ public class GoogleSheetsConfiguration {
   @Bean
   public GoogleSheetsService googleSheetService(Sheets sheets) {
     var googleSheetsClient = new GoogleSheetsClient(sheets);
-    var googleSheetsAdapter = new GoogleSheetsAdapter();
+
+    var googleSheetsInvestmentAdapter = new GoogleSheetsInvestmentAdapter();
+    var googleSheetsInvestmentEntryAdapter = new GoogleSheetsInvestmentEntryAdapter();
 
     var adapterUtils = new AdapterUtils();
     var investmentAdapter = new InvestmentAdapter(adapterUtils);
@@ -43,7 +46,8 @@ public class GoogleSheetsConfiguration {
     return new GoogleSheetsService(
         spreadSheetId,
         googleSheetsClient,
-        googleSheetsAdapter,
+        googleSheetsInvestmentAdapter,
+        googleSheetsInvestmentEntryAdapter,
         investmentAdapter,
         investmentEntryAdapter);
   }

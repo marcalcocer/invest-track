@@ -26,9 +26,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class GoogleSheetsServiceTest {
   @Mock private GoogleSheetsClient mockClient;
+  @Mock private GoogleSheetsInvestmentAdapter mockSheetsInvestmentAdapter;
+  @Mock private GoogleSheetsInvestmentEntryAdapter mockSheetsInvestmentEntryAdapter;
   @Mock private InvestmentAdapter mockInvestmentAdapter;
   @Mock private InvestmentEntryAdapter mockInvestmentEntryAdapter;
-  @Mock private GoogleSheetsAdapter mockSheetsAdapter;
 
   private GoogleSheetsService service;
 
@@ -36,11 +37,21 @@ public class GoogleSheetsServiceTest {
   public void setUp() {
     service =
         new GoogleSheetsService(
-            "1", mockClient, mockSheetsAdapter, mockInvestmentAdapter, mockInvestmentEntryAdapter);
+            "1",
+            mockClient,
+            mockSheetsInvestmentAdapter,
+            mockSheetsInvestmentEntryAdapter,
+            mockInvestmentAdapter,
+            mockInvestmentEntryAdapter);
   }
 
   private Object[] allMocks() {
-    return new Object[] {mockClient, mockInvestmentAdapter, mockSheetsAdapter};
+    return new Object[] {
+      mockClient,
+      mockSheetsInvestmentAdapter,
+      mockSheetsInvestmentEntryAdapter,
+      mockInvestmentAdapter
+    };
   }
 
   @Test
@@ -207,28 +218,56 @@ public class GoogleSheetsServiceTest {
   }
 
   @Test
-  public void testWriteInvestmentData_ShouldWriteToSheet() throws IOException {
-    var sampleInvestments = getSampleInvestments();
-    var sampleInvestment1 = sampleInvestments.get(0);
-    var sampleInvestment2 = sampleInvestments.get(1);
+  public void testWriteInvestmentsData_ShouldContinue_WhenNullEntriesInAnInvestment()
+      throws IOException {
+    var investment = newInvestment();
 
-    List<List<Object>> sampleValuesRange =
-        List.of(List.of("test1 investment"), List.of("test2 investment"));
+    doReturn(List.of()).when(mockSheetsInvestmentAdapter).toSheetValueRange(eq(investment));
 
-    doReturn(sampleValuesRange.get(0))
-        .when(mockSheetsAdapter)
-        .toSheetValueRange(eq(sampleInvestment1));
-    doReturn(sampleValuesRange.get(1))
-        .when(mockSheetsAdapter)
-        .toSheetValueRange(eq(sampleInvestment2));
+    service.writeInvestmentsData(List.of(investment));
 
-    service.writeInvestmentsData(sampleInvestments);
+    verify(mockSheetsInvestmentAdapter).toSheetValueRange(eq(investment));
+    verify(mockClient).writeToSheet(eq("1"), eq("Investments List"), eq("A2:P"), any());
 
-    verify(mockSheetsAdapter).toSheetValueRange(eq(sampleInvestment1));
-    verify(mockSheetsAdapter).toSheetValueRange(eq(sampleInvestment2));
+    verifyNoMoreInteractions(allMocks());
+  }
 
-    verify(mockClient)
-        .writeToSheet(eq("1"), eq("Investments List"), eq("A2:P"), eq(sampleValuesRange));
+  @Test
+  public void testWriteInvestmentsData_ShouldContinue_WhenEmptyEntriesInAnInvestment()
+      throws IOException {
+    var investment = newInvestment();
+    investment.setEntries(new ArrayList<>());
+
+    doReturn(List.of()).when(mockSheetsInvestmentAdapter).toSheetValueRange(eq(investment));
+
+    service.writeInvestmentsData(List.of(investment));
+
+    verify(mockSheetsInvestmentAdapter).toSheetValueRange(eq(investment));
+    verify(mockClient).writeToSheet(eq("1"), eq("Investments List"), eq("A2:P"), any());
+
+    verifyNoMoreInteractions(allMocks());
+  }
+
+  @Test
+  public void testWriteInvestmentsData_ShouldWriteInvestmentEntries_WhenData() throws IOException {
+    var investment = newInvestment();
+    var investmentEntry = newInvestmentEntry();
+    investment.setEntries(List.of(investmentEntry));
+
+    doReturn(List.of(List.of("test1 investment")))
+        .when(mockSheetsInvestmentAdapter)
+        .toSheetValueRange(eq(investment));
+    doReturn(List.of(List.of("test1 investment entry")))
+        .when(mockSheetsInvestmentEntryAdapter)
+        .toSheetValueRange(eq(investmentEntry));
+
+    service.writeInvestmentsData(List.of(investment));
+
+    verify(mockSheetsInvestmentAdapter).toSheetValueRange(eq(investment));
+    verify(mockClient).writeToSheet(eq("1"), eq("Investments List"), eq("A2:P"), any());
+
+    verify(mockSheetsInvestmentEntryAdapter).toSheetValueRange(eq(investmentEntry));
+    verify(mockClient).writeToSheet(eq("1"), eq("Investment entries - test"), eq("A2:P"), any());
 
     verifyNoMoreInteractions(allMocks());
   }
@@ -237,14 +276,11 @@ public class GoogleSheetsServiceTest {
     return List.of(List.of("test1 investment"));
   }
 
-  private List<Investment> getSampleInvestments() {
-    List<Investment> investments = new ArrayList<>();
-    investments.add(new Investment(1L, "test1", "test1", "USD", null, null, false, 0.0, 0.0, 0.0));
-    investments.add(new Investment(2L, "test2", "test2", "USD", null, null, false, 0.0, 0.0, 0.0));
-    return investments;
-  }
-
   private Investment newInvestment() {
     return new Investment(1L, "test", "desc", "USD", null, null, false, 0.0, 0.0, 0.0);
+  }
+
+  private InvestmentEntry newInvestmentEntry() {
+    return new InvestmentEntry(1L, null, 0.0, 0.0, 0.0, null, "");
   }
 }
