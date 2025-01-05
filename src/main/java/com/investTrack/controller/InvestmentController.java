@@ -4,6 +4,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
 import com.investTrack.model.Investment;
+import com.investTrack.model.Summary;
 import com.investTrack.service.InvestmentService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -70,5 +71,18 @@ public class InvestmentController {
     }
 
     return new ResponseEntity<>(deletedInvestment, OK);
+  }
+
+  @GetMapping("/summary")
+  public ResponseEntity<Summary> getSummary() {
+    log.info("Get summary endpoint called");
+    var summary = investmentService.getSummary();
+
+    if (summary == null) {
+      log.debug("Answering with internal server error to get summary call");
+      return ResponseEntity.internalServerError().build();
+    }
+
+    return new ResponseEntity<>(summary, OK);
   }
 }

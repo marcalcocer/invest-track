@@ -1,11 +1,9 @@
-package com.investTrack.model;
+package com.investTrack.model.adapter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import com.investTrack.model.adapter.AdapterUtils;
-import com.investTrack.model.adapter.InvestmentAdapter;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;

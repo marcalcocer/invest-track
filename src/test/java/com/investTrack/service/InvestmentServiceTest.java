@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import com.investTrack.api.google.GoogleSheetsService;
 import com.investTrack.model.Investment;
+import com.investTrack.model.Summary;
 import com.investTrack.repository.InvestmentRepository;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,11 +29,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class InvestmentServiceTest {
   @Mock private GoogleSheetsService mockSheetsService;
   @Mock private InvestmentRepository mockRepository;
+  @Mock private SummaryService mockSummaryService;
 
   @InjectMocks private InvestmentService service;
 
   private Object[] allMocks() {
-    return new Object[] {mockSheetsService, mockRepository};
+    return new Object[] {mockSheetsService, mockRepository, mockSummaryService};
   }
 
   @Test
@@ -238,6 +240,35 @@ public class InvestmentServiceTest {
     verify(mockRepository).saveAll(eq(writtenInvestments));
     verify(mockRepository).delete(eq(investmentToDelete));
     verify(mockSheetsService).writeInvestmentsData(eq(writtenInvestments));
+
+    verifyNoMoreInteractions(allMocks());
+  }
+
+  @Test
+  public void testGetSummary_ShouldReturnNull_WhenNoInvestmentsLoaded() throws IOException {
+    doReturn(null).when(mockSheetsService).readInvestmentsData();
+
+    assertNull(service.getSummary());
+
+    verify(mockSheetsService).readInvestmentsData();
+    verify(mockRepository, times(0)).saveAll(any());
+
+    verifyNoMoreInteractions(allMocks());
+  }
+
+  @Test
+  public void testGetSummary_ShouldReturnSummary() throws IOException {
+    var investments = List.of(newInvestmentWithId());
+    doReturn(investments).when(mockSheetsService).readInvestmentsData();
+
+    var summary = Summary.builder().build();
+    doReturn(summary).when(mockSummaryService).calculateSummary(investments);
+
+    assertEquals(summary, service.getSummary());
+
+    verify(mockSheetsService).readInvestmentsData();
+    verify(mockRepository).saveAll(eq(investments));
+    verify(mockSummaryService).calculateSummary(eq(investments));
 
     verifyNoMoreInteractions(allMocks());
   }
