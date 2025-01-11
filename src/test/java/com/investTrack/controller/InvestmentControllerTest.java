@@ -38,10 +38,10 @@ public class InvestmentControllerTest {
 
   @ParameterizedTest(name = "ShouldReturn{1}When{0}Investments")
   @MethodSource("parametersForInvestments")
-  public void testLoadInvestments(List<Investment> investments, HttpStatus status) {
+  public void testGetInvestments(List<Investment> investments, HttpStatus status) {
     doReturn(investments).when(investmentService).getInvestments();
 
-    var response = controller.loadInvestments();
+    var response = controller.getInvestments();
 
     assertEquals(status, response.getStatusCode());
 
@@ -50,11 +50,11 @@ public class InvestmentControllerTest {
   }
 
   @Test
-  public void testLoadInvestments_ShouldReturnInvestments_WhenLoadedInvestments() {
+  public void testGetInvestments_ShouldReturnInvestments_WhenLoadedInvestments() {
     var investments = List.of(newInvestmentWithId(), newInvestmentWithId());
     doReturn(investments).when(investmentService).getInvestments();
 
-    var response = controller.loadInvestments();
+    var response = controller.getInvestments();
 
     assertEquals(OK, response.getStatusCode());
     assertEquals(investments, response.getBody());

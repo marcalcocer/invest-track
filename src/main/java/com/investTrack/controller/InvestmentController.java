@@ -26,12 +26,12 @@ public class InvestmentController {
   private final InvestmentService investmentService;
 
   /*
-   * Reload investments from the Google Sheets API and save them to the database. In case of existing investments,
+   * Load investments from the Google Sheets API and save them to the database. In case of existing investments,
    * the method will try to merge the new investments with the existing ones.
    */
-  @GetMapping("/reload")
-  public ResponseEntity<List<Investment>> loadInvestments() {
-    log.info("Load investment endpoint called");
+  @GetMapping
+  public ResponseEntity<List<Investment>> getInvestments() {
+    log.info("Get investment endpoint called");
     List<Investment> investments = investmentService.getInvestments();
 
     if (investments == null) {
