@@ -22,7 +22,9 @@ import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor
 public class GoogleSheetsCredentialService {
   private final int port;
@@ -35,6 +37,7 @@ public class GoogleSheetsCredentialService {
 
   public Sheets createSheetsService(String applicationName)
       throws GeneralSecurityException, IOException {
+    log.info("Creating Google Sheets service credentials");
     var jsonFactory = GsonFactory.getDefaultInstance();
     var httpTransport = getHttpTransport();
     var credentials = getCredentials(httpTransport);
