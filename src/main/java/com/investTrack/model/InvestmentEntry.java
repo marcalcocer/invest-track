@@ -51,10 +51,10 @@ public class InvestmentEntry {
   @ManyToOne
   @JoinColumn(name = "investment_id", nullable = false)
   @JsonBackReference
-  private final Investment investment;
+  private Investment investment;
 
   @Column(name = "datetime", nullable = false)
-  private final LocalDateTime datetime;
+  private LocalDateTime datetime;
 
   @Column(length = 500)
   private final String comments;
@@ -65,16 +65,16 @@ public class InvestmentEntry {
   @Column(name = "reinvested_amount", nullable = false)
   private double reinvestedAmount;
 
-  @Column(name = "total_invested_amount", nullable = false)
+  @Column(name = "total_invested_amount")
   private double totalInvestedAmount;
 
   @Column(nullable = false)
   private double profitability;
 
-  @Column(name = "obtained", nullable = false)
+  @Column(name = "obtained")
   private double obtained;
 
-  @Column(name = "benefit", nullable = false)
+  @Column(name = "benefit")
   private double benefit;
 
   private void calculateTotalInvestedAmount() {
