@@ -2,9 +2,11 @@ package com.investTrack.service;
 
 import com.investTrack.api.google.GoogleSheetsService;
 import com.investTrack.model.Investment;
+import com.investTrack.model.InvestmentEntry;
 import com.investTrack.model.Summary;
 import com.investTrack.repository.InvestmentRepository;
 import jakarta.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +54,16 @@ public class InvestmentService {
     log.trace("Saved investments into the database");
   }
 
+  private void saveInvestment(Investment investment) {
+    log.debug("Saving investment into the database: {}", investment);
+    repository.save(investment);
+    log.trace("Saved investment into the database");
+  }
+
+  private Investment getInvestment(List<Investment> investments, Long id) {
+    return investments.stream().filter(i -> i.getId().equals(id)).findFirst().orElse(null);
+  }
+
   public Investment createInvestment(Investment investment) {
     List<Investment> investments = getInvestments();
     if (investments == null) {
@@ -70,7 +82,8 @@ public class InvestmentService {
     try {
       googleSheetsService.writeInvestmentsData(investments);
     } catch (Exception e) {
-      log.error("Failed to write investments into Google Sheets while creating one due to", e);
+      log.error(
+          "Failed to write investments into Google Sheets while creating an investment due to", e);
       return null;
     }
 
@@ -90,7 +103,7 @@ public class InvestmentService {
           investments.stream().filter(i -> i.getId().equals(id)).findFirst().orElse(null);
 
       if (investmentToDelete == null) {
-        log.error("Could not be found investment with id {}", id);
+        log.error("Could not be found investment to be deleted with id {}", id);
         return null;
       }
 
@@ -106,10 +119,50 @@ public class InvestmentService {
     try {
       googleSheetsService.writeInvestmentsData(investments);
     } catch (Exception e) {
-      log.error("Failed to write investments into Google Sheets while deleting one due to", e);
+      log.error(
+          "Failed to write investments into Google Sheets while deleting an investment due to", e);
       return null;
     }
     return investmentToDelete;
+  }
+
+  public InvestmentEntry createInvestmentEntry(InvestmentEntry entry, Long id) {
+    List<Investment> investments = getInvestments();
+    if (investments == null) {
+      log.error("Failed to load investments list while creating an investment entry");
+      return null;
+    }
+
+    Investment investment = getInvestment(investments, id);
+    if (investment == null) {
+      log.error("Could not be found investment with id {}", id);
+      return null;
+    }
+
+    log.debug("Creating investment entry {} for investment {}", entry, investment);
+    try {
+      if (entry.getDatetime() == null) {
+        var now = LocalDateTime.now();
+        log.debug("Setting current datetime to the entry {}", now);
+        entry.setDatetime(now);
+      }
+      entry.setInvestment(investment);
+
+      investment.getEntries().add(entry);
+      saveInvestment(investment);
+    } catch (Exception e) {
+      log.error("Failed to create investment entry {} due to:", entry, e);
+      return null;
+    }
+
+    try {
+      googleSheetsService.writeInvestmentsData(investments);
+    } catch (Exception e) {
+      log.error("Failed to write investments into Google Sheets while creating an entry due to", e);
+      return null;
+    }
+
+    return entry;
   }
 
   public Summary getSummary() {

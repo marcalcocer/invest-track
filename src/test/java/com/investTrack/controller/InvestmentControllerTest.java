@@ -11,6 +11,7 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import com.investTrack.model.Investment;
+import com.investTrack.model.InvestmentEntry;
 import com.investTrack.model.Summary;
 import com.investTrack.service.InvestmentService;
 import java.util.List;
@@ -51,7 +52,7 @@ public class InvestmentControllerTest {
 
   @Test
   public void testGetInvestments_ShouldReturnInvestments_WhenLoadedInvestments() {
-    var investments = List.of(newInvestmentWithId(), newInvestmentWithId());
+    var investments = List.of(newInvestment(), newInvestment());
     doReturn(investments).when(investmentService).getInvestments();
 
     var response = controller.getInvestments();
@@ -65,7 +66,7 @@ public class InvestmentControllerTest {
 
   @Test
   public void testCreateInvestment_ShouldReturnInternalServerError_WhenNullInvestment() {
-    var investment = newInvestmentWithId();
+    var investment = newInvestment();
     doReturn(null).when(investmentService).createInvestment(any());
 
     var response = controller.createInvestment(investment);
@@ -78,7 +79,7 @@ public class InvestmentControllerTest {
 
   @Test
   public void testCreateInvestment_ShouldReturnCreatedInvestment_WhenInvestmentCreated() {
-    var investment = newInvestmentWithId();
+    var investment = newInvestment();
     doReturn(investment).when(investmentService).createInvestment(any());
 
     var response = controller.createInvestment(investment);
@@ -104,7 +105,7 @@ public class InvestmentControllerTest {
 
   @Test
   public void testDeleteInvestment_ShouldReturnDeletedInvestment_WhenInvestmentDeleted() {
-    var investment = newInvestmentWithId();
+    var investment = newInvestment();
     doReturn(investment).when(investmentService).deleteInvestment(eq(1L));
 
     var response = controller.deleteInvestment(1L);
@@ -113,6 +114,32 @@ public class InvestmentControllerTest {
     assertEquals(investment, response.getBody());
 
     verify(investmentService).deleteInvestment(eq(1L));
+    verifyNoMoreInteractions(investmentService);
+  }
+
+  @Test
+  public void testCreateInvestmentEntry_ShouldReturnInternalServerError_WhenNullInvestmentEntry() {
+    doReturn(null).when(investmentService).createInvestmentEntry(any(), any());
+
+    var response = controller.createInvestmentEntry(null, 1L);
+
+    assertEquals(INTERNAL_SERVER_ERROR, response.getStatusCode());
+
+    verify(investmentService).createInvestmentEntry(eq(null), eq(1L));
+    verifyNoMoreInteractions(investmentService);
+  }
+
+  @Test
+  public void testCreateInvestmentEntry_ShouldReturnCreatedInvestmentEntry_WhenEntryCreated() {
+    var entry = newInvestmentEntry();
+    doReturn(entry).when(investmentService).createInvestmentEntry(any(), any());
+
+    var response = controller.createInvestmentEntry(entry, 1L);
+
+    assertEquals(HttpStatus.CREATED, response.getStatusCode());
+    assertEquals(entry, response.getBody());
+
+    verify(investmentService).createInvestmentEntry(eq(entry), eq(1L));
     verifyNoMoreInteractions(investmentService);
   }
 
@@ -142,7 +169,11 @@ public class InvestmentControllerTest {
     verifyNoMoreInteractions(investmentService);
   }
 
-  private Investment newInvestmentWithId() {
+  private Investment newInvestment() {
     return new Investment();
+  }
+
+  private InvestmentEntry newInvestmentEntry() {
+    return new InvestmentEntry();
   }
 }

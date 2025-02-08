@@ -4,6 +4,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
 import com.investTrack.model.Investment;
+import com.investTrack.model.InvestmentEntry;
 import com.investTrack.model.Summary;
 import com.investTrack.service.InvestmentService;
 import java.util.List;
@@ -71,6 +72,20 @@ public class InvestmentController {
     }
 
     return new ResponseEntity<>(deletedInvestment, OK);
+  }
+
+  @PostMapping("/entry/{id}")
+  public ResponseEntity<InvestmentEntry> createInvestmentEntry(
+      @RequestBody InvestmentEntry entry, @PathVariable Long id) {
+    log.info("Create entry endpoint called");
+    var savedEntry = investmentService.createInvestmentEntry(entry, id);
+
+    if (savedEntry == null) {
+      log.debug("Answering with internal server error to create investment entry call");
+      return ResponseEntity.internalServerError().build();
+    }
+
+    return new ResponseEntity<>(savedEntry, CREATED);
   }
 
   @GetMapping("/summary")
