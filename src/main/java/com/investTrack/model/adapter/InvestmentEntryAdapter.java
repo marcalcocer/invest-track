@@ -21,26 +21,24 @@ public class InvestmentEntryAdapter {
       return null;
     }
 
-    var id = adapterUtils.parseLong(valueRange.get(0));
-    var dateTime = adapterUtils.parseDateTime(valueRange.get(1));
-    var initialInvestedAmount = adapterUtils.parseCurrencyDouble(valueRange.get(2));
-    var reinvestedAmount = adapterUtils.parseCurrencyDouble(valueRange.get(3));
-    var profitability = adapterUtils.parsePercentageDouble(valueRange.get(4));
+    var dateTime = adapterUtils.parseDateTime(valueRange.get(0));
+    var initialInvestedAmount = adapterUtils.parseCurrencyDouble(valueRange.get(1));
+    var reinvestedAmount = adapterUtils.parseCurrencyDouble(valueRange.get(2));
+    var profitability = adapterUtils.parsePercentageDouble(valueRange.get(3));
     var comments = adaptComments(valueRange);
 
     return new InvestmentEntry(
-        (Long) adapterUtils.mandatoryField(id),
         (LocalDateTime) adapterUtils.mandatoryField(dateTime),
         (Double) adapterUtils.mandatoryField(initialInvestedAmount),
         (Double) adapterUtils.mandatoryField(reinvestedAmount),
         (Double) adapterUtils.mandatoryField(profitability),
-        investment,
-        comments);
+        comments,
+        investment);
   }
 
   private String adaptComments(List<Object> valueRange) {
     try {
-      return adapterUtils.parseString(valueRange.get(5));
+      return adapterUtils.parseString(valueRange.get(4));
     } catch (IndexOutOfBoundsException e) {
       log.trace("No comments found for investment entry");
       return "";

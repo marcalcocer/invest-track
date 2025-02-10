@@ -19,11 +19,11 @@ public class GoogleSheetsInvestmentEntryAdapter {
     var dateTime = parseDateTime(entry.getDatetime());
 
     return List.of(
-        entry.getId(),
         dateTime,
         entry.getInitialInvestedAmount(),
         entry.getReinvestedAmount(),
-        entry.getProfitability());
+        entry.getProfitability(),
+        entry.getComments());
   }
 
   private String parseDateTime(LocalDateTime dateTime) {

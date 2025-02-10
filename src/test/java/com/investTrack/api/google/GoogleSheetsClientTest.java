@@ -1,7 +1,6 @@
 package com.investTrack.api.google;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -24,10 +23,11 @@ import com.google.api.services.sheets.v4.model.ValueRange;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -100,7 +100,8 @@ public class GoogleSheetsClientTest {
   }
 
   @Test
-  public void testWriteToSheet_ShouldThrowAnIOException_ErrorsClearingData() throws IOException {
+  public void testWriteToSheet_ShouldThrowAnIOException_WhenErrorsClearingData()
+      throws IOException {
     doThrow(new IOException("test")).when(mockValues).clear(any(), any(), any());
     doReturn(mockValues).when(mockSpreadSheets).values();
     doReturn(mockSpreadSheets).when(mockSheets).spreadsheets();
@@ -121,7 +122,7 @@ public class GoogleSheetsClientTest {
   }
 
   @Test
-  public void testWriteToSheet_ShouldThrowAnIOException_ErrorsWritingData() throws IOException {
+  public void testWriteToSheet_ShouldThrowAnIOException_WhenErrorsWritingData() throws IOException {
     var sampleValueRange = getSampleValuesRange();
 
     doReturn(mockValuesClear).when(mockValues).clear(any(), any(), any());
@@ -172,48 +173,33 @@ public class GoogleSheetsClientTest {
   }
 
   @Test
-  public void testExistSheet_ShouldReturnFalse_WhenSheetDoesNotExist() throws IOException {
-    doReturn(null).when(mockSpreadSheetsGet).execute();
-    doReturn(mockSpreadSheetsGet).when(mockSpreadSheets).get(any());
+  public void testGetSheets_ShouldThrowIOException_WhenErrorsGettingSheets() throws IOException {
+    doThrow(new IOException("test")).when(mockSpreadSheets).get(any());
     doReturn(mockSpreadSheets).when(mockSheets).spreadsheets();
 
-    var result = client.existSheet("1", "sheet");
-    assertFalse(result);
+    var exception = assertThrows(IOException.class, () -> client.getSheets("1"));
+    assertEquals("test", exception.getMessage());
 
     verify(mockSheets).spreadsheets();
     verify(mockSpreadSheets).get(eq("1"));
-    verify(mockSpreadSheetsGet).execute();
 
     verifyNoMoreInteractions(allMocks());
   }
 
   @Test
-  public void testExistSheet_ShouldReturnFalse_WhenExceptionExecutingRequest() throws IOException {
-    doThrow(new IOException("test")).when(mockSpreadSheetsGet).execute();
+  public void testGetSheets_ShouldReturnSheets() throws IOException {
+    var sheet1 = newSheetWithTitleAndId("sheet1", 1);
+    var sheet2 = newSheetWithTitleAndId("sheet2", 2);
+
+    var spreadsheet = new Spreadsheet();
+    spreadsheet.setSheets(List.of(sheet1, sheet2));
+
+    doReturn(spreadsheet).when(mockSpreadSheetsGet).execute();
     doReturn(mockSpreadSheetsGet).when(mockSpreadSheets).get(any());
     doReturn(mockSpreadSheets).when(mockSheets).spreadsheets();
 
-    var result = client.existSheet("1", "sheet");
-    assertFalse(result);
-
-    verify(mockSheets).spreadsheets();
-    verify(mockSpreadSheets).get(eq("1"));
-    verify(mockSpreadSheetsGet).execute();
-
-    verifyNoMoreInteractions(allMocks());
-  }
-
-  @ParameterizedTest(name = "ShouldReturn{1}")
-  @CsvSource({"sheet, true", "unknown-sheet, false"})
-  public void testExistSheet(String title, boolean expectedResult) throws IOException {
-    var spreadSheet = getSampleSpreadSheetWithTitle(title);
-
-    doReturn(spreadSheet).when(mockSpreadSheetsGet).execute();
-    doReturn(mockSpreadSheetsGet).when(mockSpreadSheets).get(any());
-    doReturn(mockSpreadSheets).when(mockSheets).spreadsheets();
-
-    var result = client.existSheet("1", "sheet");
-    assertEquals(expectedResult, result);
+    var result = client.getSheets("1");
+    assertEquals(Map.of("sheet1", 1, "sheet2", 2), result);
 
     verify(mockSheets).spreadsheets();
     verify(mockSpreadSheets).get(eq("1"));
@@ -251,16 +237,46 @@ public class GoogleSheetsClientTest {
     verifyNoMoreInteractions(allMocks());
   }
 
+  @ParameterizedTest
+  @NullAndEmptySource
+  public void testDeleteSheets_ShouldReturn_WhenNoSheetsToDelete(List<Integer> list)
+      throws IOException {
+    client.deleteSheets("1", list);
+    verifyNoMoreInteractions(allMocks());
+  }
+
+  @Test
+  public void testDeleteSheets_ShouldThrowIOException_WhenErrorsDeletingSheets()
+      throws IOException {
+    doThrow(new IOException("test")).when(mockSpreadSheets).batchUpdate(any(), any());
+    doReturn(mockSpreadSheets).when(mockSheets).spreadsheets();
+
+    var exception = assertThrows(IOException.class, () -> client.deleteSheets("1", List.of(1, 2)));
+    assertEquals("test", exception.getMessage());
+
+    verify(mockSheets).spreadsheets();
+    verify(mockSpreadSheets).batchUpdate(eq("1"), any());
+    verifyNoMoreInteractions(allMocks());
+  }
+
+  @Test
+  public void testDeleteSheets_ShouldDeleteSheets() throws IOException {
+    doReturn(mockBatchUpdate).when(mockSpreadSheets).batchUpdate(any(), any());
+    doReturn(mockSpreadSheets).when(mockSheets).spreadsheets();
+
+    client.deleteSheets("1", List.of(1, 2));
+
+    verify(mockSheets).spreadsheets();
+    verify(mockSpreadSheets).batchUpdate(eq("1"), argThat(arg -> arg.getRequests().size() == 2));
+    verify(mockBatchUpdate).execute();
+
+    verifyNoMoreInteractions(allMocks());
+  }
+
   private List<List<Object>> getSampleValuesRange() {
     List<List<Object>> valueRange = new ArrayList<>(new ArrayList<>());
     valueRange.add(List.of(("test")));
     return valueRange;
-  }
-
-  private Spreadsheet getSampleSpreadSheetWithTitle(String title) {
-    var sheetProperties = new SheetProperties().setTitle(title);
-    List<Sheet> sheets = List.of(new Sheet().setProperties(sheetProperties));
-    return new Spreadsheet().setSheets(sheets);
   }
 
   private BatchUpdateSpreadsheetRequest assertBatchUpdateRequest() {
@@ -278,5 +294,9 @@ public class GoogleSheetsClientTest {
 
   private ValueRange assertValueRangeContent(List<List<Object>> values) {
     return argThat(arg -> arg.getValues().equals(values));
+  }
+
+  private Sheet newSheetWithTitleAndId(String sheet, int id) {
+    return new Sheet().setProperties(new SheetProperties().setTitle(sheet).setSheetId(id));
   }
 }

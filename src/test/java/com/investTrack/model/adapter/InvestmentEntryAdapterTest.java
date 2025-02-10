@@ -26,12 +26,11 @@ public class InvestmentEntryAdapterTest {
   @Test
   public void testFromSheetValueRange_ShouldReturnAValidInvestmentEntry() {
     List<Object> sampleValueRange =
-        List.of(1, "19/11/2023 0:00:00", "1,00 €", "2,00 €", "1,45%", "test");
+        List.of("19/11/2023 0:00:00", "1,00 €", "2,00 €", "1,45%", "test");
     var investment = newInvestment();
 
     var investmentEntry = adapter.fromSheetValueRange(sampleValueRange, investment);
 
-    assertEquals(1L, investmentEntry.getId());
     assertEquals(LocalDateTime.parse("2023-11-19T00:00:00"), investmentEntry.getDatetime());
     assertEquals(1.00, investmentEntry.getInitialInvestedAmount());
     assertEquals(2.00, investmentEntry.getReinvestedAmount());
@@ -42,12 +41,11 @@ public class InvestmentEntryAdapterTest {
 
   @Test
   public void testFromSheetValueRange_ShouldReturnAValidInvestmentEntry_WhenNoComments() {
-    List<Object> sampleValueRange = List.of(1, "19/11/2023 0:00:00", "1,00 €", "2,00 €", "1,45%");
+    List<Object> sampleValueRange = List.of("19/11/2023 0:00:00", "1,00 €", "2,00 €", "1,45%");
     var investment = newInvestment();
 
     var investmentEntry = adapter.fromSheetValueRange(sampleValueRange, investment);
 
-    assertEquals(1L, investmentEntry.getId());
     assertEquals(LocalDateTime.parse("2023-11-19T00:00:00"), investmentEntry.getDatetime());
     assertEquals(1.00, investmentEntry.getInitialInvestedAmount());
     assertEquals(2.00, investmentEntry.getReinvestedAmount());

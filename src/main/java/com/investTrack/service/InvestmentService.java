@@ -28,7 +28,7 @@ public class InvestmentService {
     if (areInvestmentsLoaded) {
       var loadedInvestments = repository.findAll();
       var msg = "Investments already loaded, returning from the database these investments:\n{}";
-      log.debug(msg, loadedInvestments);
+      log.info(msg, loadedInvestments);
 
       return loadedInvestments;
     }

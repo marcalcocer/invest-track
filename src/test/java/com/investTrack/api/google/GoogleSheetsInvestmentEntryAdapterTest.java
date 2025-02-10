@@ -15,11 +15,11 @@ public class GoogleSheetsInvestmentEntryAdapterTest {
   @Test
   public void testToSheetValueRange_ShouldThrowDateTimeException_WhenErrorsFormatingDatetime() {
     var dateTime = LocalDateTime.of(2021, 1, 1, 0, 0, 0);
-    var entry = new InvestmentEntry(1L, dateTime, 1.0, 2.0, 1.0, new Investment(), "comments");
+    var entry = new InvestmentEntry(dateTime, 1.0, 2.0, 1.0, "comments", new Investment());
 
     var valueRange = adapter.toSheetValueRange(entry);
 
-    var expectedRange = List.of(1L, "01/01/2021 00:00:00", 1.0, 2.0, 1.0);
+    var expectedRange = List.of("01/01/2021 00:00:00", 1.0, 2.0, 1.0, "comments");
     assertEquals(expectedRange, valueRange);
   }
 }

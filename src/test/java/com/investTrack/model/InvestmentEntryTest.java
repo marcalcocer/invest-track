@@ -11,9 +11,8 @@ public class InvestmentEntryTest {
     var datetime = now();
     var investment = new Investment();
 
-    var investmentEntry = new InvestmentEntry(1L, datetime, 5.0, 5.0, 0.1, investment, "Comments");
+    var investmentEntry = new InvestmentEntry(datetime, 5.0, 5.0, 0.1, "Comments", investment);
 
-    assertEquals(1L, investmentEntry.getId());
     assertEquals(investment, investmentEntry.getInvestment());
     assertEquals(datetime, investmentEntry.getDatetime());
     assertEquals("Comments", investmentEntry.getComments());

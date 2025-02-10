@@ -20,14 +20,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(force = true) // Default constructor required by JPA
 public class InvestmentEntry {
   public InvestmentEntry(
-      Long id,
       LocalDateTime datetime,
       double initialInvestedAmount,
       double reinvestedAmount,
       double profitability,
-      Investment investment,
-      String comments) {
-    this.id = id;
+      String comments,
+      Investment investment) {
     this.datetime = datetime;
     this.investment = investment;
     this.comments = comments;
