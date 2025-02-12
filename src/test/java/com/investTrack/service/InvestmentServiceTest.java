@@ -337,6 +337,109 @@ public class InvestmentServiceTest {
   }
 
   @Test
+  public void testDeleteInvestmentEntry_ShouldReturnNull_WhenNoInvestmentsLoaded()
+      throws IOException {
+    doReturn(null).when(mockSheetsService).readInvestmentsData();
+
+    assertNull(service.deleteInvestmentEntry(1L, 1L));
+
+    verify(mockSheetsService).readInvestmentsData();
+    verify(mockRepository, times(0)).save(any());
+
+    verifyNoMoreInteractions(allMocks());
+  }
+
+  @Test
+  public void testDeleteInvestmentEntry_ShouldReturnNull_WhenNoInvestmentFound()
+      throws IOException {
+    var investments = List.of(newInvestment());
+    doReturn(investments).when(mockSheetsService).readInvestmentsData();
+
+    assertNull(service.deleteInvestmentEntry(2L, 1L));
+
+    verify(mockSheetsService).readInvestmentsData();
+    verify(mockRepository).saveAll(eq(investments));
+    verify(mockRepository, times(0)).save(any());
+
+    verifyNoMoreInteractions(allMocks());
+  }
+
+  @Test
+  public void testDeleteInvestmentEntry_ShouldReturnNull_WhenNoEntryFound() throws IOException {
+    var investment = newInvestment();
+    var investments = List.of(investment);
+    doReturn(investments).when(mockSheetsService).readInvestmentsData();
+
+    assertNull(service.deleteInvestmentEntry(1L, 2L));
+
+    verify(mockSheetsService).readInvestmentsData();
+    verify(mockRepository).saveAll(eq(investments));
+    verify(mockRepository, times(0)).save(any());
+
+    verifyNoMoreInteractions(allMocks());
+  }
+
+  @Test
+  public void testDeleteInvestmentEntry_ShouldReturnNull_WhenExceptionSavingInvestment()
+      throws IOException {
+    var investment = newInvestment();
+    var entryToDelete = newInvestmentEntry();
+    investment.getEntries().add(entryToDelete);
+    var investments = List.of(investment);
+
+    doReturn(investments).when(mockSheetsService).readInvestmentsData();
+    doThrow(new RuntimeException("test")).when(mockRepository).save(any());
+
+    assertNull(service.deleteInvestmentEntry(1L, 1L));
+
+    verify(mockSheetsService).readInvestmentsData();
+    verify(mockRepository).saveAll(eq(investments));
+    verify(mockRepository).save(eq(investment));
+
+    verifyNoMoreInteractions(allMocks());
+  }
+
+  @Test
+  public void testDeleteInvestmentEntry_ShouldReturnNull_WhenExceptionWritingInvestments()
+      throws IOException {
+    var investment = newInvestment();
+    var entryToDelete = newInvestmentEntry();
+    investment.getEntries().add(entryToDelete);
+    var investments = List.of(investment);
+
+    doReturn(investments).when(mockSheetsService).readInvestmentsData();
+    doThrow(new IOException("test")).when(mockSheetsService).writeInvestmentsData(any());
+
+    assertNull(service.deleteInvestmentEntry(1L, 1L));
+
+    verify(mockSheetsService).readInvestmentsData();
+    verify(mockRepository).saveAll(eq(investments));
+    verify(mockRepository).save(eq(investment));
+    verify(mockSheetsService).writeInvestmentsData(eq(investments));
+
+    verifyNoMoreInteractions(allMocks());
+  }
+
+  @Test
+  public void testDeleteInvestmentEntry_ShouldReturnEntry() throws IOException {
+    var investment = newInvestment();
+    var entryToDelete = newInvestmentEntry();
+    investment.getEntries().add(entryToDelete);
+    var investments = List.of(investment);
+
+    doReturn(investments).when(mockSheetsService).readInvestmentsData();
+
+    assertEquals(entryToDelete, service.deleteInvestmentEntry(1L, 1L));
+
+    verify(mockSheetsService).readInvestmentsData();
+    verify(mockRepository).saveAll(eq(investments));
+    verify(mockRepository).save(eq(investment));
+    verify(mockSheetsService).writeInvestmentsData(eq(investments));
+
+    verifyNoMoreInteractions(allMocks());
+  }
+
+  @Test
   public void testGetSummary_ShouldReturnNull_WhenNoInvestmentsLoaded() throws IOException {
     doReturn(null).when(mockSheetsService).readInvestmentsData();
 

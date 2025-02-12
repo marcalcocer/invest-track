@@ -88,6 +88,20 @@ public class InvestmentController {
     return new ResponseEntity<>(savedEntry, CREATED);
   }
 
+  @DeleteMapping("/entry/{investmentId}/{entryId}")
+  public ResponseEntity<InvestmentEntry> deleteInvestmentEntry(
+      @PathVariable Long investmentId, @PathVariable Long entryId) {
+    log.info("Delete entry endpoint called");
+    var deletedEntry = investmentService.deleteInvestmentEntry(investmentId, entryId);
+
+    if (deletedEntry == null) {
+      log.debug("Answering with no content to delete investment entry call");
+      return ResponseEntity.noContent().build();
+    }
+
+    return new ResponseEntity<>(deletedEntry, OK);
+  }
+
   @GetMapping("/summary")
   public ResponseEntity<Summary> getSummary() {
     log.info("Get summary endpoint called");

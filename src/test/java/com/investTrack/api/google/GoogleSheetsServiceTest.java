@@ -240,7 +240,7 @@ public class GoogleSheetsServiceTest {
   }
 
   @Test
-  public void testWriteInvestmentsData_ShouldContinue_WhenNullEntriesInAnInvestment()
+  public void testWriteInvestmentsData_ShouldClearSheet_WhenNullEntriesInAnInvestment()
       throws IOException {
     var investment = newInvestment();
     List<List<Object>> values = List.of(getInvestmentsListHeaders(), List.of());
@@ -259,6 +259,7 @@ public class GoogleSheetsServiceTest {
 
     verify(mockSheetsInvestmentAdapter).toSheetValueRange(eq(investment));
     verify(mockClient).writeToSheet(eq("1"), eq("Investments List"), eq("A1:P"), eq(values));
+    verify(mockClient).clearSheet(eq("1"), eq("Investment entries - test"), eq("A2:P"));
 
     verifyNoMoreInteractions(allMocks());
   }
@@ -284,6 +285,7 @@ public class GoogleSheetsServiceTest {
 
     verify(mockSheetsInvestmentAdapter).toSheetValueRange(eq(investment));
     verify(mockClient).writeToSheet(eq("1"), eq("Investments List"), eq("A1:P"), eq(values));
+    verify(mockClient).clearSheet(eq("1"), eq("Investment entries - test"), eq("A2:P"));
 
     verifyNoMoreInteractions(allMocks());
   }
@@ -338,7 +340,7 @@ public class GoogleSheetsServiceTest {
 
     verify(mockSheetsInvestmentAdapter).toSheetValueRange(eq(investment));
     verify(mockClient).writeToSheet(eq("1"), eq("Investments List"), eq("A1:P"), eq(values));
-
+    verify(mockClient).clearSheet(eq("1"), eq("Investment entries - test"), eq("A2:P"));
     verify(mockClient).deleteSheets(eq("1"), eq(List.of(34, 12)));
 
     verifyNoMoreInteractions(allMocks());

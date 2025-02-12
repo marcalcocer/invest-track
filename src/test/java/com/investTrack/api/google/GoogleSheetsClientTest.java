@@ -173,6 +173,39 @@ public class GoogleSheetsClientTest {
   }
 
   @Test
+  public void testClearSheet_ShouldThrowAnIOException_WhenErrorsClearingData() throws IOException {
+    doThrow(new IOException("test")).when(mockValues).clear(any(), any(), any());
+    doReturn(mockValues).when(mockSpreadSheets).values();
+    doReturn(mockSpreadSheets).when(mockSheets).spreadsheets();
+
+    var exception =
+        assertThrows(IOException.class, () -> client.clearSheet("1", "sheet", "A1:Z100"));
+    assertEquals("test", exception.getMessage());
+
+    verify(mockSheets).spreadsheets();
+    verify(mockSpreadSheets).values();
+    verify(mockValues).clear(eq("1"), eq("sheet!A1:Z100"), eq(new ClearValuesRequest()));
+
+    verifyNoMoreInteractions(allMocks());
+  }
+
+  @Test
+  public void testClearSheet_ShouldClearData() throws IOException {
+    doReturn(mockValuesClear).when(mockValues).clear(any(), any(), any());
+    doReturn(mockValues).when(mockSpreadSheets).values();
+    doReturn(mockSpreadSheets).when(mockSheets).spreadsheets();
+
+    client.clearSheet("1", "sheet", "A1:Z100");
+
+    verify(mockSheets).spreadsheets();
+    verify(mockSpreadSheets).values();
+    verify(mockValues).clear(eq("1"), eq("sheet!A1:Z100"), eq(new ClearValuesRequest()));
+    verify(mockValuesClear).execute();
+
+    verifyNoMoreInteractions(allMocks());
+  }
+
+  @Test
   public void testGetSheets_ShouldThrowIOException_WhenErrorsGettingSheets() throws IOException {
     doThrow(new IOException("test")).when(mockSpreadSheets).get(any());
     doReturn(mockSpreadSheets).when(mockSheets).spreadsheets();

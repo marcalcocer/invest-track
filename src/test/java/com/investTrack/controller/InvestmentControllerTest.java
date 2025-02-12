@@ -92,7 +92,7 @@ public class InvestmentControllerTest {
   }
 
   @Test
-  public void testDeleteInvestment_ShouldReturnNull_WhenInvestmentNotFound() {
+  public void testDeleteInvestment_ShouldAnswerNoContent_WhenInvestmentNotFound() {
     doReturn(null).when(investmentService).deleteInvestment(eq(1L));
 
     var response = controller.deleteInvestment(1L);
@@ -140,6 +140,32 @@ public class InvestmentControllerTest {
     assertEquals(entry, response.getBody());
 
     verify(investmentService).createInvestmentEntry(eq(entry), eq(1L));
+    verifyNoMoreInteractions(investmentService);
+  }
+
+  @Test
+  public void testDeleteInvestmentEntry_ShouldAnswerNoContent_WhenInvestmentEntryNotFound() {
+    doReturn(null).when(investmentService).deleteInvestmentEntry(eq(1L), eq(2L));
+
+    var response = controller.deleteInvestmentEntry(1L, 2L);
+
+    assertEquals(NO_CONTENT, response.getStatusCode());
+
+    verify(investmentService).deleteInvestmentEntry(eq(1L), eq(2L));
+    verifyNoMoreInteractions(investmentService);
+  }
+
+  @Test
+  public void testDeleteInvestmentEntry_ShouldReturnDeletedInvestmentEntry_WhenEntryDeleted() {
+    var entry = newInvestmentEntry();
+    doReturn(entry).when(investmentService).deleteInvestmentEntry(eq(1L), eq(2L));
+
+    var response = controller.deleteInvestmentEntry(1L, 2L);
+
+    assertEquals(OK, response.getStatusCode());
+    assertEquals(entry, response.getBody());
+
+    verify(investmentService).deleteInvestmentEntry(eq(1L), eq(2L));
     verifyNoMoreInteractions(investmentService);
   }
 

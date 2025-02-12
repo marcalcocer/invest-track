@@ -51,11 +51,7 @@ public class GoogleSheetsClient {
       String spreadSheetId, String name, String range, List<List<Object>> values)
       throws IOException {
     log.debug("Cleaning up the sheet before writing data");
-    sheets
-        .spreadsheets()
-        .values()
-        .clear(spreadSheetId, getRangeFormat(name, range), new ClearValuesRequest())
-        .execute();
+    clearSheet(spreadSheetId, name, range);
 
     var rangeFormat = getRangeFormat(name, range);
 
@@ -68,6 +64,19 @@ public class GoogleSheetsClient {
         .values()
         .update(spreadSheetId, rangeFormat, body)
         .setValueInputOption("RAW") // TODO (Marc. A): Check if this is the best option
+        .execute();
+  }
+
+  public void clearSheet(String spreadSheetId, String name, String range) throws IOException {
+    log.debug(
+        "Clearing data for spread sheet id \"{}\", name \"{}\", and range \"{}\"",
+        spreadSheetId,
+        name,
+        range);
+    sheets
+        .spreadsheets()
+        .values()
+        .clear(spreadSheetId, getRangeFormat(name, range), new ClearValuesRequest())
         .execute();
   }
 

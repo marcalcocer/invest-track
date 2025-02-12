@@ -156,7 +156,10 @@ public class GoogleSheetsService {
 
       var entries = investment.getEntries();
       if (entries == null || entries.isEmpty()) {
-        log.debug("No investment entries found for investment {}", investment.getName());
+        log.info(
+            "No investment entries found for investment {}, cleaning up sheet",
+            investment.getName());
+        client.clearSheet(spreadSheetId, investmentEntriesSheetName, READ_SHEET_RANGE);
         continue;
       }
 

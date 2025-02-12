@@ -47,23 +47,6 @@ public class InvestmentService {
     return investments;
   }
 
-  @Transactional
-  private void saveInvestments(List<Investment> investments) {
-    log.debug("Saving investments into the database: {}", investments);
-    repository.saveAll(investments);
-    log.trace("Saved investments into the database");
-  }
-
-  private void saveInvestment(Investment investment) {
-    log.debug("Saving investment into the database: {}", investment);
-    repository.save(investment);
-    log.trace("Saved investment into the database");
-  }
-
-  private Investment getInvestment(List<Investment> investments, Long id) {
-    return investments.stream().filter(i -> i.getId().equals(id)).findFirst().orElse(null);
-  }
-
   public Investment createInvestment(Investment investment) {
     List<Investment> investments = getInvestments();
     if (investments == null) {
@@ -99,8 +82,7 @@ public class InvestmentService {
 
     Investment investmentToDelete;
     try {
-      investmentToDelete =
-          investments.stream().filter(i -> i.getId().equals(id)).findFirst().orElse(null);
+      investmentToDelete = getInvestment(investments, id);
 
       if (investmentToDelete == null) {
         log.error("Could not be found investment to be deleted with id {}", id);
@@ -165,6 +147,44 @@ public class InvestmentService {
     return entry;
   }
 
+  public InvestmentEntry deleteInvestmentEntry(Long investmentId, Long entryId) {
+    List<Investment> investments = getInvestments();
+    if (investments == null) {
+      log.error("Failed to load investments list while deleting an investment entry");
+      return null;
+    }
+
+    Investment investment = getInvestment(investments, investmentId);
+    if (investment == null) {
+      log.error("Could not be found investment with id {}", investmentId);
+      return null;
+    }
+
+    InvestmentEntry entryToDelete = getInvestmentEntry(investment, entryId);
+    if (entryToDelete == null) {
+      log.error("Could not be found entry with id {} in investment {}", entryId, investment);
+      return null;
+    }
+
+    log.info("Deleting investment entry {} from investment {}", entryToDelete, investment);
+    try {
+      investment.getEntries().remove(entryToDelete);
+      saveInvestment(investment);
+    } catch (Exception e) {
+      log.error("Failed to delete investment entry {} due to:", entryToDelete, e);
+      return null;
+    }
+
+    try {
+      googleSheetsService.writeInvestmentsData(investments);
+    } catch (Exception e) {
+      log.error("Failed to write investments into Google Sheets while deleting an entry due to", e);
+      return null;
+    }
+
+    return entryToDelete;
+  }
+
   public Summary getSummary() {
     List<Investment> investments = getInvestments();
     if (investments == null) {
@@ -175,5 +195,29 @@ public class InvestmentService {
     var summary = summaryService.calculateSummary(investments);
     log.info("Calculated summary: {}", summary);
     return summary;
+  }
+
+  @Transactional
+  private void saveInvestments(List<Investment> investments) {
+    log.debug("Saving investments into the database: {}", investments);
+    repository.saveAll(investments);
+    log.trace("Saved investments into the database");
+  }
+
+  private void saveInvestment(Investment investment) {
+    log.debug("Saving investment into the database: {}", investment);
+    repository.save(investment);
+    log.trace("Saved investment into the database");
+  }
+
+  private Investment getInvestment(List<Investment> investments, Long id) {
+    return investments.stream().filter(i -> i.getId().equals(id)).findFirst().orElse(null);
+  }
+
+  private InvestmentEntry getInvestmentEntry(Investment investment, Long id) {
+    return investment.getEntries().stream()
+        .filter(e -> e.getId().equals(id))
+        .findFirst()
+        .orElse(null);
   }
 }
