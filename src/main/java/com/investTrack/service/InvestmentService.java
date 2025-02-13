@@ -9,29 +9,31 @@ import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 // Provides application logic for managing investments.
 
 @Slf4j
-@RequiredArgsConstructor
 @Service
 public class InvestmentService {
   private final GoogleSheetsService googleSheetsService;
   private final InvestmentRepository repository;
   private final SummaryService summaryService;
-  private boolean areInvestmentsLoaded = false;
 
-  public List<Investment> getInvestments() {
-    if (areInvestmentsLoaded) {
-      var loadedInvestments = repository.findAll();
-      var msg = "Investments already loaded, returning from the database these investments:\n{}";
-      log.info(msg, loadedInvestments);
+  public InvestmentService(
+      GoogleSheetsService googleSheetsService,
+      InvestmentRepository repository,
+      SummaryService summaryService) {
+    this.googleSheetsService = googleSheetsService;
+    this.repository = repository;
+    this.summaryService = summaryService;
 
-      return loadedInvestments;
-    }
+    loadInvestments();
+  }
+
+  private void loadInvestments() {
+    log.info("Loading investments...");
     List<Investment> investments = new ArrayList<>();
     try {
       var loadedInvestments = googleSheetsService.readInvestmentsData();
@@ -39,17 +41,19 @@ public class InvestmentService {
       investments.addAll(loadedInvestments);
 
       saveInvestments(investments);
-      areInvestmentsLoaded = true;
+      log.info("Loaded investments successfully!");
     } catch (Exception e) {
-      log.error("Failed to load investments list", e);
-      return null;
+      throw new RuntimeException("Failed to load investments", e);
     }
-    return investments;
+  }
+
+  public List<Investment> getInvestments() {
+    return repository.findAll();
   }
 
   public Investment createInvestment(Investment investment) {
     List<Investment> investments = getInvestments();
-    if (investments == null) {
+    if (investments.isEmpty()) {
       log.error("Failed to load investments list while creating a new one");
       return null;
     }
@@ -75,7 +79,7 @@ public class InvestmentService {
 
   public Investment deleteInvestment(Long id) {
     List<Investment> investments = getInvestments();
-    if (investments == null) {
+    if (investments.isEmpty()) {
       log.error("Failed to load investments list while deleting one");
       return null;
     }
@@ -110,14 +114,14 @@ public class InvestmentService {
 
   public InvestmentEntry createInvestmentEntry(InvestmentEntry entry, Long id) {
     List<Investment> investments = getInvestments();
-    if (investments == null) {
+    if (investments.isEmpty()) {
       log.error("Failed to load investments list while creating an investment entry");
       return null;
     }
 
     Investment investment = getInvestment(investments, id);
     if (investment == null) {
-      log.error("Could not be found investment with id {}", id);
+      log.error("Could not be found investment with id {} when creating an investment entry", id);
       return null;
     }
 
@@ -149,14 +153,16 @@ public class InvestmentService {
 
   public InvestmentEntry deleteInvestmentEntry(Long investmentId, Long entryId) {
     List<Investment> investments = getInvestments();
-    if (investments == null) {
+    if (investments.isEmpty()) {
       log.error("Failed to load investments list while deleting an investment entry");
       return null;
     }
 
     Investment investment = getInvestment(investments, investmentId);
     if (investment == null) {
-      log.error("Could not be found investment with id {}", investmentId);
+      log.error(
+          "Could not be found investment with id {} when deleting an investment entry",
+          investmentId);
       return null;
     }
 
@@ -187,7 +193,7 @@ public class InvestmentService {
 
   public Summary getSummary() {
     List<Investment> investments = getInvestments();
-    if (investments == null) {
+    if (investments.isEmpty()) {
       log.error("Failed to load investments list while calculating the summary");
       return null;
     }
