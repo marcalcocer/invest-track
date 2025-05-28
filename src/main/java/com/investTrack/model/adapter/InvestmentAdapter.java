@@ -26,20 +26,8 @@ public class InvestmentAdapter {
     var startDateTime = adapterUtils.parseDateTime(valueRange.get(4));
     var endDateTime = adapterUtils.parseDateTime(valueRange.get(5));
     var isReinvested = adapterUtils.parseBoolean(valueRange.get(6));
-    var initialInvestedAmount = adapterUtils.parseCurrencyDouble(valueRange.get(7));
-    var reinvestedAmount = adapterUtils.parseCurrencyDouble(valueRange.get(8));
-    var profitability = adapterUtils.parsePercentageDouble(valueRange.get(9));
 
     return new Investment(
-        id,
-        name,
-        description,
-        currency,
-        startDateTime,
-        endDateTime,
-        isReinvested,
-        initialInvestedAmount,
-        reinvestedAmount,
-        profitability);
+        id, name, description, currency, startDateTime, endDateTime, isReinvested);
   }
 }

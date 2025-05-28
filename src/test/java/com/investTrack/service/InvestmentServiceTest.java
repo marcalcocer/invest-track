@@ -435,7 +435,7 @@ public class InvestmentServiceTest {
   }
 
   private Investment newInvestmentWithId(Long id) {
-    var investment = new Investment(1L, "test", "desc", "EUR", null, null, false, 0.0, 0.0, 0.0);
+    var investment = new Investment(1L, "test", "desc", "EUR", null, null, false);
     investment.setId(id);
     investment.setEntries(new ArrayList<>());
     return investment;

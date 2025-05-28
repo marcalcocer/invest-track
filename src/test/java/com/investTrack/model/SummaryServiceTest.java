@@ -11,12 +11,19 @@ public class SummaryServiceTest {
 
   @Test
   public void testCalculateSummary_ShouldReturnASummary() {
-    var investments =
-        List.of(
-            new Investment(1L, "name", "description", "USD", null, null, true, 1000, 0, 0.2),
-            new Investment(2L, "name", "description", "USD", null, null, true, 800, 1200, 0.1),
-            new Investment(2L, "name", "description", "USD", null, null, false, 800, 2200, 0.15),
-            new Investment(2L, "name", "description", "USD", null, null, false, 500, 0, 0.05));
+    var investment1 = newInvestment(true);
+    investment1.setEntries(List.of(new InvestmentEntry(null, 1000, 0, 0.2, "", investment1)));
+
+    var investment2 = newInvestment(true);
+    investment2.setEntries(List.of(new InvestmentEntry(null, 800, 1200, 0.1, "", investment2)));
+
+    var investment3 = newInvestment(false);
+    investment3.setEntries(List.of(new InvestmentEntry(null, 800, 2200, 0.15, "", investment3)));
+
+    var investment4 = newInvestment(false);
+    investment4.setEntries(List.of(new InvestmentEntry(null, 500, 0, 0.05, "", investment4)));
+
+    var investments = List.of(investment1, investment2, investment3, investment4);
 
     var summary = summaryService.calculateSummary(investments);
 
@@ -30,13 +37,46 @@ public class SummaryServiceTest {
   }
 
   @Test
+  public void testCalculateSummary_ShouldReturnASummaryWhenInvestmentWithoutLastEntry() {
+    var investment1 = newInvestment(true);
+    investment1.setEntries(List.of(new InvestmentEntry(null, 1000, 0, 0.2, "", investment1)));
+
+    var investment2 = newInvestment(true);
+    investment2.setEntries(List.of(new InvestmentEntry(null, 800, 1200, 0.1, "", investment2)));
+
+    var investment3 = newInvestment(false);
+    investment3.setEntries(List.of(new InvestmentEntry(null, 800, 2200, 0.15, "", investment3)));
+
+    var investment4 = newInvestment(false);
+    // No entries for this investment
+    var investments = List.of(investment1, investment2, investment3, investment4);
+
+    var summary = summaryService.calculateSummary(investments);
+
+    assertEquals(3000, summary.getInvestedAmount());
+    assertEquals(3450, summary.getObtained());
+    assertEquals(450, summary.getBenefit());
+    assertEquals(0.15, summary.getProfitability(), 0.0001);
+    assertEquals(2600, summary.getRealInvested());
+    assertEquals(850, summary.getRealBenefit());
+    assertEquals(0.326, summary.getRealProfitability(), 0.001);
+  }
+
+  @Test
   public void testCalculateSummary_ShouldReturnASummaryWhen0Dividing() {
-    var investments =
-        List.of(
-            new Investment(1L, "name", "description", "USD", null, null, true, 0, 0, 0.2),
-            new Investment(2L, "name", "description", "USD", null, null, true, 0, 0, 0.1),
-            new Investment(2L, "name", "description", "USD", null, null, false, 0, 0, 0.15),
-            new Investment(2L, "name", "description", "USD", null, null, false, 0, 0, 0.05));
+    var investment1 = newInvestment(true);
+    investment1.setEntries(List.of(new InvestmentEntry(null, 0, 0, 0.2, "", investment1)));
+
+    var investment2 = newInvestment(true);
+    investment2.setEntries(List.of(new InvestmentEntry(null, 0, 0, 0.1, "", investment2)));
+
+    var investment3 = newInvestment(false);
+    investment3.setEntries(List.of(new InvestmentEntry(null, 0, 0, 0.15, "", investment3)));
+
+    var investment4 = newInvestment(false);
+    investment4.setEntries(List.of(new InvestmentEntry(null, 0, 0, 0.05, "", investment4)));
+
+    var investments = List.of(investment1, investment2, investment3, investment4);
 
     var summary = summaryService.calculateSummary(investments);
 
@@ -47,5 +87,9 @@ public class SummaryServiceTest {
     assertEquals(0, summary.getRealInvested());
     assertEquals(0, summary.getRealBenefit());
     assertEquals(0, summary.getRealProfitability());
+  }
+
+  private Investment newInvestment(boolean reinvested) {
+    return new Investment(1L, "name", "description", "USD", null, null, reinvested);
   }
 }

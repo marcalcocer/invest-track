@@ -17,6 +17,7 @@ public class GoogleSheetsInvestmentAdapter {
     log.trace("Converting to sheet value range investment {}", investment);
     var startDateTime = parseDateTime(investment.getStartDateTime());
     var endDateTime = parseDateTime(investment.getEndDateTime());
+    var lastEntry = investment.getLastEntry();
 
     return List.of(
         investment.getId(),
@@ -26,9 +27,9 @@ public class GoogleSheetsInvestmentAdapter {
         startDateTime,
         endDateTime,
         investment.isReinvested(),
-        investment.getInitialInvestedAmount(),
-        investment.getReinvestedAmount(),
-        investment.getProfitability());
+        lastEntry != null ? lastEntry.getInitialInvestedAmount() : "",
+        lastEntry != null ? lastEntry.getReinvestedAmount() : "",
+        lastEntry != null ? lastEntry.getProfitability() : "");
   }
 
   private String parseDateTime(LocalDateTime dateTime) {

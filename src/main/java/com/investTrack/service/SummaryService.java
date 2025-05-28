@@ -15,14 +15,18 @@ public class SummaryService {
     var realInvested = 0.0;
 
     for (Investment investment : investments) {
-      realInvested += investment.getInitialInvestedAmount();
+      var lastEntry = investment.getLastEntry();
+      if (lastEntry == null) {
+        continue;
+      }
+      realInvested += lastEntry.getInitialInvestedAmount();
 
       if (investment.isReinvested()) {
         continue;
       }
-      investedAmount += investment.getTotalInvestedAmount();
-      obtained += investment.getObtained();
-      benefit += investment.getBenefit();
+      investedAmount += lastEntry.getTotalInvestedAmount();
+      obtained += lastEntry.getObtained();
+      benefit += lastEntry.getBenefit();
     }
 
     var profitability = calculateProfitability(benefit, investedAmount);

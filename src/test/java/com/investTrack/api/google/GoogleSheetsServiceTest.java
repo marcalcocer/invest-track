@@ -363,7 +363,7 @@ public class GoogleSheetsServiceTest {
   }
 
   private Investment newInvestment() {
-    return new Investment(1L, "test", "desc", "USD", null, null, false, 0.0, 0.0, 0.0);
+    return new Investment(1L, "test", "desc", "USD", null, null, false);
   }
 
   private InvestmentEntry newInvestmentEntry() {

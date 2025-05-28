@@ -32,10 +32,7 @@ public class Investment {
       String currency,
       LocalDateTime startDateTime,
       LocalDateTime endDateTime,
-      boolean isReinvested,
-      double initialInvestedAmount,
-      double reinvestedAmount,
-      double profitability) {
+      boolean isReinvested) {
     this.id = id;
     this.name = name;
     this.description = description;
@@ -43,15 +40,6 @@ public class Investment {
     this.startDateTime = startDateTime;
     this.endDateTime = endDateTime;
     this.isReinvested = isReinvested;
-
-    // TODO: Treat common behavior in a separated class
-    this.initialInvestedAmount = initialInvestedAmount;
-    this.reinvestedAmount = reinvestedAmount;
-    this.profitability = profitability;
-
-    calculateTotalInvestedAmount();
-    calculateObtained();
-    calculateBenefit();
   }
 
   @Id
@@ -83,33 +71,10 @@ public class Investment {
   @ColumnDefault("false")
   private boolean isReinvested;
 
-  @Column(name = "initial_investment_amount", nullable = false)
-  private double initialInvestedAmount;
-
-  @Column(name = "reinvested_amount", nullable = false)
-  private double reinvestedAmount;
-
-  @Column(name = "total_invested_amount", nullable = false)
-  private double totalInvestedAmount;
-
-  @Column(nullable = false)
-  private double profitability;
-
-  @Column(name = "obtained", nullable = false)
-  private double obtained;
-
-  @Column(name = "benefit", nullable = false)
-  private double benefit;
-
-  private void calculateTotalInvestedAmount() {
-    totalInvestedAmount = initialInvestedAmount + reinvestedAmount;
-  }
-
-  private void calculateObtained() {
-    obtained = totalInvestedAmount + totalInvestedAmount * profitability;
-  }
-
-  private void calculateBenefit() {
-    benefit = totalInvestedAmount * profitability;
+  public InvestmentEntry getLastEntry() {
+    if (entries == null || entries.isEmpty()) {
+      return null;
+    }
+    return entries.get(entries.size() - 1);
   }
 }

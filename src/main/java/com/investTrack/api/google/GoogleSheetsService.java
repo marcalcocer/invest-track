@@ -54,7 +54,7 @@ public class GoogleSheetsService {
   private final InvestmentAdapter investmentAdapter;
   private final InvestmentEntryAdapter investmentEntryAdapter;
 
-  public List<Investment> readInvestmentsData() throws IOException {
+  public synchronized List<Investment> readInvestmentsData() throws IOException {
     log.info("Started reading investments data from Google Sheets");
     sheetsByName = client.getSheets(spreadSheetId);
     var existSheet = existSheet(INVESTMENTS_LIST_SHEET_NAME);
@@ -114,7 +114,7 @@ public class GoogleSheetsService {
     return investmentEntries;
   }
 
-  public void writeInvestmentsData(List<Investment> investments) throws IOException {
+  public synchronized void writeInvestmentsData(List<Investment> investments) throws IOException {
     log.info("Started writing investments data to Google Sheets");
 
     // We want to store all the sheet names that are not written to, so we can clean them up later

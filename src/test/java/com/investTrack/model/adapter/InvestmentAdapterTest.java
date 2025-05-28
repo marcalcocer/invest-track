@@ -31,12 +31,6 @@ public class InvestmentAdapterTest {
     assertEquals(LocalDateTime.parse("2023-12-20T10:00:00"), investment.getStartDateTime());
     assertNull(investment.getEndDateTime());
     assertFalse(investment.isReinvested());
-    assertEquals(1.0, investment.getInitialInvestedAmount());
-    assertEquals(2.0, investment.getReinvestedAmount());
-    assertEquals(3.00, investment.getTotalInvestedAmount());
-    assertEquals(0.1, investment.getProfitability());
-    assertEquals(3.3, investment.getObtained());
-    assertEquals(0.3, investment.getBenefit(), 0.0001);
   }
 
   private List<Object> getSampleInvestmentValueRange() {

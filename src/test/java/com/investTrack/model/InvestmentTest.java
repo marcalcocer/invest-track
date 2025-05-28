@@ -2,8 +2,10 @@ package com.investTrack.model;
 
 import static java.time.LocalDateTime.now;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 public class InvestmentTest {
@@ -14,8 +16,7 @@ public class InvestmentTest {
     var endDate = now().minusDays(1);
 
     var investment =
-        new Investment(
-            1L, "Investment", "description", "EUR", startDate, endDate, true, 3.0, 2.0, 0.1);
+        new Investment(1L, "Investment", "description", "EUR", startDate, endDate, true);
 
     assertEquals(1L, investment.getId());
     assertEquals("Investment", investment.getName());
@@ -24,11 +25,28 @@ public class InvestmentTest {
     assertEquals(startDate, investment.getStartDateTime());
     assertEquals(endDate, investment.getEndDateTime());
     assertTrue(investment.isReinvested());
-    assertEquals(3.0, investment.getInitialInvestedAmount());
-    assertEquals(2.0, investment.getReinvestedAmount());
-    assertEquals(5.0, investment.getTotalInvestedAmount());
-    assertEquals(0.1, investment.getProfitability());
-    assertEquals(5.5, investment.getObtained());
-    assertEquals(0.5, investment.getBenefit());
+  }
+
+  @Test
+  public void testGetLastEntry_ShouldReturnNull_WhenNoEntries() {
+    var investment = new Investment();
+    assertNull(investment.getLastEntry());
+  }
+
+  @Test
+  public void testGetLastEntry_ShouldReturnNull_WhenEmptyEntries() {
+    var investment = new Investment();
+    investment.setEntries(List.of());
+    assertNull(investment.getLastEntry());
+  }
+
+  @Test
+  public void testGetLastEntry_ShouldReturnLastEntry_WhenEntriesPresent() {
+    var investment = new Investment();
+    var entry1 = new InvestmentEntry();
+    var entry2 = new InvestmentEntry();
+    investment.setEntries(List.of(entry1, entry2));
+
+    assertEquals(entry2, investment.getLastEntry());
   }
 }
