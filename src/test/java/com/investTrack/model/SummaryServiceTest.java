@@ -3,6 +3,7 @@ package com.investTrack.model;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.investTrack.service.SummaryService;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +24,11 @@ public class SummaryServiceTest {
     var investment4 = newInvestment(false);
     investment4.setEntries(List.of(new InvestmentEntry(null, 500, 0, 0.05, "", investment4)));
 
-    var investments = List.of(investment1, investment2, investment3, investment4);
+    var investment5 = newInvestment(false);
+    investment5.setEndDateTime(LocalDateTime.now().minusYears(1));
+    investment5.setEntries(List.of(new InvestmentEntry(null, 500, 0, 0.05, "", investment5)));
+
+    var investments = List.of(investment1, investment2, investment3, investment4, investment5);
 
     var summary = summaryService.calculateSummary(investments);
 
@@ -31,9 +36,9 @@ public class SummaryServiceTest {
     assertEquals(3975, summary.getObtained());
     assertEquals(475, summary.getBenefit());
     assertEquals(0.1357, summary.getProfitability(), 0.0001);
-    assertEquals(3100, summary.getRealInvested());
-    assertEquals(875, summary.getRealBenefit());
-    assertEquals(0.2822, summary.getRealProfitability(), 0.0001);
+    assertEquals(3600, summary.getRealInvested());
+    assertEquals(375, summary.getRealBenefit());
+    assertEquals(0.10416, summary.getRealProfitability(), 0.0001);
   }
 
   @Test

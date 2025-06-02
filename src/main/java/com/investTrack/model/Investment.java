@@ -71,6 +71,10 @@ public class Investment {
   @ColumnDefault("false")
   private boolean isReinvested;
 
+  public boolean isActive() {
+    return endDateTime == null || endDateTime.isAfter(LocalDateTime.now());
+  }
+
   public InvestmentEntry getLastEntry() {
     if (entries == null || entries.isEmpty()) {
       return null;

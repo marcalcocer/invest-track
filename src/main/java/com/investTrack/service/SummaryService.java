@@ -21,7 +21,7 @@ public class SummaryService {
       }
       realInvested += lastEntry.getInitialInvestedAmount();
 
-      if (investment.isReinvested()) {
+      if (investment.isReinvested() || !investment.isActive()) {
         continue;
       }
       investedAmount += lastEntry.getTotalInvestedAmount();
