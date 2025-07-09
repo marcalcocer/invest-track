@@ -12,44 +12,26 @@ public class SummaryService {
     var investedAmount = 0.0;
     var obtained = 0.0;
     var benefit = 0.0;
-    var realInvested = 0.0;
 
     for (Investment investment : investments) {
+      if (!investment.isActive() || investment.getLastEntry() == null) {
+        continue;
+      }
       var lastEntry = investment.getLastEntry();
-      if (lastEntry == null) {
-        continue;
-      }
-      realInvested += lastEntry.getInitialInvestedAmount();
 
-      if (investment.isReinvested() || !investment.isActive()) {
-        continue;
-      }
       investedAmount += lastEntry.getTotalInvestedAmount();
       obtained += lastEntry.getObtained();
       benefit += lastEntry.getBenefit();
     }
 
     var profitability = calculateProfitability(benefit, investedAmount);
-    var realBenefit = calculateRealBenefit(obtained, realInvested);
-    var realProfitability = calculateRealProfitability(realBenefit, realInvested);
 
     return Summary.builder()
         .investedAmount(investedAmount)
         .obtained(obtained)
         .benefit(benefit)
         .profitability(profitability)
-        .realInvested(realInvested)
-        .realBenefit(realBenefit)
-        .realProfitability(realProfitability)
         .build();
-  }
-
-  private double calculateRealProfitability(double realBenefit, double realInvested) {
-    if (realInvested == 0) {
-      log.debug("Real invested amount is 0, returning 0 as real profitability");
-      return 0;
-    }
-    return realBenefit / realInvested;
   }
 
   private double calculateProfitability(double benefit, double investedAmount) {
@@ -58,9 +40,5 @@ public class SummaryService {
       return 0;
     }
     return benefit / investedAmount;
-  }
-
-  private double calculateRealBenefit(double obtained, double realInvested) {
-    return obtained - realInvested;
   }
 }

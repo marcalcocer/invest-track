@@ -32,13 +32,10 @@ public class SummaryServiceTest {
 
     var summary = summaryService.calculateSummary(investments);
 
-    assertEquals(3500, summary.getInvestedAmount());
-    assertEquals(3975, summary.getObtained());
-    assertEquals(475, summary.getBenefit());
-    assertEquals(0.1357, summary.getProfitability(), 0.0001);
-    assertEquals(3600, summary.getRealInvested());
-    assertEquals(375, summary.getRealBenefit());
-    assertEquals(0.10416, summary.getRealProfitability(), 0.0001);
+    assertEquals(6500, summary.getInvestedAmount());
+    assertEquals(7375, summary.getObtained());
+    assertEquals(875, summary.getBenefit());
+    assertEquals(0.1346, summary.getProfitability(), 0.0001);
   }
 
   @Test
@@ -58,13 +55,10 @@ public class SummaryServiceTest {
 
     var summary = summaryService.calculateSummary(investments);
 
-    assertEquals(3000, summary.getInvestedAmount());
-    assertEquals(3450, summary.getObtained());
-    assertEquals(450, summary.getBenefit());
-    assertEquals(0.15, summary.getProfitability(), 0.0001);
-    assertEquals(2600, summary.getRealInvested());
-    assertEquals(850, summary.getRealBenefit());
-    assertEquals(0.326, summary.getRealProfitability(), 0.001);
+    assertEquals(6000, summary.getInvestedAmount());
+    assertEquals(6850, summary.getObtained());
+    assertEquals(850, summary.getBenefit());
+    assertEquals(0.1416, summary.getProfitability(), 0.0001);
   }
 
   @Test
@@ -89,9 +83,6 @@ public class SummaryServiceTest {
     assertEquals(0, summary.getObtained());
     assertEquals(0, summary.getBenefit());
     assertEquals(0, summary.getProfitability());
-    assertEquals(0, summary.getRealInvested());
-    assertEquals(0, summary.getRealBenefit());
-    assertEquals(0, summary.getRealProfitability());
   }
 
   private Investment newInvestment(boolean reinvested) {
