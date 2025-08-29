@@ -22,6 +22,9 @@ public class InvestmentRepository {
 
   public void save(Investment investment) {
     if (investment.getId() == null) {
+      long nextId = storage.keySet().stream().mapToLong(Long::longValue).max().orElse(0L) + 1;
+
+      idGenerator.set(nextId);
       long newId = idGenerator.getAndIncrement();
       investment.setId(newId);
       log.debug("Assigned new ID {} to investment", newId);

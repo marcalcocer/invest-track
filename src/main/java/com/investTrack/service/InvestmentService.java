@@ -39,7 +39,7 @@ public class InvestmentService {
       log.debug("Loaded {} investments from Google Sheets", loadedInvestments.size());
       investments.addAll(loadedInvestments);
 
-      saveInvestments(investments);
+      repository.saveAll(investments);
       log.info("Loaded investments successfully!");
     } catch (Exception e) {
       throw new RuntimeException("Failed to load investments", e);
@@ -200,12 +200,6 @@ public class InvestmentService {
     var summary = summaryService.calculateSummary(investments);
     log.info("Calculated summary: {}", summary);
     return summary;
-  }
-
-  private void saveInvestments(List<Investment> investments) {
-    log.debug("Saving investments into the database: {}", investments);
-    repository.saveAll(investments);
-    log.trace("Saved investments into the database");
   }
 
   private void saveInvestment(Investment investment) {

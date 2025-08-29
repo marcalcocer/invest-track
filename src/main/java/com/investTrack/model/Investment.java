@@ -6,11 +6,13 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Data
 @ToString(exclude = "entries") // Prevents infinite recursion when serializing to JSON
 @Builder
+@NoArgsConstructor // Default constructor required by JPA
 @AllArgsConstructor
 public class Investment {
 
