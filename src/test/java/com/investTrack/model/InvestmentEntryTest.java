@@ -9,7 +9,7 @@ public class InvestmentEntryTest {
   @Test
   public void testInvestmentEntryConstructor_ShouldCalculateAllAttributes() {
     var datetime = now();
-    var investment = new Investment();
+    var investment = Investment.builder().build();
 
     var investmentEntry = new InvestmentEntry(datetime, 5.0, 5.0, 0.1, "Comments", investment);
 

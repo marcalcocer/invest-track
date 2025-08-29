@@ -5,7 +5,6 @@ import com.investTrack.model.Investment;
 import com.investTrack.model.InvestmentEntry;
 import com.investTrack.model.Summary;
 import com.investTrack.repository.InvestmentRepository;
-import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -203,7 +202,6 @@ public class InvestmentService {
     return summary;
   }
 
-  @Transactional
   private void saveInvestments(List<Investment> investments) {
     log.debug("Saving investments into the database: {}", investments);
     repository.saveAll(investments);

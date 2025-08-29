@@ -196,10 +196,10 @@ public class InvestmentControllerTest {
   }
 
   private Investment newInvestment() {
-    return new Investment();
+    return Investment.builder().build();
   }
 
   private InvestmentEntry newInvestmentEntry() {
-    return new InvestmentEntry();
+    return InvestmentEntry.builder().build();
   }
 }

@@ -55,6 +55,6 @@ public class InvestmentEntryAdapterTest {
   }
 
   private Investment newInvestment() {
-    return new Investment();
+    return Investment.builder().id(1L).name("Test").build();
   }
 }

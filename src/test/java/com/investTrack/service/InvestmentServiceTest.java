@@ -442,7 +442,7 @@ public class InvestmentServiceTest {
   }
 
   private InvestmentEntry newInvestmentEntry() {
-    var entry = new InvestmentEntry();
+    var entry = InvestmentEntry.builder().build();
     entry.setId(1L);
     return entry;
   }

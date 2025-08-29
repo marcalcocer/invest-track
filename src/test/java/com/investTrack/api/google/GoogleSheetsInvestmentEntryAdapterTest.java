@@ -15,7 +15,8 @@ public class GoogleSheetsInvestmentEntryAdapterTest {
   @Test
   public void testToSheetValueRange_ShouldThrowDateTimeException_WhenErrorsFormatingDatetime() {
     var dateTime = LocalDateTime.of(2021, 1, 1, 0, 0, 0);
-    var entry = new InvestmentEntry(dateTime, 1.0, 2.0, 1.0, "comments", new Investment());
+    var entry =
+        new InvestmentEntry(dateTime, 1.0, 2.0, 1.0, "comments", Investment.builder().build());
 
     var valueRange = adapter.toSheetValueRange(entry);
 
