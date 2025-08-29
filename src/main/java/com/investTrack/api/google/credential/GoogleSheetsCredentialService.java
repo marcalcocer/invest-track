@@ -4,7 +4,6 @@ import static com.google.api.client.googleapis.javanet.GoogleNetHttpTransport.ne
 import static java.util.Collections.singletonList;
 
 import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
@@ -68,8 +67,42 @@ public class GoogleSheetsCredentialService {
             .setDataStoreFactory(resPath)
             .setAccessType("offline")
             .build();
+
     var receiver = new LocalServerReceiver.Builder().setPort(port).build();
-    return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+
+    var authorizationUrl =
+        flow.newAuthorizationUrl().setRedirectUri(receiver.getRedirectUri()).build();
+
+    openBrowser(authorizationUrl);
+
+    var code = receiver.waitForCode();
+    receiver.stop();
+
+    var tokenResponse =
+        flow.newTokenRequest(code).setRedirectUri(receiver.getRedirectUri()).execute();
+
+    return flow.createAndStoreCredential(tokenResponse, "user");
+  }
+
+  /**
+   * Opens the authorization URL in the default browser.
+   *
+   * @param url The authorization URL to open.
+   */
+  private void openBrowser(String url) {
+    try {
+      var os = System.getProperty("os.name").toLowerCase();
+      if (os.contains("linux")) {
+        new ProcessBuilder("xdg-open", url).start();
+      } else if (os.contains("mac")) {
+        new ProcessBuilder("open", url).start();
+      } else if (os.contains("win")) {
+        new ProcessBuilder("rundll32", "url.dll,FileProtocolHandler", url).start();
+      }
+    } catch (Exception e) {
+      log.warn("Failed to open browser automatically. Please manually open the following URL:");
+      log.warn(url);
+    }
   }
 
   private InputStreamReader getCredentialsInputStreamReader() throws FileNotFoundException {
