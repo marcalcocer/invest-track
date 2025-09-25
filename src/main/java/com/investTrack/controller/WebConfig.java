@@ -13,7 +13,7 @@ public class WebConfig implements WebMvcConfigurer {
     // TODO: Improve this before publishing it to production and work with profiles
     registry
         .addMapping("/**")
-        .allowedOrigins("http://localhost:4321") // Frontend origin
+        .allowedOrigins("http://localhost:4321", "https://invest-track-ui.vercel.app' ") // Frontend origin
         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
         .allowedHeaders("*")
         .allowCredentials(true);
