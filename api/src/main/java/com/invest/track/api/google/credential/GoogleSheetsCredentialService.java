@@ -1,0 +1,143 @@
+package com.invest.track.api.google.credential;
+
+import static com.google.api.client.googleapis.javanet.GoogleNetHttpTransport.newTrustedTransport;
+import static java.util.Collections.singletonList;
+
+import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
+import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
+import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.client.util.store.FileDataStoreFactory;
+import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.SheetsScopes;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.security.GeneralSecurityException;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@RequiredArgsConstructor
+public class GoogleSheetsCredentialService {
+  private final int port;
+
+  private static final String CREDENTIALS_RES_PATH = "credentials";
+  private static final String CREDENTIALS_FILE_NAME = "credentials.json";
+  private static final String URL_SEPARATOR = "/";
+
+  private static final List<String> SCOPES = singletonList(SheetsScopes.SPREADSHEETS);
+
+  public Sheets createSheetsService(String applicationName)
+      throws GeneralSecurityException, IOException {
+    log.info("Creating Google Sheets service credentials");
+    var jsonFactory = GsonFactory.getDefaultInstance();
+    var httpTransport = getHttpTransport();
+    var credentials = getCredentials(httpTransport);
+
+    return new Sheets.Builder(httpTransport, jsonFactory, credentials)
+        .setApplicationName(applicationName)
+        .build();
+  }
+
+  /**
+   * Creates an authorized Credential object.
+   *
+   * @param HTTP_TRANSPORT The network HTTP Transport.
+   * @return An authorized Credential object.
+   * @throws IOException If the credentials.json file cannot be found.
+   */
+  protected Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
+    var jsonFactory = GsonFactory.getDefaultInstance();
+
+    var credentialsInputStreamReader = getCredentialsInputStreamReader();
+    var clientSecrets = GoogleClientSecrets.load(jsonFactory, credentialsInputStreamReader);
+
+    var resPath = getResourcesFileDataStoreFactory();
+
+    // Build flow and trigger user authorization request.
+    var flow =
+        new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, jsonFactory, clientSecrets, SCOPES)
+            .setDataStoreFactory(resPath)
+            .setAccessType("offline")
+            .build();
+
+    var receiver = new LocalServerReceiver.Builder().setPort(port).build();
+
+    var authorizationUrl =
+        flow.newAuthorizationUrl().setRedirectUri(receiver.getRedirectUri()).build();
+
+    openBrowser(authorizationUrl);
+
+    var code = receiver.waitForCode();
+    receiver.stop();
+
+    var tokenResponse =
+        flow.newTokenRequest(code).setRedirectUri(receiver.getRedirectUri()).execute();
+
+    return flow.createAndStoreCredential(tokenResponse, "user");
+  }
+
+  /**
+   * Opens the authorization URL in the default browser.
+   *
+   * @param url The authorization URL to open.
+   */
+  private void openBrowser(String url) {
+    try {
+      var os = System.getProperty("os.name").toLowerCase();
+      if (os.contains("linux")) {
+        new ProcessBuilder("xdg-open", url).start();
+      } else if (os.contains("mac")) {
+        new ProcessBuilder("open", url).start();
+      } else if (os.contains("win")) {
+        new ProcessBuilder("rundll32", "url.dll,FileProtocolHandler", url).start();
+      }
+    } catch (Exception e) {
+      log.warn("Failed to open browser automatically. Please manually open the following URL:");
+      log.warn(url);
+    }
+  }
+
+  private InputStreamReader getCredentialsInputStreamReader() throws FileNotFoundException {
+    var credentialsFullPath =
+        URL_SEPARATOR + CREDENTIALS_RES_PATH + URL_SEPARATOR + CREDENTIALS_FILE_NAME;
+    var in = getCredentialsInputStream(credentialsFullPath);
+    if (in == null) {
+      throw new FileNotFoundException("Resource not found: " + credentialsFullPath);
+    }
+    return new InputStreamReader(in);
+  }
+
+  private FileDataStoreFactory getResourcesFileDataStoreFactory() throws IOException {
+    var resUrl = getResourcesPathUrl();
+    if (resUrl == null) {
+      throw new IllegalStateException("Resources directory not found");
+    }
+    var resPath = resUrl.getPath();
+
+    return getFileDataStoreFactory(resPath);
+  }
+
+  protected NetHttpTransport getHttpTransport() throws GeneralSecurityException, IOException {
+    return newTrustedTransport();
+  }
+
+  protected InputStream getCredentialsInputStream(String path) {
+    return getClass().getResourceAsStream(path);
+  }
+
+  protected URL getResourcesPathUrl() {
+    return getClass().getClassLoader().getResource("");
+  }
+
+  protected FileDataStoreFactory getFileDataStoreFactory(String path) throws IOException {
+    return new FileDataStoreFactory(new File(path));
+  }
+}
