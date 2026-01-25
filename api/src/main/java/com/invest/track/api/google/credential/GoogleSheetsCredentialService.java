@@ -1,6 +1,8 @@
 package com.invest.track.api.google.credential;
 
 import static com.google.api.client.googleapis.javanet.GoogleNetHttpTransport.newTrustedTransport;
+import static java.nio.file.Files.exists;
+import static java.nio.file.Files.readString;
 import static java.util.Collections.singletonList;
 
 import com.google.api.client.auth.oauth2.Credential;
@@ -18,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -80,7 +83,6 @@ public class GoogleSheetsCredentialService {
     var authorizationUrl =
         flow.newAuthorizationUrl().setRedirectUri(receiver.getRedirectUri()).build();
 
-    log.info("Google OAuth URL: {}", authorizationUrl);
     openBrowser(authorizationUrl);
 
     var code = receiver.waitForCode();
@@ -100,11 +102,26 @@ public class GoogleSheetsCredentialService {
   private void openBrowser(String url) {
     try {
       var os = System.getProperty("os.name").toLowerCase();
-      if (os.contains("linux")) {
+      // Detect WSL (Windows Subsystem for Linux)
+      String procVersion = "";
+      try {
+        var procVersionPath = Paths.get("/proc/version");
+        if (exists(procVersionPath)) {
+          procVersion = readString(procVersionPath).toLowerCase();
+        }
+      } catch (Exception ignored) {
+      }
+      if (procVersion.contains("microsoft")) {
+        log.info("Detected WSL environment. Using powershell.exe to open browser.");
+        new ProcessBuilder("powershell.exe", "-Command", "Start-Process '" + url + "'").start();
+      } else if (os.contains("linux")) {
+        log.info("Detected Linux environment. Using xdg-open to open browser.");
         new ProcessBuilder("xdg-open", url).start();
       } else if (os.contains("mac")) {
+        log.info("Detected macOS environment. Using open to open browser.");
         new ProcessBuilder("open", url).start();
       } else if (os.contains("win")) {
+        log.info("Detected Windows environment. Using rundll32 to open browser.");
         new ProcessBuilder("rundll32", "url.dll,FileProtocolHandler", url).start();
       }
     } catch (Exception e) {
