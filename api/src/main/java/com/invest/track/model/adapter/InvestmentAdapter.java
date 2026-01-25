@@ -4,11 +4,13 @@ import com.invest.track.model.Investment;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 // Adapts investment data from Google Sheets to the application
 
 @Slf4j
 @RequiredArgsConstructor
+@Component
 public class InvestmentAdapter {
   private final AdapterUtils adapterUtils;
 

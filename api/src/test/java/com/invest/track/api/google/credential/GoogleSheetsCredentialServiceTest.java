@@ -13,6 +13,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.services.sheets.v4.Sheets;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -20,13 +21,19 @@ import java.security.GeneralSecurityException;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 public class GoogleSheetsCredentialServiceTest {
 
-  private final GoogleSheetsCredentialService service = new GoogleSheetsCredentialService(1234);
+  @Mock private LocalServerReceiver receiver;
+
+  private final GoogleSheetsCredentialService service = new GoogleSheetsCredentialService(receiver);
   private final GoogleSheetsCredentialService spy = spy(service);
 
   @Test

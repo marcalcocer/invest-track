@@ -1,4 +1,4 @@
-package com.invest.track.controller;
+package com.invest.track.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -13,7 +13,7 @@ public class WebConfig implements WebMvcConfigurer {
     // TODO: Improve this before publishing it to production and work with profiles
     registry
         .addMapping("/**")
-        .allowedOrigins("http://localhost:4321", "http://192.168.1.28:4321") // Frontend origin
+        .allowedOrigins("http://localhost:4321", "http://172.21.154.192:4321/") // Frontend origin
         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
         .allowedHeaders("*")
         .allowCredentials(true);

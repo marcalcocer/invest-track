@@ -20,19 +20,26 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 
 @Slf4j
-@RequiredArgsConstructor
+@Service
 public class GoogleSheetsCredentialService {
-  private final int port;
+
+  private final LocalServerReceiver receiver;
 
   private static final String CREDENTIALS_RES_PATH = "credentials";
   private static final String CREDENTIALS_FILE_NAME = "credentials.json";
   private static final String URL_SEPARATOR = "/";
 
   private static final List<String> SCOPES = singletonList(SheetsScopes.SPREADSHEETS);
+
+  public GoogleSheetsCredentialService(
+      @Qualifier("googleLocalServerReceiver") LocalServerReceiver receiver) {
+    this.receiver = receiver;
+  }
 
   public Sheets createSheetsService(String applicationName)
       throws GeneralSecurityException, IOException {
@@ -68,11 +75,12 @@ public class GoogleSheetsCredentialService {
             .setAccessType("offline")
             .build();
 
-    var receiver = new LocalServerReceiver.Builder().setPort(port).build();
+    Runtime.getRuntime().addShutdownHook(new GoogleLocalServerReceiverShutdownHook(receiver));
 
     var authorizationUrl =
         flow.newAuthorizationUrl().setRedirectUri(receiver.getRedirectUri()).build();
 
+    log.info("Google OAuth URL: {}", authorizationUrl);
     openBrowser(authorizationUrl);
 
     var code = receiver.waitForCode();

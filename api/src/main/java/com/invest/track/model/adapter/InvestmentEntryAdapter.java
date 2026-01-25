@@ -6,11 +6,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 // Adapts investment entry data from the Google Sheets to the application
 
 @Slf4j
 @RequiredArgsConstructor
+@Component
 public class InvestmentEntryAdapter {
   private final AdapterUtils adapterUtils;
 
