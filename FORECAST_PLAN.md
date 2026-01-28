@@ -70,10 +70,11 @@ Enable forecasting for investments with multiple strategies, each containing thr
 - [x] Analyze current investment and entry models
 - [x] Analyze UI structure for investment display
 - [x] Clarify requirements with user
-- [ ] Design forecast data model (Java)
-- [ ] Design forecast repository/service (Java)
-- [ ] Add forecast CRUD endpoints (Java, Spring)
-- [ ] Update API to serve forecasts with investments
+- [x] Design forecast data model (Java)
+- [x] Design forecast repository/service (Java)
+- [x] Add forecast CRUD endpoints (Java, Spring)
+- [x] Update API to serve forecasts with investments
+- [ ] Integrate backend with Google Sheets for reading/writing forecasts (follow the pattern used for investments: create a GoogleSheetsService for forecasts, adapt model for sheet conversion, and update service/repository to use it)
 - [ ] Update UI: add forecast creation modal/form (choose investment entry as start date, set monthly growth rates, set end date by number of months/years)
 - [ ] Update UI: allow editing and deleting forecasts
 - [ ] Update UI: display forecasted vs real data in graphs (one graph per forecast vs real, and a combined graph with all forecasts/scenarios vs real)

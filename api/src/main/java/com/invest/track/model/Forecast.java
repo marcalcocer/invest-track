@@ -1,0 +1,31 @@
+package com.invest.track.model;
+
+import static lombok.AccessLevel.PRIVATE;
+
+import java.time.LocalDate;
+import java.util.Map;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor(access = PRIVATE)
+@AllArgsConstructor
+@Builder
+public class Forecast {
+  private String id;
+  private String investmentId;
+  private String name;
+  private LocalDate startDate;
+  private LocalDate endDate;
+  private Map<ForecastScenario, Double> scenarioRates;
+  private LocalDate createdAt;
+  private LocalDate updatedAt;
+
+  public enum ForecastScenario {
+    PESSIMIST,
+    NEUTRAL,
+    OPTIMIST
+  }
+}
