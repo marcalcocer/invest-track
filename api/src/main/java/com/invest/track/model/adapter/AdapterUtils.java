@@ -3,6 +3,7 @@ package com.invest.track.model.adapter;
 import static java.time.format.DateTimeFormatter.ofPattern;
 
 import java.time.DateTimeException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,21 @@ public class AdapterUtils {
   private static final List<String> DATE_FORMATTERS =
       List.of(
           "dd/MM/yyyy HH:mm:ss", "dd/MM/yyyy H:mm:ss", "d/MM/yyyy HH:mm:ss", "d/MM/yyyy H:mm:ss");
+
+  public LocalDate parseLocalDate(Object value) {
+    var str = parseString(value);
+    if (str.isEmpty()) return null;
+    try {
+      return LocalDate.parse(str);
+    } catch (DateTimeException e) {
+      log.error("Failed to parse LocalDate value \"{}\"", str);
+      throw e;
+    }
+  }
+
+  public String formatLocalDate(LocalDate date) {
+    return date == null ? "" : date.toString();
+  }
 
   public Long parseLong(Object value) {
     var str = parseString(value);

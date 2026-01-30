@@ -3,10 +3,12 @@ package com.invest.track.api.google.config;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.services.sheets.v4.Sheets;
 import com.invest.track.api.google.GoogleSheetsClient;
+import com.invest.track.api.google.GoogleSheetsForecastService;
 import com.invest.track.api.google.GoogleSheetsInvestmentAdapter;
 import com.invest.track.api.google.GoogleSheetsInvestmentEntryAdapter;
 import com.invest.track.api.google.GoogleSheetsService;
 import com.invest.track.api.google.credential.GoogleSheetsCredentialService;
+import com.invest.track.model.adapter.ForecastAdapter;
 import com.invest.track.model.adapter.InvestmentAdapter;
 import com.invest.track.model.adapter.InvestmentEntryAdapter;
 import java.io.IOException;
@@ -50,5 +52,12 @@ public class GoogleSheetsConfiguration {
         googleSheetsInvestmentEntryAdapter,
         investmentAdapter,
         investmentEntryAdapter);
+  }
+
+  @Bean
+  public GoogleSheetsForecastService googleSheetsForecastService(
+      Sheets sheets, ForecastAdapter forecastAdapter) {
+    var googleSheetsClient = new GoogleSheetsClient(sheets);
+    return new GoogleSheetsForecastService(spreadSheetId, googleSheetsClient, forecastAdapter);
   }
 }

@@ -25,6 +25,18 @@ public class GoogleSheetsClient {
 
   private static final String INTERVAL_SEPARATOR = "!";
 
+  public boolean sheetExists(String spreadSheetId, String sheetName) throws IOException {
+    var sheetsList = sheets.spreadsheets().get(spreadSheetId).execute().getSheets();
+    if (sheetsList == null) return false;
+    for (var sheet : sheetsList) {
+      var props = sheet.getProperties();
+      if (props != null && sheetName.equals(props.getTitle())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public List<List<Object>> readSheet(String spreadSheetId, String sheetName, String range)
       throws IOException {
     var msg = "Getting data for spread sheet id \"{}\", name \"{}\", and range \"{}\"";

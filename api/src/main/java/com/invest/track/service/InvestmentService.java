@@ -5,9 +5,11 @@ import com.invest.track.model.Investment;
 import com.invest.track.model.InvestmentEntry;
 import com.invest.track.model.Summary;
 import com.invest.track.repository.InvestmentRepository;
+import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -15,19 +17,14 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class InvestmentService {
   private final GoogleSheetsService googleSheetsService;
   private final InvestmentRepository repository;
   private final SummaryService summaryService;
 
-  public InvestmentService(
-      GoogleSheetsService googleSheetsService,
-      InvestmentRepository repository,
-      SummaryService summaryService) {
-    this.googleSheetsService = googleSheetsService;
-    this.repository = repository;
-    this.summaryService = summaryService;
-
+  @PostConstruct
+  public void init() {
     loadInvestments();
   }
 
@@ -87,11 +84,6 @@ public class InvestmentService {
     try {
       investmentToDelete = getInvestment(investments, id);
 
-      if (investmentToDelete == null) {
-        log.error("Could not be found investment to be deleted with id {}", id);
-        return null;
-      }
-
       log.debug("Deleting investment {} from the database", investmentToDelete);
       repository.delete(investmentToDelete);
       investments.remove(investmentToDelete);
@@ -119,12 +111,8 @@ public class InvestmentService {
     }
 
     Investment investment = getInvestment(investments, id);
-    if (investment == null) {
-      log.error("Could not be found investment with id {} when creating an investment entry", id);
-      return null;
-    }
-
     log.debug("Creating investment entry {} for investment {}", entry, investment);
+
     try {
       if (entry.getDatetime() == null) {
         var now = LocalDateTime.now();
@@ -158,20 +146,9 @@ public class InvestmentService {
     }
 
     Investment investment = getInvestment(investments, investmentId);
-    if (investment == null) {
-      log.error(
-          "Could not be found investment with id {} when deleting an investment entry",
-          investmentId);
-      return null;
-    }
-
     InvestmentEntry entryToDelete = getInvestmentEntry(investment, entryId);
-    if (entryToDelete == null) {
-      log.error("Could not be found entry with id {} in investment {}", entryId, investment);
-      return null;
-    }
-
     log.info("Deleting investment entry {} from investment {}", entryToDelete, investment);
+
     try {
       investment.getEntries().remove(entryToDelete);
       saveInvestment(investment);

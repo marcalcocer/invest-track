@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class Forecast {
-  private String id;
+  private Long id;
   private String investmentId;
   private String name;
   private LocalDate startDate;
