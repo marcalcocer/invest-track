@@ -20,42 +20,28 @@ public class ForecastRepository {
     return new ArrayList<>(storage.values());
   }
 
-  public List<Forecast> findByInvestmentId(String investmentId) {
-    List<Forecast> result = new ArrayList<>();
-    for (Forecast forecast : storage.values()) {
-      if (forecast.getInvestmentId().equals(investmentId)) {
-        result.add(forecast);
-      }
-    }
-    return result;
-  }
-
-  public Forecast findById(Long id) {
-    return storage.get(id);
-  }
-
-  public Forecast save(Forecast forecast) {
+  public void save(Forecast forecast) {
     if (forecast.getId() == null) {
-      var newId = idGenerator.getAndIncrement();
-      forecast.setId(String.valueOf(newId));
+      long nextId = storage.keySet().stream().mapToLong(Long::longValue).max().orElse(0L) + 1;
+
+      idGenerator.set(nextId);
+      long newId = idGenerator.getAndIncrement();
+      forecast.setId(newId);
       log.debug("Assigned new ID {} to forecast", newId);
     }
-    storage.put(Long.valueOf(forecast.getId()), forecast);
+    storage.put(forecast.getId(), forecast);
     log.debug("Saved forecast with ID {}", forecast.getId());
-    return forecast;
   }
 
-  public Forecast update(Forecast forecast) {
-    if (forecast.getId() != null && storage.containsKey(Long.valueOf(forecast.getId()))) {
-      storage.put(Long.valueOf(forecast.getId()), forecast);
-      log.debug("Updated forecast with ID {}", forecast.getId());
-      return forecast;
+  public void saveAll(List<Forecast> forecasts) {
+    log.debug("Saving {} forecasts", forecasts.size());
+    for (Forecast f : forecasts) {
+      save(f);
     }
-    return null;
   }
 
-  public void delete(Long id) {
-    storage.remove(id);
-    log.debug("Deleted forecast with ID {}", id);
+  public void delete(Forecast forecast) {
+    log.debug("Deleting forecast with ID {}", forecast.getId());
+    storage.remove(forecast.getId());
   }
 }

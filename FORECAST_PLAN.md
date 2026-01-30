@@ -74,7 +74,12 @@ Enable forecasting for investments with multiple strategies, each containing thr
 - [x] Design forecast repository/service (Java)
 - [x] Add forecast CRUD endpoints (Java, Spring)
 - [x] Update API to serve forecasts with investments
-- [ ] Integrate backend with Google Sheets for reading/writing forecasts (follow the pattern used for investments: create a GoogleSheetsService for forecasts, adapt model for sheet conversion, and update service/repository to use it)
+- [x] Integrate backend with Google Sheets for reading/writing forecasts (follow the pattern used for investments: create a GoogleSheetsService for forecasts, adapt model for sheet conversion, and update service/repository to use it)
+  - Implemented GoogleSheetsForecastService, ForecastAdapter, and utility methods
+  - Added and verified unit tests for all new integration logic
+  - [x] Create a Spring @Bean for GoogleSheetsForecastService in a configuration class
+  - [x] Inject GoogleSheetsForecastService into ForecastService (not ForecastRepository)
+  - [x] Update ForecastService to load/save forecasts from/to Google Sheets, keeping ForecastRepository as in-memory only (mirroring InvestmentService pattern)
 - [ ] Update UI: add forecast creation modal/form (choose investment entry as start date, set monthly growth rates, set end date by number of months/years)
 - [ ] Update UI: allow editing and deleting forecasts
 - [ ] Update UI: display forecasted vs real data in graphs (one graph per forecast vs real, and a combined graph with all forecasts/scenarios vs real)
