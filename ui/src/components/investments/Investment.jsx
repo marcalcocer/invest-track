@@ -6,6 +6,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { formatDatetime } from "@/lib/datetimeFormater";
 import ConfirmDeleteModal from "@/components/modals/ConfirmDeleteModal";
 import InvestmentGraphModal from "../modals/InvestmentGraphModal";
+import CreateForecastModal from "../modals/CreateForecastModal";
 
 export default function Investment() {
     const [investment, setInvestment] = useState(null);
@@ -15,6 +16,7 @@ export default function Investment() {
     const [isConfirmingDelete, setIsConfirmingDelete] = useState(null);
     const [isDeleting, setIsDeleting] = useState(null);
     const [showGraphModal, setShowGraphModal] = useState(false);
+    const [showForecastModal, setShowForecastModal] = useState(false);
 
     // On mount, get the id from query params and fetch the investment details
     useEffect(() => {
@@ -59,9 +61,23 @@ export default function Investment() {
 
     if (isLoading) return <LoadingSpinner />;
 
+    const handleCreateForecast = async (forecastData) => {
+        // TODO: Call InvestmentService.createForecast when implemented
+        setShowForecastModal(false);
+        // Optionally reload or update state
+    };
+
     return (
         <>
             {isDeleting && <LoadingSpinner />}
+            {showForecastModal && (
+                <CreateForecastModal
+                    investment={investment}
+                    entries={entries}
+                    onClose={() => setShowForecastModal(false)}
+                    onCreate={handleCreateForecast}
+                />
+            )}
 
             <div className="p-4 sm:p-6 max-w-3xl mx-auto">
                 <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">{investment.name} - Entries</h2>
@@ -81,6 +97,12 @@ export default function Investment() {
                         onClick={() => setShowGraphModal(true)}
                     >
                         Graph
+                    </button>
+                    <button
+                        className="px-3 py-2 sm:px-4 sm:py-2 bg-purple-500 text-white text-sm rounded shadow hover:bg-purple-600 transition duration-200"
+                        onClick={() => setShowForecastModal(true)}
+                    >
+                        Forecast
                     </button>
                     <button
                         className="px-3 py-2 sm:px-4 sm:py-2 bg-gray-500 text-white text-sm rounded shadow hover:bg-gray-600 transition duration-200"
