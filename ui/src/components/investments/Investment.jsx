@@ -7,6 +7,9 @@ import { formatDatetime } from "@/lib/datetimeFormater";
 import ConfirmDeleteModal from "@/components/modals/ConfirmDeleteModal";
 import InvestmentGraphModal from "../modals/InvestmentGraphModal";
 import CreateForecastModal from "../modals/CreateForecastModal";
+import InvestmentForecastSection from "./InvestmentSection/InvestmentForecastSection";
+import InvestmentEntriesMobile from "./InvestmentSection/InvestmentEntriesMobile";
+import InvestmentEntriesTable from "./InvestmentSection/InvestmentEntriesTable";
 
 export default function Investment() {
     const [investment, setInvestment] = useState(null);
@@ -17,6 +20,10 @@ export default function Investment() {
     const [isDeleting, setIsDeleting] = useState(null);
     const [showGraphModal, setShowGraphModal] = useState(false);
     const [showForecastModal, setShowForecastModal] = useState(false);
+    // Forecasts state
+    const [forecasts, setForecasts] = useState([]);
+    const [isLoadingForecasts, setIsLoadingForecasts] = useState(true);
+    const [isConfirmingDeleteForecast, setIsConfirmingDeleteForecast] = useState(null);
 
     // On mount, get the id from query params and fetch the investment details
     useEffect(() => {
@@ -35,6 +42,12 @@ export default function Investment() {
             if (inv) {
                 setInvestment(inv);
                 setEntries(inv.entries);
+                // Fetch forecasts for this investment
+                setIsLoadingForecasts(true);
+                InvestmentService.fetchForecasts(inv.id)
+                    .then(setForecasts)
+                    .catch(() => setForecasts([]))
+                    .finally(() => setIsLoadingForecasts(false));
             } else {
                 window.location.href = "/404";
             }
@@ -62,13 +75,37 @@ export default function Investment() {
     if (isLoading) return <LoadingSpinner />;
 
     const handleCreateForecast = async (forecastData) => {
-        // TODO: Call InvestmentService.createForecast when implemented
+        if (!investment) return;
         setShowForecastModal(false);
-        // Optionally reload or update state
+        setIsLoadingForecasts(true);
+        try {
+            await InvestmentService.createForecast(investment.id, forecastData);
+            const updated = await InvestmentService.fetchForecasts(investment.id);
+            setForecasts(updated);
+        } catch (e) {
+            // Optionally show error
+        } finally {
+            setIsLoadingForecasts(false);
+        }
     };
 
+    const handleDeleteForecast = async (forecastId) => {
+        setIsConfirmingDeleteForecast(null);
+        setIsLoadingForecasts(true);
+        try {
+            await InvestmentService.deleteForecast(forecastId);
+            const updated = await InvestmentService.fetchForecasts(investment.id);
+            setForecasts(updated);
+        } catch (e) {
+            // Optionally show error
+        } finally {
+            setIsLoadingForecasts(false);
+        }
+    };
+
+
     return (
-        <>
+        <div className="p-4 sm:p-6 max-w-3xl mx-auto">
             {isDeleting && <LoadingSpinner />}
             {showForecastModal && (
                 <CreateForecastModal
@@ -79,7 +116,6 @@ export default function Investment() {
                 />
             )}
 
-            <div className="p-4 sm:p-6 max-w-3xl mx-auto">
                 <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">{investment.name} - Entries</h2>
                 <p className="text-gray-600 text-sm sm:text-base mb-4">
                     {investment.description} ({investment.currency})
@@ -120,49 +156,21 @@ export default function Investment() {
                     </button>
                 </div>
 
+                {/* Forecasts Section */}
+                <InvestmentForecastSection
+                    forecasts={forecasts}
+                    isLoadingForecasts={isLoadingForecasts}
+                    onDeleteForecast={handleDeleteForecast}
+                    isConfirmingDeleteForecast={isConfirmingDeleteForecast}
+                    setIsConfirmingDeleteForecast={setIsConfirmingDeleteForecast}
+                />
+
                 {/* Mobile Cards View */}
-                <div className="block sm:hidden mt-4 space-y-3">
-                    {entries.length > 0 ? (
-                        entries.map((entry, idx) => (
-                            <div key={entry.id ?? `entry-${idx}`} className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
-                                <div className="grid grid-cols-2 gap-2 text-sm">
-                                    <div>
-                                        <span className="font-medium text-gray-500">ID:</span>
-                                        <p className="text-gray-800">{entry.id}</p>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-gray-500">Date:</span>
-                                        <p className="text-gray-800">{formatDatetime(entry.datetime)}</p>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-gray-500">Total Invested:</span>
-                                        <p className="text-gray-800">{currencyAdapter(entry.totalInvestedAmount, investment.currency)}</p>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-gray-500">Profitability:</span>
-                                        <p className="text-gray-800">{(entry.profitability * 100).toFixed(2)}%</p>
-                                    </div>
-                                    <div className="col-span-2">
-                                        <span className="font-medium text-gray-500">Comments:</span>
-                                        <p className="text-gray-800 truncate">{entry.comments || "-"}</p>
-                                    </div>
-                                </div>
-                                <div className="mt-3 flex justify-end">
-                                    <button
-                                        className="px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition duration-200"
-                                        onClick={() => setIsConfirmingDelete(entry)}
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <div className="text-center p-4 text-gray-500 bg-white border border-slate-200 rounded-xl shadow-sm">
-                            No entries available
-                        </div>
-                    )}
-                </div>
+                <InvestmentEntriesMobile
+                    entries={entries}
+                    investment={investment}
+                    setIsConfirmingDelete={setIsConfirmingDelete}
+                />
 
                 {/* Desktop Table View */}
                 <div className="hidden sm:block overflow-x-auto mt-6">
@@ -235,7 +243,6 @@ export default function Investment() {
                         onConfirm={() => { setIsConfirmingDelete(null); handleDeleteEntry(isConfirmingDelete.id) }}
                     />
                 )}
-            </div>
 
             {showGraphModal && (
                 <InvestmentGraphModal
@@ -244,6 +251,6 @@ export default function Investment() {
                     showDetailsButton={false}
                 />
             )}
-        </>
+        </div>
     );
 }
