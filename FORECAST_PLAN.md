@@ -80,8 +80,10 @@ Enable forecasting for investments with multiple strategies, each containing thr
   - [x] Create a Spring @Bean for GoogleSheetsForecastService in a configuration class
   - [x] Inject GoogleSheetsForecastService into ForecastService (not ForecastRepository)
   - [x] Update ForecastService to load/save forecasts from/to Google Sheets, keeping ForecastRepository as in-memory only (mirroring InvestmentService pattern)
-- [ ] Update UI: add forecast creation modal/form (choose investment entry as start date, set monthly growth rates, set end date by number of months/years)
-- [ ] Update UI: allow editing and deleting forecasts
+- [x] Update UI: add forecast creation modal/form (choose investment entry as start date, set monthly growth rates, set end date by number of months/years)
+    - Implemented as CreateForecastModal.jsx, integrated in Investment.jsx with full form and validation.
+- [x] Update UI: allow deleting forecasts
+- [ ] Update UI: allow editing forecasts (deferred until backend ready)
 - [ ] Update UI: display forecasted vs real data in graphs (one graph per forecast vs real, and a combined graph with all forecasts/scenarios vs real)
 - [ ] Update UI: allow switching/comparing multiple forecasts
 - [ ] Add "Forecast" button in Investment Details view for forecast graphs
