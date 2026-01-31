@@ -7,12 +7,15 @@ import { formatDate } from "@/lib/datetimeFormater";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import CreateInvestmentModal from '../modals/CreateInvestmentModal';
 
+import CreateForecastModal from "../modals/CreateForecastModal";
+
 export default function InvestmentsDetails({ investments }) {
   const [selectedInvestment, setSelectedInvestment] = useState(null);
   const [investmentToDelete, setInvestmentToDelete] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showInactive, setShowInactive] = useState(false);
+  const [showForecastModalFor, setShowForecastModalFor] = useState(null);
 
   const handleDelete = async (id) => {
     setIsLoading(true);
@@ -31,6 +34,12 @@ export default function InvestmentsDetails({ investments }) {
 
   if (isLoading) return <LoadingSpinner />;
 
+  const handleCreateForecast = async (forecastData) => {
+    // TODO: Call InvestmentService.createForecast when implemented
+    setShowForecastModalFor(null);
+    // Optionally reload or update state
+  };
+
   const activeInvestments = investments.filter(i => !i.endDateTime);
   const inactiveInvestments = investments.filter(i => i.endDateTime);
 
@@ -40,10 +49,10 @@ export default function InvestmentsDetails({ investments }) {
     return (
       <li
         key={investment.id}
-        className="bg-white shadow-md rounded-lg p-3 sm:p-4 border border-gray-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 items-center"
+        className="bg-white shadow-md rounded-lg p-3 sm:p-4 border border-gray-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 items-center"
       >
         {/* Name & Description */}
-        <div className="text-center sm:text-left">
+        <div className="text-center sm:text-left col-span-1">
           <h3 className="text-base sm:text-lg font-semibold text-gray-700">{investment.name}</h3>
           <p className="text-gray-600 text-xs sm:text-sm">{investment.description} ({investment.currency})</p>
           <p className="text-gray-500 text-xs mt-1">
@@ -52,7 +61,7 @@ export default function InvestmentsDetails({ investments }) {
         </div>
 
         {/* Profitability & Obtained & Benefit */}
-        <div className="text-center sm:text-right">
+        <div className="text-center sm:text-right col-span-1">
           <p className="text-xs sm:text-sm text-gray-500">
             Profit: <span className="font-medium text-green-600">{lastEntry?.profitability != null ? (100 * lastEntry.profitability).toFixed(2) : "-"}%</span>
           </p>
@@ -64,29 +73,33 @@ export default function InvestmentsDetails({ investments }) {
           </p>
         </div>
 
-        {/* Graph Button */}
-        <button
-          className="w-full lg:w-auto px-3 py-2 bg-blue-500 text-white text-xs sm:text-sm font-semibold rounded-lg shadow hover:bg-blue-600 transition duration-200"
-          onClick={() => setSelectedInvestment(investment)}
-        >
-          Graph
-        </button>
-
-        {/* Details Button */}
-        <button
-          className="w-full lg:w-auto px-3 py-2 bg-green-500 text-white text-xs sm:text-sm font-semibold rounded-lg shadow hover:bg-green-600 transition duration-200"
-          onClick={() => window.location.href = `/investment?id=${investment.id}`}
-        >
-          Details
-        </button>
-
-        {/* Delete Button */}
-        <button
-          className="w-full lg:w-auto px-3 py-2 bg-red-500 text-white text-xs sm:text-sm font-semibold rounded-lg shadow hover:bg-red-600 transition duration-200"
-          onClick={() => setInvestmentToDelete(investment)}
-        >
-          Delete
-        </button>
+        {/* Action Buttons in Dedicated Grid Cell */}
+        <div className="flex flex-col gap-2 sm:flex-row sm:gap-2 justify-end col-span-1">
+          <button
+            className="px-3 py-2 text-xs sm:text-sm font-medium bg-gray-200 text-gray-700 border border-gray-400 rounded hover:bg-gray-300 transition duration-200"
+            onClick={() => setSelectedInvestment(investment)}
+          >
+            Graph
+          </button>
+          <button
+            className="px-3 py-2 text-xs sm:text-sm font-medium bg-gray-200 text-gray-700 border border-gray-400 rounded hover:bg-gray-300 transition duration-200"
+            onClick={() => setShowForecastModalFor(investment)}
+          >
+            Forecast
+          </button>
+          <button
+            className="px-3 py-2 text-xs sm:text-sm font-medium bg-gray-200 text-gray-700 border border-gray-400 rounded hover:bg-gray-300 transition duration-200"
+            onClick={() => window.location.href = `/investment?id=${investment.id}`}
+          >
+            Details
+          </button>
+          <button
+            className="px-3 py-2 bg-red-500 text-white text-xs sm:text-sm font-semibold rounded-lg shadow hover:bg-red-600 transition duration-200"
+            onClick={() => setInvestmentToDelete(investment)}
+          >
+            Delete
+          </button>
+        </div>
       </li>
     );
   };
@@ -115,7 +128,7 @@ export default function InvestmentsDetails({ investments }) {
       {/* Toggle Inactive Investments - more compact */}
       <div className="my-4 sm:my-6 text-center">
         <button
-          className="px-3 py-2 text-xs sm:text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition duration-200"
+          className="px-3 py-2 text-xs sm:text-sm font-medium bg-gray-200 text-gray-700 border border-gray-400 rounded hover:bg-gray-300 transition duration-200"
           onClick={() => setShowInactive(!showInactive)}
         >
           {showInactive ? 'Hide Inactive' : 'Show Inactive'}
