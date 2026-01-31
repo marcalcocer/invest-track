@@ -7,8 +7,6 @@ import { formatDate } from "@/lib/datetimeFormater";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import CreateInvestmentModal from '../modals/CreateInvestmentModal';
 
-import CreateForecastModal from "../modals/CreateForecastModal";
-
 export default function InvestmentsDetails({ investments }) {
   const [selectedInvestment, setSelectedInvestment] = useState(null);
   const [investmentToDelete, setInvestmentToDelete] = useState(null);
@@ -48,11 +46,11 @@ export default function InvestmentsDetails({ investments }) {
 
     return (
       <li
-        key={investment.id}
-        className="bg-white shadow-md rounded-lg p-3 sm:p-4 border border-gray-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 items-center"
+        key={investment.id ?? `${investment.name}-${investment.currency}` }
+        className="group bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 border border-slate-200 p-4 sm:p-6 flex flex-col sm:flex-row gap-4 lg:gap-6 items-stretch font-sans"
       >
         {/* Name & Description */}
-        <div className="text-center sm:text-left col-span-1">
+        <div className="flex-1 flex flex-col justify-center text-center sm:text-left border-b sm:border-b-0 sm:border-r border-gray-100 pr-0 sm:pr-6 mb-4 sm:mb-0">
           <h3 className="text-base sm:text-lg font-semibold text-gray-700">{investment.name}</h3>
           <p className="text-gray-600 text-xs sm:text-sm">{investment.description} ({investment.currency})</p>
           <p className="text-gray-500 text-xs mt-1">
@@ -61,7 +59,7 @@ export default function InvestmentsDetails({ investments }) {
         </div>
 
         {/* Profitability & Obtained & Benefit */}
-        <div className="text-center sm:text-right col-span-1">
+        <div className="flex-1 flex flex-col justify-center items-center sm:items-end text-center sm:text-right border-b sm:border-b-0 sm:border-r border-gray-100 px-0 sm:px-6 mb-4 sm:mb-0">
           <p className="text-xs sm:text-sm text-gray-500">
             Profit: <span className="font-medium text-green-600">{lastEntry?.profitability != null ? (100 * lastEntry.profitability).toFixed(2) : "-"}%</span>
           </p>
@@ -74,27 +72,27 @@ export default function InvestmentsDetails({ investments }) {
         </div>
 
         {/* Action Buttons in Dedicated Grid Cell */}
-        <div className="flex flex-col gap-2 sm:flex-row sm:gap-2 justify-end col-span-1">
+        <div className="flex flex-col sm:flex-row gap-2 justify-end flex-1 items-center sm:items-center pl-0 sm:pl-6">
           <button
-            className="px-3 py-2 text-xs sm:text-sm font-medium bg-gray-200 text-gray-700 border border-gray-400 rounded hover:bg-gray-300 transition duration-200"
+            className="px-3 py-2 text-xs sm:text-sm font-medium bg-gray-100 text-gray-500 border border-gray-200 rounded hover:bg-gray-200 transition duration-200"
             onClick={() => setSelectedInvestment(investment)}
           >
             Graph
           </button>
           <button
-            className="px-3 py-2 text-xs sm:text-sm font-medium bg-gray-200 text-gray-700 border border-gray-400 rounded hover:bg-gray-300 transition duration-200"
+            className="px-3 py-2 text-xs sm:text-sm font-medium bg-gray-100 text-gray-500 border border-gray-200 rounded hover:bg-gray-200 transition duration-200"
             onClick={() => setShowForecastModalFor(investment)}
           >
             Forecast
           </button>
           <button
-            className="px-3 py-2 text-xs sm:text-sm font-medium bg-gray-200 text-gray-700 border border-gray-400 rounded hover:bg-gray-300 transition duration-200"
+            className="px-3 py-2 text-xs sm:text-sm font-semibold bg-blue-600 text-white border border-blue-700 rounded hover:bg-blue-700 transition duration-200 shadow"
             onClick={() => window.location.href = `/investment?id=${investment.id}`}
           >
             Details
           </button>
           <button
-            className="px-3 py-2 bg-red-500 text-white text-xs sm:text-sm font-semibold rounded-lg shadow hover:bg-red-600 transition duration-200"
+            className="px-3 py-2 text-xs sm:text-sm font-semibold bg-red-500 text-white border border-red-700 rounded hover:bg-red-600 transition duration-200 shadow"
             onClick={() => setInvestmentToDelete(investment)}
           >
             Delete
@@ -105,13 +103,13 @@ export default function InvestmentsDetails({ investments }) {
   };
 
   return (
-    <div className="px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
+    <div className="px-3 sm:px-4 lg:px-6 py-8 sm:py-12">
       {/* Main title adjusted */}
       <h2 className="text-xl font-bold text-gray-900 sm:text-2xl lg:text-3xl text-center">
         Investments Details
       </h2>
 
-      <ul className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
+      <ul className="space-y-6 sm:space-y-8 mt-8 sm:mt-12">
         {activeInvestments.map(renderInvestment)}
       </ul>
 
@@ -126,7 +124,7 @@ export default function InvestmentsDetails({ investments }) {
       </div>
 
       {/* Toggle Inactive Investments - more compact */}
-      <div className="my-4 sm:my-6 text-center">
+      <div className="my-8 sm:my-12 text-center">
         <button
           className="px-3 py-2 text-xs sm:text-sm font-medium bg-gray-200 text-gray-700 border border-gray-400 rounded hover:bg-gray-300 transition duration-200"
           onClick={() => setShowInactive(!showInactive)}
@@ -141,7 +139,7 @@ export default function InvestmentsDetails({ investments }) {
           <h3 className="text-lg sm:text-xl font-semibold text-gray-800 text-center mb-3 sm:mb-4">
             Inactive Investments
           </h3>
-          <ul className="space-y-3 sm:space-y-4">
+          <ul className="space-y-6 sm:space-y-8">
             {inactiveInvestments.map(renderInvestment)}
           </ul>
         </div>
