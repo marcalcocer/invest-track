@@ -6,7 +6,8 @@ export default function InvestmentForecastSection({
     isLoadingForecasts,
     onDeleteForecast,
     isConfirmingDeleteForecast,
-    setIsConfirmingDeleteForecast
+    setIsConfirmingDeleteForecast,
+    onEditForecast
 }) {
     return (
         <div className="mt-8">
@@ -37,10 +38,16 @@ export default function InvestmentForecastSection({
                                     <td className="border p-2 text-center">{f.name}</td>
                                     <td className="border p-2 text-center">{f.startDate ?? ''}</td>
                                     <td className="border p-2 text-center">{f.startDate && f.endDate ? Math.max(1, Math.round((new Date(f.endDate).getFullYear() * 12 + new Date(f.endDate).getMonth()) - (new Date(f.startDate).getFullYear() * 12 + new Date(f.startDate).getMonth()))) : ''}</td>
-                                    <td className="border p-2 text-center">{f.scenarioRates?.pessimist ?? 0}%</td>
-                                    <td className="border p-2 text-center">{f.scenarioRates?.neutral ?? 0}%</td>
-                                    <td className="border p-2 text-center">{f.scenarioRates?.optimist ?? 0}%</td>
+                                    <td className="border p-2 text-center">{f.scenarioRates?.PESSIMIST ?? 0}%</td>
+                                    <td className="border p-2 text-center">{f.scenarioRates?.NEUTRAL ?? 0}%</td>
+                                    <td className="border p-2 text-center">{f.scenarioRates?.OPTIMIST ?? 0}%</td>
                                     <td className="border p-2 text-center">
+                                        <button
+                                            className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition duration-200 mr-2"
+                                            onClick={() => onEditForecast(f)}
+                                        >
+                                            Edit
+                                        </button>
                                         <button
                                             className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition duration-200"
                                             onClick={() => setIsConfirmingDeleteForecast(f.id)}
