@@ -43,9 +43,9 @@ public class ForecastService {
 
   public Forecast createForecast(Forecast forecast) {
     List<Forecast> forecasts = getForecasts();
-    if (forecasts.isEmpty()) {
-      log.error("Failed to load forecasts list while creating a new one");
-      return null;
+    if (forecasts == null) {
+      log.error("Failed to load forecasts list while creating a new one: forecasts list is null (possible Google Sheets error)");
+      forecasts = new ArrayList<>();
     }
 
     try {

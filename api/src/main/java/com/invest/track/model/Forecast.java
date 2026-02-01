@@ -20,8 +20,7 @@ public class Forecast {
   private LocalDate startDate;
   private LocalDate endDate;
   private Map<ForecastScenario, Double> scenarioRates;
-  private LocalDate createdAt;
-  private LocalDate updatedAt;
+
 
   public enum ForecastScenario {
     PESSIMIST,

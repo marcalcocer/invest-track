@@ -1,18 +1,20 @@
 import { API_BASE_URL } from "./config";
 
+const INVESTMENTS_PATH = '/investments';
+
 export const InvestmentService = {
   async fetchInvestments() {
-    const answer = await fetch(`${API_BASE_URL}`).then((res) => res.json());
+    const answer = await fetch(`${API_BASE_URL}${INVESTMENTS_PATH}`).then((res) => res.json());
     console.log("Fetched investments", answer);
     return answer;
   },
   async fetchSummary() {
-    const answer = await fetch(`${API_BASE_URL}/summary`);
+    const answer = await fetch(`${API_BASE_URL}${INVESTMENTS_PATH}/summary`);
     console.log("Fetched summary", answer);
     return answer.json();
   },
   async createInvestment(investment) {
-    const answer = await fetch(`${API_BASE_URL}`, {
+    const answer = await fetch(`${API_BASE_URL}${INVESTMENTS_PATH}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -27,7 +29,7 @@ export const InvestmentService = {
     return answer.json();
   },
   async createInvestmentEntry(investmentId, entry) {
-    const answer = await fetch(`${API_BASE_URL}/entry/${investmentId}`, {
+    const answer = await fetch(`${API_BASE_URL}${INVESTMENTS_PATH}/entry/${investmentId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -39,7 +41,7 @@ export const InvestmentService = {
     return answer.json();
   },
   async deleteInvestment(investmentId) {
-    const answer = await fetch(`${API_BASE_URL}/${investmentId}`, {
+    const answer = await fetch(`${API_BASE_URL}${INVESTMENTS_PATH}/${investmentId}`, {
       method: "DELETE",
     });
     console.log("Deleted investment", answer);
@@ -47,7 +49,7 @@ export const InvestmentService = {
   },
   async deleteInvestmentEntry(investmentId, entryId) {
     const answer = await fetch(
-      `${API_BASE_URL}/entry/${investmentId}/${entryId}`,
+      `${API_BASE_URL}${INVESTMENTS_PATH}/entry/${investmentId}/${entryId}`,
       {
         method: "DELETE",
       }
@@ -56,34 +58,4 @@ export const InvestmentService = {
     return answer.json();
   },
 
-  // Forecast CRUD
-  async fetchForecasts(investmentId) {
-    const res = await fetch(`${API_BASE_URL}/forecasts/${investmentId}`);
-    if (!res.ok) throw new Error("Failed to fetch forecasts");
-    return res.json();
-  },
-  async createForecast(investmentId, forecast) {
-    const res = await fetch(`${API_BASE_URL}/forecasts/${investmentId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(forecast),
-    });
-    if (!res.ok) throw new Error("Failed to create forecast");
-    return res.json();
-  },
-  async updateForecast(forecastId, forecast) {
-    const res = await fetch(`${API_BASE_URL}/forecasts/${forecastId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(forecast),
-    });
-    if (!res.ok) throw new Error("Failed to update forecast");
-    return res.json();
-  },
-  async deleteForecast(forecastId) {
-    const res = await fetch(`${API_BASE_URL}/forecasts/${forecastId}`, {
-      method: "DELETE" });
-    if (!res.ok) throw new Error("Failed to delete forecast");
-    return res.json();
-  }
 };
