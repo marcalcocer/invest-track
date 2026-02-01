@@ -89,6 +89,13 @@ public class InvestmentService {
   public Investment updateInvestment(Long id, Investment investment) {
     investment.setId(id);
     repository.save(investment);
+    List<Investment> investments = getInvestments();
+    try {
+      googleSheetsService.writeInvestmentsData(investments);
+    } catch (Exception e) {
+      log.error(
+          "Failed to write investments into Google Sheets while updating an investment due to", e);
+    }
     return investment;
   }
 

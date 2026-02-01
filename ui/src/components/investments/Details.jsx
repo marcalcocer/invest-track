@@ -4,6 +4,7 @@ import ConfirmDeleteModal from "../modals/ConfirmDeleteModal";
 import { InvestmentService } from '@/lib/InvestmentService';
 import LoadingSpinner from "@/components/LoadingSpinner";
 import CreateInvestmentModal from '../modals/CreateInvestmentModal';
+import EditInvestmentModal from '../modals/EditInvestmentModal';
 import InvestmentsDetailsListItem from "./InvestmentsDetailsSection/InvestmentsDetailsListItem";
 
 export default function InvestmentsDetails({ investments }) {
@@ -13,6 +14,7 @@ export default function InvestmentsDetails({ investments }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showInactive, setShowInactive] = useState(false);
   const [showForecastModalFor, setShowForecastModalFor] = useState(null);
+  const [editingInvestment, setEditingInvestment] = useState(null);
 
   const handleDelete = async (id) => {
     setIsLoading(true);
@@ -46,6 +48,7 @@ export default function InvestmentsDetails({ investments }) {
       onForecast={() => setShowForecastModalFor(investment)}
       onDetails={() => window.location.href = `/investment?id=${investment.id}`}
       onDelete={() => setInvestmentToDelete(investment)}
+      onEdit={() => setEditingInvestment(investment)}
     />
   );
 
@@ -96,6 +99,14 @@ export default function InvestmentsDetails({ investments }) {
         <CreateInvestmentModal
           onClose={() => setIsModalOpen(false)}
           onCreate={handleCreate}
+        />
+      )}
+
+      {editingInvestment && (
+        <EditInvestmentModal
+          investment={editingInvestment}
+          onClose={() => setEditingInvestment(null)}
+          onUpdate={() => window.location.reload()}
         />
       )}
 

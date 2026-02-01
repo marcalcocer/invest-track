@@ -58,6 +58,21 @@ export const InvestmentService = {
     return answer.json();
   },
 
+  async updateInvestment(investmentId, investment) {
+    const answer = await fetch(`${API_BASE_URL}${INVESTMENTS_PATH}/${investmentId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(investment),
+    });
+    if (!answer.ok) {
+      throw new Error("status: " + answer.status);
+    }
+    console.log("Updated investment", answer);
+    return answer.json();
+  },
+
   async updateInvestmentEntry(investmentId, entryId, entry) {
     const answer = await fetch(
       `${API_BASE_URL}${INVESTMENTS_PATH}/entry/${investmentId}/${entryId}`,

@@ -1,7 +1,7 @@
 import { currencyAdapter } from "@/lib/currencyAdapter";
 import { formatDate } from "@/lib/datetimeFormater";
 
-export default function InvestmentListItem({ investment, onGraph, onForecast, onDetails, onDelete }) {
+export default function InvestmentListItem({ investment, onGraph, onForecast, onDetails, onDelete, onEdit }) {
     const lastEntry = investment.lastEntry;
     return (
         <li
@@ -46,6 +46,12 @@ export default function InvestmentListItem({ investment, onGraph, onForecast, on
                     onClick={onDetails}
                 >
                     Details
+                </button>
+                <button
+                    className="px-3 py-2 text-xs sm:text-sm font-semibold bg-yellow-500 text-white border border-yellow-700 rounded hover:bg-yellow-600 transition duration-200 shadow"
+                    onClick={onEdit}
+                >
+                    Edit
                 </button>
                 <button
                     className="px-3 py-2 text-xs sm:text-sm font-semibold bg-red-500 text-white border border-red-700 rounded hover:bg-red-600 transition duration-200 shadow"
