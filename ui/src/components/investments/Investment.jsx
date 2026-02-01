@@ -6,6 +6,7 @@ import CreateEntryModal from "@/components/modals/CreateEntryModal";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { formatDatetime } from "@/lib/datetimeFormater";
 import ConfirmDeleteModal from "@/components/modals/ConfirmDeleteModal";
+import UpdateEntryModal from "@/components/modals/UpdateEntryModal";
 import InvestmentGraphModal from "../modals/InvestmentGraphModal";
 import CreateForecastModal from "../modals/CreateForecastModal";
 import InvestmentForecastSection from "./InvestmentSection/InvestmentForecastSection";
@@ -20,6 +21,7 @@ export default function Investment() {
     const [isDeleting, setIsDeleting] = useState(null);
     const [showGraphModal, setShowGraphModal] = useState(false);
     const [showForecastModal, setShowForecastModal] = useState(false);
+    const [isUpdatingEntry, setIsUpdatingEntry] = useState(null);
     // Forecasts state
     const [forecasts, setForecasts] = useState([]);
     const [isLoadingForecasts, setIsLoadingForecasts] = useState(true);
@@ -205,12 +207,20 @@ export default function Investment() {
                                             {entry.comments || "-"}
                                         </td>
                                         <td className="border p-2 text-center">
-                                            <button
+                                            <div className="flex flex-row gap-2 justify-center items-center">
+                                                <button
+                                                className="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600 transition duration-200"
+                                                onClick={() => setIsUpdatingEntry(entry)}
+                                                >
+                                                Update
+                                                </button>
+                                                <button
                                                 className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition duration-200"
                                                 onClick={() => setIsConfirmingDelete(entry)}
-                                            >
+                                                >
                                                 Delete
-                                            </button>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -230,6 +240,25 @@ export default function Investment() {
                         investment={investment}
                         onClose={() => setIsCreating(false)}
                         onCreate={reload}
+                    />
+                )}
+
+                {isUpdatingEntry && (
+                    <UpdateEntryModal
+                        entry={isUpdatingEntry}
+                        onClose={() => setIsUpdatingEntry(null)}
+                        onUpdate={async (updatedEntry) => {
+                            // Debug: log ids
+                            console.log('UpdateEntryModal onUpdate', { updatedEntry, isUpdatingEntry });
+                            const entryId = updatedEntry.id || isUpdatingEntry?.id;
+                            if (!entryId) {
+                                alert('Entry ID is missing!');
+                                return;
+                            }
+                            await InvestmentService.updateInvestmentEntry(investment.id, entryId, updatedEntry);
+                            setIsUpdatingEntry(null);
+                            reload();
+                        }}
                     />
                 )}
 

@@ -15,11 +15,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 // Performs operations on Google Sheets API
 
 @Slf4j
 @RequiredArgsConstructor
+@Component
 public class GoogleSheetsClient {
   private final Sheets sheets;
 

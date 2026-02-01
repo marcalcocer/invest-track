@@ -1,6 +1,6 @@
 package com.invest.track.service;
 
-import com.invest.track.api.google.GoogleSheetsService;
+import com.invest.track.api.google.GoogleSheetsInvestmentService;
 import com.invest.track.model.Investment;
 import com.invest.track.model.InvestmentEntry;
 import com.invest.track.model.Summary;
@@ -9,6 +9,7 @@ import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,9 +20,10 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class InvestmentService {
-  private final GoogleSheetsService googleSheetsService;
+  private final GoogleSheetsInvestmentService googleSheetsService;
   private final InvestmentRepository repository;
   private final SummaryService summaryService;
+  private final AtomicLong entryIdGenerator = new AtomicLong(1);
 
   @PostConstruct
   public void init() {
@@ -34,6 +36,17 @@ public class InvestmentService {
     try {
       var loadedInvestments = googleSheetsService.readInvestmentsData();
       log.debug("Loaded {} investments from Google Sheets", loadedInvestments.size());
+
+      // Assign IDs to entries if missing
+      for (var inv : loadedInvestments) {
+        if (inv.getEntries() != null) {
+          for (var entry : inv.getEntries()) {
+            if (entry.getId() == null) {
+              entry.setId(entryIdGenerator.getAndIncrement());
+            }
+          }
+        }
+      }
       investments.addAll(loadedInvestments);
 
       repository.saveAll(investments);
@@ -70,6 +83,12 @@ public class InvestmentService {
       return null;
     }
 
+    return investment;
+  }
+
+  public Investment updateInvestment(Long id, Investment investment) {
+    investment.setId(id);
+    repository.save(investment);
     return investment;
   }
 
@@ -136,6 +155,38 @@ public class InvestmentService {
     }
 
     return entry;
+  }
+
+  public InvestmentEntry updateInvestmentEntry(Long investmentId, InvestmentEntry entry) {
+    List<Investment> investments = getInvestments();
+    if (investments.isEmpty()) {
+      log.error("Failed to load investments list while updating an investment entry");
+      return null;
+    }
+    Investment investment = getInvestment(investments, investmentId);
+    InvestmentEntry existingEntry = getInvestmentEntry(investment, entry.getId());
+    if (existingEntry == null) {
+      log.error("Entry to update not found");
+      return null;
+    }
+
+    // Update fields
+    existingEntry.setDatetime(entry.getDatetime());
+    existingEntry.setComments(entry.getComments());
+    existingEntry.setInitialInvestedAmount(entry.getInitialInvestedAmount());
+    existingEntry.setReinvestedAmount(entry.getReinvestedAmount());
+    existingEntry.setProfitability(entry.getProfitability());
+
+    // Recalculate derived fields
+    saveInvestment(investment);
+
+    try {
+      googleSheetsService.writeInvestmentsData(investments);
+    } catch (Exception e) {
+      log.error("Failed to write investments into Google Sheets while updating an entry due to", e);
+      return null;
+    }
+    return existingEntry;
   }
 
   public InvestmentEntry deleteInvestmentEntry(Long investmentId, Long entryId) {

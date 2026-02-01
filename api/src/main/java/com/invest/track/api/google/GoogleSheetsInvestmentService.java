@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class GoogleSheetsService {
+public class GoogleSheetsInvestmentService {
   private final String spreadSheetId;
 
   // Map to store the sheet names and their corresponding IDs, so we are able to clean up them based

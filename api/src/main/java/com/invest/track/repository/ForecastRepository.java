@@ -40,6 +40,12 @@ public class ForecastRepository {
     }
   }
 
+  public void update(Forecast forecast) {
+    if (forecast.getId() == null) return;
+    storage.put(forecast.getId(), forecast);
+    log.debug("Updated forecast with ID {}", forecast.getId());
+  }
+
   public void delete(Forecast forecast) {
     log.debug("Deleting forecast with ID {}", forecast.getId());
     storage.remove(forecast.getId());
