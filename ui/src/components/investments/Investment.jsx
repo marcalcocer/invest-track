@@ -9,6 +9,7 @@ import ConfirmDeleteModal from "@/components/modals/ConfirmDeleteModal";
 import UpdateEntryModal from "@/components/modals/UpdateEntryModal";
 import InvestmentGraphModal from "../modals/InvestmentGraphModal";
 import CreateForecastModal from "../modals/CreateForecastModal";
+import EditForecastModal from "../modals/EditForecastModal";
 import InvestmentForecastSection from "./InvestmentSection/InvestmentForecastSection";
 import InvestmentEntriesMobile from "./InvestmentSection/InvestmentEntriesMobile";
 
@@ -26,6 +27,7 @@ export default function Investment() {
     const [forecasts, setForecasts] = useState([]);
     const [isLoadingForecasts, setIsLoadingForecasts] = useState(true);
     const [isConfirmingDeleteForecast, setIsConfirmingDeleteForecast] = useState(null);
+    const [editingForecast, setEditingForecast] = useState(null);
 
     // On mount, get the id from query params and fetch the investment details
     useEffect(() => {
@@ -103,6 +105,15 @@ export default function Investment() {
         }
     };
 
+    const handleEditForecast = (forecast) => {
+        setEditingForecast(forecast);
+    };
+
+    const handleUpdateForecast = () => {
+        setEditingForecast(null);
+        window.location.reload();
+    };
+
     return (
         <div className="p-4 sm:p-6 max-w-3xl mx-auto">
             {isDeleting && <LoadingSpinner />}
@@ -112,6 +123,14 @@ export default function Investment() {
                     entries={entries}
                     onClose={() => setShowForecastModal(false)}
                     onCreate={handleCreateForecast}
+                />
+            )}
+            {editingForecast && (
+                <EditForecastModal
+                    forecast={editingForecast}
+                    entries={entries}
+                    onClose={() => setEditingForecast(null)}
+                    onUpdate={handleUpdateForecast}
                 />
             )}
             
@@ -164,6 +183,7 @@ export default function Investment() {
                     onDeleteForecast={handleDeleteForecast}
                     isConfirmingDeleteForecast={isConfirmingDeleteForecast}
                     setIsConfirmingDeleteForecast={setIsConfirmingDeleteForecast}
+                    onEditForecast={handleEditForecast}
                 />
 
                 {/* Mobile Cards View */}
@@ -209,10 +229,10 @@ export default function Investment() {
                                         <td className="border p-2 text-center">
                                             <div className="flex flex-row gap-2 justify-center items-center">
                                                 <button
-                                                className="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600 transition duration-200"
+                                                className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition duration-200"
                                                 onClick={() => setIsUpdatingEntry(entry)}
                                                 >
-                                                Update
+                                                Edit
                                                 </button>
                                                 <button
                                                 className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition duration-200"

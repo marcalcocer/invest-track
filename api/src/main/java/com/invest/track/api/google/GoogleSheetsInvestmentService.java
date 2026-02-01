@@ -22,10 +22,20 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class GoogleSheetsInvestmentService {
   private final String spreadSheetId;
+  private final GoogleSheetsClient client;
+  private final GoogleSheetsInvestmentAdapter googleSheetsInvestmentAdapter;
+  private final GoogleSheetsInvestmentEntryAdapter googleSheetsInvestmentEntryAdapter;
+  private final InvestmentAdapter investmentAdapter;
+  private final InvestmentEntryAdapter investmentEntryAdapter;
+  private final String allowlistSheetsConfig;
 
   // Map to store the sheet names and their corresponding IDs, so we are able to clean up them based
   // on the sheet names that we haven't modified when writing investment data
   private Map<String, Integer> sheetsByName;
+
+  private List<String> getAllowlistSheets() {
+    return List.of(allowlistSheetsConfig.split(",\s*"));
+  }
 
   private final String READ_SHEET_RANGE = "A2:P";
   private final String WRITE_SHEET_RANGE = "A1:P";
@@ -47,12 +57,6 @@ public class GoogleSheetsInvestmentService {
   private final String INVESTMENT_SHEET_NAME_PATTERN = "Investment entries - ";
   private final List<Object> INVESTMENT_ENTRIES_HEADERS =
       List.of("Date", "Initial Invested Amount", "Reinvested Amount", "Profitability", "Comments");
-
-  private final GoogleSheetsClient client;
-  private final GoogleSheetsInvestmentAdapter googleSheetsInvestmentAdapter;
-  private final GoogleSheetsInvestmentEntryAdapter googleSheetsInvestmentEntryAdapter;
-  private final InvestmentAdapter investmentAdapter;
-  private final InvestmentEntryAdapter investmentEntryAdapter;
 
   public synchronized List<Investment> readInvestmentsData() throws IOException {
     log.info("Started reading investments data from Google Sheets");
@@ -120,6 +124,11 @@ public class GoogleSheetsInvestmentService {
     // We want to store all the sheet names that are not written to, so we can clean them up later
     sheetsByName = client.getSheets(spreadSheetId);
     var nonWrittenSheets = new HashMap<>(Map.copyOf(sheetsByName));
+
+    // Remove allowlist sheets from cleanup
+    for (String allowSheet : getAllowlistSheets()) {
+      nonWrittenSheets.remove(allowSheet);
+    }
 
     writeInvestmentsList(investments, nonWrittenSheets);
 

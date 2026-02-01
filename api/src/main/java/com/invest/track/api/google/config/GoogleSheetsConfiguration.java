@@ -27,6 +27,9 @@ public class GoogleSheetsConfiguration {
   @Value("${google.api.credentials.receiver-port}")
   private int credentialsPort;
 
+  @Value("${sheets.allowlist}")
+  private String allowlistSheetsConfig;
+
   private static final String applicationName = "InvestTrack API";
 
   @Bean
@@ -49,7 +52,8 @@ public class GoogleSheetsConfiguration {
         googleSheetsInvestmentAdapter,
         googleSheetsInvestmentEntryAdapter,
         investmentAdapter,
-        investmentEntryAdapter);
+        investmentEntryAdapter,
+        allowlistSheetsConfig);
   }
 
   @Bean
