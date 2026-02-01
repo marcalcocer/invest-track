@@ -23,7 +23,7 @@ export default function InvestmentForecastSection({
                         <thead>
                             <tr className="bg-gray-100">
                                 <th className="border p-2">Name</th>
-                                <th className="border p-2">Start Entry</th>
+                                <th className="border p-2">Start Date</th>
                                 <th className="border p-2">Months</th>
                                 <th className="border p-2">Pessimist %</th>
                                 <th className="border p-2">Neutral %</th>
@@ -34,16 +34,16 @@ export default function InvestmentForecastSection({
                         <tbody>
                             {forecasts.map((f) => (
                                 <tr key={f.id} className="border">
-                                    <td className="border p-2">{f.name}</td>
-                                    <td className="border p-2">{f.startEntryId}</td>
-                                    <td className="border p-2">{f.months}</td>
-                                    <td className="border p-2">{f.scenarioRates?.pessimist}</td>
-                                    <td className="border p-2">{f.scenarioRates?.neutral}</td>
-                                    <td className="border p-2">{f.scenarioRates?.optimist}</td>
+                                    <td className="border p-2 text-center">{f.name}</td>
+                                    <td className="border p-2 text-center">{f.startDate ?? ''}</td>
+                                    <td className="border p-2 text-center">{f.startDate && f.endDate ? Math.max(1, Math.round((new Date(f.endDate).getFullYear() * 12 + new Date(f.endDate).getMonth()) - (new Date(f.startDate).getFullYear() * 12 + new Date(f.startDate).getMonth()))) : ''}</td>
+                                    <td className="border p-2 text-center">{f.scenarioRates?.pessimist ?? 0}%</td>
+                                    <td className="border p-2 text-center">{f.scenarioRates?.neutral ?? 0}%</td>
+                                    <td className="border p-2 text-center">{f.scenarioRates?.optimist ?? 0}%</td>
                                     <td className="border p-2 text-center">
                                         <button
                                             className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition duration-200"
-                                            onClick={() => setIsConfirmingDeleteForecast(f)}
+                                            onClick={() => setIsConfirmingDeleteForecast(f.id)}
                                         >
                                             Delete
                                         </button>
@@ -57,8 +57,8 @@ export default function InvestmentForecastSection({
             {isConfirmingDeleteForecast && (
                 <ConfirmDeleteModal
                     entity="forecast"
-                    id={isConfirmingDeleteForecast.id}
-                    name={isConfirmingDeleteForecast.name}
+                    id={isConfirmingDeleteForecast}
+                    name={forecasts.find(f => f.id === isConfirmingDeleteForecast)?.name || ''}
                     onCancel={() => setIsConfirmingDeleteForecast(null)}
                     onConfirm={onDeleteForecast}
                 />

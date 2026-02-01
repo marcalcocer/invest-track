@@ -16,8 +16,8 @@ public class GoogleSheetsForecastService {
   private final ForecastAdapter forecastAdapter;
 
   private static final String FORECASTS_SHEET_NAME = "Forecasts";
-  private static final String READ_SHEET_RANGE = "A2:H";
-  private static final String WRITE_SHEET_RANGE = "A1:H";
+  private static final String READ_SHEET_RANGE = "A2:F";
+  private static final String WRITE_SHEET_RANGE = "A1:F";
   private static final List<Object> FORECASTS_HEADERS =
       List.of(
           "Forecast ID",
@@ -25,9 +25,7 @@ public class GoogleSheetsForecastService {
           "Name",
           "Start Date",
           "End Date",
-          "Scenario Rates",
-          "Created At",
-          "Updated At");
+          "Scenario Rates");
 
   public synchronized List<Forecast> readForecastsData() throws IOException {
     log.info("Started reading forecasts data from Google Sheets");

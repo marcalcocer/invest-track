@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { currencyAdapter } from "@/lib/currencyAdapter";
 import InvestmentGraphModal from "../modals/InvestmentGraphModal";
 import ConfirmDeleteModal from "../modals/ConfirmDeleteModal";
 import { InvestmentService } from '@/lib/InvestmentService';
-import { formatDate } from "@/lib/datetimeFormater";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import CreateInvestmentModal from '../modals/CreateInvestmentModal';
 import InvestmentsDetailsListItem from "./InvestmentsDetailsSection/InvestmentsDetailsListItem";
@@ -33,10 +31,8 @@ export default function InvestmentsDetails({ investments }) {
 
   if (isLoading) return <LoadingSpinner />;
 
-  const handleCreateForecast = async (forecastData) => {
-    // TODO: Call InvestmentService.createForecast when implemented
+  const handleCreateForecast = () => {
     setShowForecastModalFor(null);
-    // Optionally reload or update state
   };
 
   const activeInvestments = investments.filter(i => !i.endDateTime);

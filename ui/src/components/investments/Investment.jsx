@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { InvestmentService } from "@/lib/InvestmentService";
+import { ForecastService } from "@/lib/ForecastService";
 import { currencyAdapter } from "@/lib/currencyAdapter";
 import CreateEntryModal from "@/components/modals/CreateEntryModal";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -9,7 +10,6 @@ import InvestmentGraphModal from "../modals/InvestmentGraphModal";
 import CreateForecastModal from "../modals/CreateForecastModal";
 import InvestmentForecastSection from "./InvestmentSection/InvestmentForecastSection";
 import InvestmentEntriesMobile from "./InvestmentSection/InvestmentEntriesMobile";
-import InvestmentEntriesTable from "./InvestmentSection/InvestmentEntriesTable";
 
 export default function Investment() {
     const [investment, setInvestment] = useState(null);
@@ -44,7 +44,7 @@ export default function Investment() {
                 setEntries(inv.entries);
                 // Fetch forecasts for this investment
                 setIsLoadingForecasts(true);
-                InvestmentService.fetchForecasts(inv.id)
+                ForecastService.fetchForecasts(inv.id)
                     .then(setForecasts)
                     .catch(() => setForecasts([]))
                     .finally(() => setIsLoadingForecasts(false));
@@ -79,9 +79,8 @@ export default function Investment() {
         setShowForecastModal(false);
         setIsLoadingForecasts(true);
         try {
-            await InvestmentService.createForecast(investment.id, forecastData);
-            const updated = await InvestmentService.fetchForecasts(investment.id);
-            setForecasts(updated);
+            await ForecastService.createForecast(investment.id, forecastData);
+            window.location.reload();
         } catch (e) {
             // Optionally show error
         } finally {
@@ -93,16 +92,14 @@ export default function Investment() {
         setIsConfirmingDeleteForecast(null);
         setIsLoadingForecasts(true);
         try {
-            await InvestmentService.deleteForecast(forecastId);
-            const updated = await InvestmentService.fetchForecasts(investment.id);
-            setForecasts(updated);
+            await ForecastService.deleteForecast(forecastId);
+            window.location.reload();
         } catch (e) {
             // Optionally show error
         } finally {
             setIsLoadingForecasts(false);
         }
     };
-
 
     return (
         <div className="p-4 sm:p-6 max-w-3xl mx-auto">
@@ -115,6 +112,7 @@ export default function Investment() {
                     onCreate={handleCreateForecast}
                 />
             )}
+            
 
                 <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">{investment.name} - Entries</h2>
                 <p className="text-gray-600 text-sm sm:text-base mb-4">
@@ -146,7 +144,7 @@ export default function Investment() {
                         className="px-3 py-2 sm:px-4 sm:py-2 bg-purple-500 text-white text-sm rounded shadow hover:bg-purple-600 transition duration-200"
                         onClick={() => setShowForecastModal(true)}
                     >
-                        Forecast
+                        Create Forecast
                     </button>
                     <button
                         className="px-3 py-2 sm:px-4 sm:py-2 bg-gray-500 text-white text-sm rounded shadow hover:bg-gray-600 transition duration-200"
@@ -158,6 +156,7 @@ export default function Investment() {
 
                 {/* Forecasts Section */}
                 <InvestmentForecastSection
+                    key={forecasts.map(f => f.id).join('-')}
                     forecasts={forecasts}
                     isLoadingForecasts={isLoadingForecasts}
                     onDeleteForecast={handleDeleteForecast}

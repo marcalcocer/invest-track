@@ -1,9 +1,10 @@
 import { useState } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { ForecastService } from "@/lib/ForecastService";
 
 export default function CreateForecastModal({ investment, entries, onClose, onCreate }) {
     const [name, setName] = useState("");
-    const [startEntryId, setStartEntryId] = useState(entries && entries.length > 0 ? entries[0].id : "");
+    const [startEntryId, setStartEntryId] = useState(entries && entries.length > 0 ? String(entries[0].id) : "");
     const [months, setMonths] = useState(12);
     const [pessimistRate, setPessimistRate] = useState(0);
     const [neutralRate, setNeutralRate] = useState(0);
@@ -20,17 +21,34 @@ export default function CreateForecastModal({ investment, entries, onClose, onCr
             setError("Start entry must be selected");
             return;
         }
+        if (Number(months) < 1) {
+            setError("Duration (months) must be at least 1");
+            return;
+        }
         setIsCreating(true);
         setError("");
         try {
-            await onCreate({
+            // Find the selected start entry
+            const startEntry = entries.find(e => String(e.id) === String(startEntryId));
+            let startDate = startEntry ? startEntry.datetime : null;
+            let endDate = null;
+            if (startDate) {
+                // Parse as ISO string and add months
+                const d = new Date(startDate);
+                d.setMonth(d.getMonth() + Number(months));
+                endDate = d.toISOString().split('T')[0];
+                startDate = new Date(startDate).toISOString().split('T')[0];
+            }
+            if (onCreate) onCreate({
                 name,
-                startEntryId,
+                startEntryId: Number(startEntryId),
                 months: Number(months),
+                startDate,
+                endDate,
                 scenarioRates: {
-                    pessimist: Number(pessimistRate),
-                    neutral: Number(neutralRate),
-                    optimist: Number(optimistRate)
+                    PESSIMIST: Number(pessimistRate),
+                    NEUTRAL: Number(neutralRate),
+                    OPTIMIST: Number(optimistRate)
                 }
             });
         } catch (err) {
@@ -51,7 +69,7 @@ export default function CreateForecastModal({ investment, entries, onClose, onCr
                 <label className="block mb-2">Start Entry
                     <select className="w-full border rounded p-2 mt-1" value={startEntryId} onChange={e => setStartEntryId(e.target.value)}>
                         {entries.map(entry => (
-                            <option key={entry.id} value={entry.id}>
+                            <option key={entry.id} value={String(entry.id)}>
                                 {entry.id} - {entry.datetime}
                             </option>
                         ))}
