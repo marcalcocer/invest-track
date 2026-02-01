@@ -58,4 +58,22 @@ export const InvestmentService = {
     return answer.json();
   },
 
+  async updateInvestmentEntry(investmentId, entryId, entry) {
+    const answer = await fetch(
+      `${API_BASE_URL}${INVESTMENTS_PATH}/entry/${investmentId}/${entryId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(entry),
+      }
+    );
+    if (!answer.ok) {
+      throw new Error("status: " + answer.status);
+    }
+    console.log("Updated investment entry", answer);
+    return answer.json();
+  },
+
 };

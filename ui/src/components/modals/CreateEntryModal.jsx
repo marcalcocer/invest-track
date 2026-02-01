@@ -18,7 +18,7 @@ export default function CreateEntryModal({ investment, onClose, onCreate }) {
     const [initialInvestedAmount, setInitialInvestedAmount] = useState(lastEntry ? lastEntry.initialInvestedAmount : 0);
     const [reinvestedAmount, setReinvestedAmount] = useState(lastEntry ? lastEntry.reinvestedAmount : 0);
     const [totalInvestedAmount, setTotalInvestedAmount] = useState(lastEntry ? lastEntry.totalInvestedAmount : 0);
-    const [profitability, setProfitability] = useState(lastEntry ? lastEntry.profitability * 100 : 0);
+    const [profitability, setProfitability] = useState(lastEntry ? (lastEntry.profitability * 100).toFixed(2) : 0);
     // Recalculate values whenever inputs change
     useEffect(() => {
         let initial = 0;
@@ -60,7 +60,7 @@ export default function CreateEntryModal({ investment, onClose, onCreate }) {
                 comments,
                 initialInvestedAmount: parseFloat(initialInvestedAmount),
                 reinvestedAmount: parseFloat(reinvestedAmount),
-                profitability: parseFloat(profitability / 100),
+                profitability: parseFloat((profitability / 100).toFixed(4)),
                 totalInvestedAmount: parseFloat(totalInvestedAmount),
                 obtained,
                 benefit,

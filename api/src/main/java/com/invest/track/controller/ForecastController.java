@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -50,6 +51,18 @@ public class ForecastController {
       return ResponseEntity.internalServerError().build();
     }
     return new ResponseEntity<>(saved, CREATED);
+  }
+
+  @PutMapping("/{id}")
+  public ResponseEntity<Forecast> updateForecast(
+      @PathVariable Long id, @RequestBody Forecast forecast) {
+    log.info("Update forecast endpoint called");
+    forecast.setId(id);
+    var updated = service.updateForecast(forecast);
+    if (updated == null) {
+      return ResponseEntity.internalServerError().build();
+    }
+    return new ResponseEntity<>(updated, OK);
   }
 
   @DeleteMapping("/{id}")

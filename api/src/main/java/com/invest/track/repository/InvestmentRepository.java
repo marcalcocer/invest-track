@@ -40,6 +40,16 @@ public class InvestmentRepository {
     }
   }
 
+  public void update(Investment investment) {
+    if (investment.getId() == null) return;
+    storage.put(investment.getId(), investment);
+    log.debug("Updated investment with ID {}", investment.getId());
+  }
+
+  public Investment findById(Long id) {
+    return storage.get(id);
+  }
+
   public void delete(Investment investment) {
     log.debug("Deleting investment with ID {}", investment.getId());
     storage.remove(investment.getId());

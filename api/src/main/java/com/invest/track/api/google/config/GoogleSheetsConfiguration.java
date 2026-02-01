@@ -6,7 +6,7 @@ import com.invest.track.api.google.GoogleSheetsClient;
 import com.invest.track.api.google.GoogleSheetsForecastService;
 import com.invest.track.api.google.GoogleSheetsInvestmentAdapter;
 import com.invest.track.api.google.GoogleSheetsInvestmentEntryAdapter;
-import com.invest.track.api.google.GoogleSheetsService;
+import com.invest.track.api.google.GoogleSheetsInvestmentService;
 import com.invest.track.api.google.credential.GoogleSheetsCredentialService;
 import com.invest.track.model.adapter.ForecastAdapter;
 import com.invest.track.model.adapter.InvestmentAdapter;
@@ -37,15 +37,13 @@ public class GoogleSheetsConfiguration {
   }
 
   @Bean
-  public GoogleSheetsService googleSheetService(
-      Sheets sheets,
+  public GoogleSheetsInvestmentService googleSheetService(
+      GoogleSheetsClient googleSheetsClient,
       GoogleSheetsInvestmentAdapter googleSheetsInvestmentAdapter,
       GoogleSheetsInvestmentEntryAdapter googleSheetsInvestmentEntryAdapter,
       InvestmentAdapter investmentAdapter,
       InvestmentEntryAdapter investmentEntryAdapter) {
-    var googleSheetsClient = new GoogleSheetsClient(sheets);
-
-    return new GoogleSheetsService(
+    return new GoogleSheetsInvestmentService(
         spreadSheetId,
         googleSheetsClient,
         googleSheetsInvestmentAdapter,
@@ -56,8 +54,7 @@ public class GoogleSheetsConfiguration {
 
   @Bean
   public GoogleSheetsForecastService googleSheetsForecastService(
-      Sheets sheets, ForecastAdapter forecastAdapter) {
-    var googleSheetsClient = new GoogleSheetsClient(sheets);
+      GoogleSheetsClient googleSheetsClient, ForecastAdapter forecastAdapter) {
     return new GoogleSheetsForecastService(spreadSheetId, googleSheetsClient, forecastAdapter);
   }
 }

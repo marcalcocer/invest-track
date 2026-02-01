@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -61,6 +62,18 @@ public class InvestmentController {
     return new ResponseEntity<>(savedInvestment, CREATED);
   }
 
+  @PutMapping("/{id}")
+  public ResponseEntity<Investment> updateInvestment(
+      @PathVariable Long id, @RequestBody Investment investment) {
+    log.info("Update investment endpoint called");
+    investment.setId(id);
+    var updated = investmentService.updateInvestment(id, investment);
+    if (updated == null) {
+      return ResponseEntity.internalServerError().build();
+    }
+    return new ResponseEntity<>(updated, OK);
+  }
+
   @DeleteMapping("/{id}")
   public ResponseEntity<Investment> deleteInvestment(@PathVariable Long id) {
     log.info("Delete investment endpoint called");
@@ -86,6 +99,20 @@ public class InvestmentController {
     }
 
     return new ResponseEntity<>(savedEntry, CREATED);
+  }
+
+  @PutMapping("/entry/{investmentId}/{entryId}")
+  public ResponseEntity<InvestmentEntry> updateInvestmentEntry(
+      @PathVariable Long investmentId,
+      @PathVariable Long entryId,
+      @RequestBody InvestmentEntry entry) {
+    log.info("Update entry endpoint called");
+    entry.setId(entryId);
+    var updatedEntry = investmentService.updateInvestmentEntry(investmentId, entry);
+    if (updatedEntry == null) {
+      return ResponseEntity.internalServerError().build();
+    }
+    return new ResponseEntity<>(updatedEntry, OK);
   }
 
   @DeleteMapping("/entry/{investmentId}/{entryId}")

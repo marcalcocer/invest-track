@@ -44,7 +44,7 @@ public class ForecastService {
   public Forecast createForecast(Forecast forecast) {
     List<Forecast> forecasts = getForecasts();
     if (forecasts == null) {
-      log.error("Failed to load forecasts list while creating a new one: forecasts list is null (possible Google Sheets error)");
+      log.error("Failed to load forecasts list while creating a new one: forecasts list is null");
       forecasts = new ArrayList<>();
     }
 
@@ -63,6 +63,27 @@ public class ForecastService {
       return null;
     }
 
+    return forecast;
+  }
+
+  public Forecast updateForecast(Forecast forecast) {
+    List<Forecast> forecasts = getForecasts();
+    if (forecasts == null || forecasts.isEmpty()) {
+      log.error("Failed to load forecasts list while updating one");
+      return null;
+    }
+    try {
+      repository.update(forecast);
+    } catch (Exception e) {
+      log.error("Failed to update forecast in repository", e);
+      return null;
+    }
+    try {
+      googleSheetsService.writeForecastsData(getForecasts());
+    } catch (Exception e) {
+      log.error("Failed to write forecasts into Google Sheets while updating a forecast due to", e);
+      return null;
+    }
     return forecast;
   }
 

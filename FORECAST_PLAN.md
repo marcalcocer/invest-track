@@ -83,6 +83,7 @@ Enable forecasting for investments with multiple strategies, each containing thr
 - [x] Update UI: add forecast creation modal/form (choose investment entry as start date, set monthly growth rates, set end date by number of months/years)
     - Implemented as CreateForecastModal.jsx, integrated in Investment.jsx with full form and validation.
 - [x] Update UI: allow deleting forecasts
+- [ ] Implement backend: allow editing forecasts (update endpoint, service, repository)
 - [ ] Update UI: allow editing forecasts (deferred until backend ready)
 - [ ] Update UI: display forecasted vs real data in graphs (one graph per forecast vs real, and a combined graph with all forecasts/scenarios vs real)
 - [ ] Update UI: allow switching/comparing multiple forecasts
