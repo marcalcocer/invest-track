@@ -4,6 +4,7 @@ import static lombok.AccessLevel.PRIVATE;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +13,8 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Data
-@ToString(exclude = "entries") // Prevents infinite recursion when serializing to JSON
+@ToString(
+    exclude = {"entries", "forecasts"}) // Prevents infinite recursion when serializing to JSON
 @Builder
 @NoArgsConstructor(access = PRIVATE)
 @AllArgsConstructor
@@ -44,6 +46,12 @@ public class Investment {
   private boolean isReinvested;
 
   @JsonManagedReference private List<InvestmentEntry> entries;
+  @JsonManagedReference private List<Forecast> forecasts = new ArrayList<>();
+
+  public void addForecast(Forecast forecast) {
+    forecasts.add(forecast);
+    forecast.setInvestment(this);
+  }
 
   public boolean isActive() {
     return endDateTime == null || endDateTime.isAfter(LocalDateTime.now());

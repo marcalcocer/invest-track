@@ -1,6 +1,7 @@
 package com.invest.track.service;
 
 import com.invest.track.api.google.GoogleSheetsInvestmentService;
+import com.invest.track.model.Forecast;
 import com.invest.track.model.Investment;
 import com.invest.track.model.InvestmentEntry;
 import com.invest.track.model.Summary;
@@ -175,12 +176,7 @@ public class InvestmentService {
     }
     Investment investment = getInvestment(investments, investmentId);
     InvestmentEntry existingEntry = getInvestmentEntry(investment, entry.getId());
-    if (existingEntry == null) {
-      log.error("Entry to update not found");
-      return null;
-    }
 
-    // Update fields
     existingEntry.setDatetime(entry.getDatetime());
     existingEntry.setComments(entry.getComments());
     existingEntry.setInitialInvestedAmount(entry.getInitialInvestedAmount());
@@ -226,6 +222,95 @@ public class InvestmentService {
     }
 
     return entryToDelete;
+  }
+
+  public Forecast createForecast(Forecast forecast, Long id) {
+    List<Investment> investments = getInvestments();
+    if (investments.isEmpty()) {
+      log.error("Failed to load investments list while creating a forecast");
+      return null;
+    }
+    Investment investment = getInvestment(investments, id);
+    log.debug("Creating forecast {} for investment {}", forecast, investment);
+    try {
+      if (forecast.getId() == null) {
+        forecast.setId(System.currentTimeMillis());
+      }
+      forecast.setInvestment(investment);
+      investment.getForecasts().add(forecast);
+      saveInvestment(investment);
+    } catch (Exception e) {
+      log.error("Failed to create forecast {} due to:", forecast, e);
+      return null;
+    }
+    try {
+      googleSheetsService.writeInvestmentsData(investments);
+    } catch (Exception e) {
+      log.error(
+          "Failed to write investments into Google Sheets while creating a forecast due to", e);
+      return null;
+    }
+    return forecast;
+  }
+
+  public Forecast updateForecast(Long investmentId, Forecast forecast) {
+    List<Investment> investments = getInvestments();
+    if (investments.isEmpty()) {
+      log.error("Failed to load investments list while updating a forecast");
+      return null;
+    }
+    Investment investment = getInvestment(investments, investmentId);
+    Forecast existingForecast = getForecast(investment, forecast.getId());
+
+    existingForecast.setName(forecast.getName());
+    existingForecast.setStartDate(forecast.getStartDate());
+    existingForecast.setEndDate(forecast.getEndDate());
+    existingForecast.setScenarioRates(forecast.getScenarioRates());
+
+    // Recalculate derived fields
+    saveInvestment(investment);
+
+    try {
+      googleSheetsService.writeInvestmentsData(investments);
+    } catch (Exception e) {
+      log.error(
+          "Failed to write investments into Google Sheets while updating a forecast due to", e);
+      return null;
+    }
+    return existingForecast;
+  }
+
+  public Forecast deleteForecast(Long investmentId, Long forecastId) {
+    List<Investment> investments = getInvestments();
+    if (investments.isEmpty()) {
+      log.error("Failed to load investments list while deleting a forecast");
+      return null;
+    }
+    Investment investment = getInvestment(investments, investmentId);
+    Forecast forecastToDelete = getForecast(investment, forecastId);
+    log.info("Deleting forecast {} from investment {}", forecastToDelete, investment);
+    try {
+      investment.getForecasts().remove(forecastToDelete);
+      saveInvestment(investment);
+    } catch (Exception e) {
+      log.error("Failed to delete forecast {} due to:", forecastToDelete, e);
+      return null;
+    }
+    try {
+      googleSheetsService.writeInvestmentsData(investments);
+    } catch (Exception e) {
+      log.error(
+          "Failed to write investments into Google Sheets while deleting a forecast due to", e);
+      return null;
+    }
+    return forecastToDelete;
+  }
+
+  private Forecast getForecast(Investment investment, Long id) {
+    return investment.getForecasts().stream()
+        .filter(f -> f.getId().equals(id))
+        .findFirst()
+        .orElse(null);
   }
 
   public Summary getSummary() {

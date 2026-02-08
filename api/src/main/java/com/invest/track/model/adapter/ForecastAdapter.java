@@ -1,6 +1,9 @@
 package com.invest.track.model.adapter;
 
+import static com.fasterxml.jackson.databind.util.ClassUtil.name;
+
 import com.invest.track.model.Forecast;
+import com.invest.track.model.Investment;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,18 +17,22 @@ import org.springframework.stereotype.Component;
 public class ForecastAdapter {
   private final AdapterUtils adapterUtils;
 
-  public Forecast fromSheetValueRange(List<Object> valueRange) {
+  public Forecast fromSheetValueRange(List<Object> valueRange, List<Investment> investments) {
     if (valueRange.isEmpty()) return null;
 
     var id = adapterUtils.parseLong(valueRange.get(0));
-    var investmentId = adapterUtils.parseString(valueRange.get(1));
+    var investmentId = adapterUtils.parseLong(valueRange.get(1));
     var name = adapterUtils.parseString(valueRange.get(2));
     var startDate = adapterUtils.parseLocalDate(valueRange.get(3));
     var endDate = adapterUtils.parseLocalDate(valueRange.get(4));
     var scenarioRates = parseScenarioRates(adapterUtils.parseString(valueRange.get(5)));
     return Forecast.builder()
         .id(id)
-        .investmentId(investmentId)
+        .investment(
+            investments.stream()
+                .filter(inv -> inv.getId() != null && inv.getId().equals(investmentId))
+                .findFirst()
+                .orElse(null))
         .name(name)
         .startDate(startDate)
         .endDate(endDate)
@@ -36,7 +43,7 @@ public class ForecastAdapter {
   public List<Object> toSheetValueRange(Forecast forecast) {
     return List.of(
         forecast.getId() != null ? forecast.getId() : "",
-        forecast.getInvestmentId() != null ? forecast.getInvestmentId() : "",
+        forecast.getInvestment() != null ? forecast.getInvestment().getId() : "",
         forecast.getName() != null ? forecast.getName() : "",
         adapterUtils.formatLocalDate(forecast.getStartDate()),
         adapterUtils.formatLocalDate(forecast.getEndDate()),

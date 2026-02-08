@@ -8,7 +8,7 @@
     </appender>
 
     <!-- Change to DEBUG log protocol messages -->
-    <logger name="com.investTrack" level="INFO"/>
+    <logger name="com.investTrack" level="DEBUG"/>
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />

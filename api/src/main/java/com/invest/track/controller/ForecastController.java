@@ -4,13 +4,11 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
 import com.invest.track.model.Forecast;
-import com.invest.track.service.ForecastService;
-import java.util.List;
+import com.invest.track.service.InvestmentService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -19,61 +17,49 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
+@RequiredArgsConstructor
 @RestController
-@RequestMapping("/forecasts")
+@RequestMapping("/investments/forecast")
 public class ForecastController {
-  @Autowired private ForecastService service;
+  private final InvestmentService investmentService;
 
-  @GetMapping
-  public ResponseEntity<List<Forecast>> getForecasts() {
-    log.info("Get forecasts endpoint called");
-    List<Forecast> forecasts = service.getForecasts();
+  @PostMapping("/{id}")
+  public ResponseEntity<Forecast> createForecast(
+      @PathVariable Long id, @RequestBody(required = true) Forecast forecast) {
+    log.info("Received createForecast request: id={}, forecast={}", id, forecast);
 
-    if (forecasts == null) {
-      log.debug("Answering with internal server error to load forecast call");
-      return ResponseEntity.internalServerError().build();
-    }
-
-    if (forecasts.isEmpty()) {
-      log.debug("Answering with no content to load forecast call");
-      return ResponseEntity.noContent().build();
-    }
-
-    return new ResponseEntity<>(forecasts, OK);
-  }
-
-  @PostMapping
-  public ResponseEntity<Forecast> createForecast(@RequestBody Forecast forecast) {
     log.info("Create forecast endpoint called");
-    var saved = service.createForecast(forecast);
-
-    if (saved == null) {
+    var savedForecast = investmentService.createForecast(forecast, id);
+    if (savedForecast == null) {
+      log.debug("Answering with internal server error to create forecast call");
       return ResponseEntity.internalServerError().build();
     }
-    return new ResponseEntity<>(saved, CREATED);
+    return new ResponseEntity<>(savedForecast, CREATED);
   }
 
-  @PutMapping("/{id}")
+  @PutMapping("/{investmentId}/{forecastId}")
   public ResponseEntity<Forecast> updateForecast(
-      @PathVariable Long id, @RequestBody Forecast forecast) {
+      @PathVariable Long investmentId,
+      @PathVariable Long forecastId,
+      @RequestBody Forecast forecast) {
     log.info("Update forecast endpoint called");
-    forecast.setId(id);
-    var updated = service.updateForecast(forecast);
-    if (updated == null) {
+    forecast.setId(forecastId);
+    var updatedForecast = investmentService.updateForecast(investmentId, forecast);
+    if (updatedForecast == null) {
       return ResponseEntity.internalServerError().build();
     }
-    return new ResponseEntity<>(updated, OK);
+    return new ResponseEntity<>(updatedForecast, OK);
   }
 
-  @DeleteMapping("/{id}")
-  public ResponseEntity<Forecast> deleteForecast(@PathVariable Long id) {
-    log.info("Delete investment endpoint called");
-
-    var deleted = service.deleteForecast(id);
-    if (deleted == null) {
+  @DeleteMapping("/{investmentId}/{forecastId}")
+  public ResponseEntity<Forecast> deleteForecast(
+      @PathVariable Long investmentId, @PathVariable Long forecastId) {
+    log.info("Delete forecast endpoint called");
+    var deletedForecast = investmentService.deleteForecast(investmentId, forecastId);
+    if (deletedForecast == null) {
       log.debug("Answering with no content to delete forecast call");
       return ResponseEntity.noContent().build();
     }
-    return new ResponseEntity<>(deleted, OK);
+    return new ResponseEntity<>(deletedForecast, OK);
   }
 }

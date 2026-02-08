@@ -5,6 +5,7 @@ import com.google.api.services.sheets.v4.Sheets;
 import com.invest.track.api.google.GoogleSheetsClient;
 import com.invest.track.api.google.GoogleSheetsForecastService;
 import com.invest.track.api.google.GoogleSheetsInvestmentAdapter;
+import com.invest.track.api.google.GoogleSheetsInvestmentEntriesService;
 import com.invest.track.api.google.GoogleSheetsInvestmentEntryAdapter;
 import com.invest.track.api.google.GoogleSheetsInvestmentService;
 import com.invest.track.api.google.credential.GoogleSheetsCredentialService;
@@ -40,20 +41,32 @@ public class GoogleSheetsConfiguration {
   }
 
   @Bean
+  public GoogleSheetsInvestmentEntriesService googleSheetsInvestmentEntriesService(
+      GoogleSheetsClient googleSheetsClient,
+      GoogleSheetsInvestmentEntryAdapter googleSheetsInvestmentEntryAdapter,
+      InvestmentEntryAdapter investmentEntryAdapter) {
+    return new GoogleSheetsInvestmentEntriesService(
+        spreadSheetId,
+        googleSheetsClient,
+        investmentEntryAdapter,
+        googleSheetsInvestmentEntryAdapter);
+  }
+
+  @Bean
   public GoogleSheetsInvestmentService googleSheetService(
       GoogleSheetsClient googleSheetsClient,
       GoogleSheetsInvestmentAdapter googleSheetsInvestmentAdapter,
-      GoogleSheetsInvestmentEntryAdapter googleSheetsInvestmentEntryAdapter,
       InvestmentAdapter investmentAdapter,
-      InvestmentEntryAdapter investmentEntryAdapter) {
+      GoogleSheetsInvestmentEntriesService googleSheetsInvestmentEntriesService,
+      GoogleSheetsForecastService googleSheetsForecastService) {
     return new GoogleSheetsInvestmentService(
         spreadSheetId,
         googleSheetsClient,
         googleSheetsInvestmentAdapter,
-        googleSheetsInvestmentEntryAdapter,
         investmentAdapter,
-        investmentEntryAdapter,
-        allowlistSheetsConfig);
+        allowlistSheetsConfig,
+        googleSheetsInvestmentEntriesService,
+        googleSheetsForecastService);
   }
 
   @Bean

@@ -2,10 +2,9 @@ package com.invest.track.api.google;
 
 import static java.util.Collections.emptyList;
 
+import com.invest.track.model.Forecast;
 import com.invest.track.model.Investment;
-import com.invest.track.model.InvestmentEntry;
 import com.invest.track.model.adapter.InvestmentAdapter;
-import com.invest.track.model.adapter.InvestmentEntryAdapter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,10 +23,10 @@ public class GoogleSheetsInvestmentService {
   private final String spreadSheetId;
   private final GoogleSheetsClient client;
   private final GoogleSheetsInvestmentAdapter googleSheetsInvestmentAdapter;
-  private final GoogleSheetsInvestmentEntryAdapter googleSheetsInvestmentEntryAdapter;
   private final InvestmentAdapter investmentAdapter;
-  private final InvestmentEntryAdapter investmentEntryAdapter;
   private final String allowlistSheetsConfig;
+  private final GoogleSheetsInvestmentEntriesService investmentEntriesService;
+  private final GoogleSheetsForecastService forecastService;
 
   // Map to store the sheet names and their corresponding IDs, so we are able to clean up them based
   // on the sheet names that we haven't modified when writing investment data
@@ -37,8 +36,8 @@ public class GoogleSheetsInvestmentService {
     return List.of(allowlistSheetsConfig.split(",\s*"));
   }
 
-  private final String READ_SHEET_RANGE = "A2:P";
-  private final String WRITE_SHEET_RANGE = "A1:P";
+  private static final String READ_SHEET_RANGE = "A2:P";
+  private static final String WRITE_SHEET_RANGE = "A1:P";
 
   private final String INVESTMENTS_LIST_SHEET_NAME = "Investments List";
   private final List<Object> INVESTMENTS_LIST_HEADERS =
@@ -54,15 +53,10 @@ public class GoogleSheetsInvestmentService {
           "Reinvested Amount",
           "Profitability");
 
-  private final String INVESTMENT_SHEET_NAME_PATTERN = "Investment entries - ";
-  private final List<Object> INVESTMENT_ENTRIES_HEADERS =
-      List.of("Date", "Initial Invested Amount", "Reinvested Amount", "Profitability", "Comments");
-
   public synchronized List<Investment> readInvestmentsData() throws IOException {
     log.info("Started reading investments data from Google Sheets");
     sheetsByName = client.getSheets(spreadSheetId);
-    var existSheet = existSheet(INVESTMENTS_LIST_SHEET_NAME);
-    if (!existSheet) {
+    if (!existInvestmentsListSheet()) {
       client.createSheet(spreadSheetId, INVESTMENTS_LIST_SHEET_NAME);
       return emptyList();
     }
@@ -88,34 +82,29 @@ public class GoogleSheetsInvestmentService {
         break;
       }
 
-      var investmentEntries = readInvestmentEntries(investment);
+      var investmentEntries = investmentEntriesService.readInvestmentEntries(investment);
       investment.setEntries(investmentEntries);
 
       investments.add(investment);
     }
+
+    mergeForecasts(investments);
     return investments;
   }
 
-  private List<InvestmentEntry> readInvestmentEntries(Investment investment) throws IOException {
-    var sheetName = INVESTMENT_SHEET_NAME_PATTERN + investment.getName();
-    var existSheet = existSheet(sheetName);
-    if (!existSheet) {
-      client.createSheet(spreadSheetId, sheetName);
-      return emptyList();
+  private void mergeForecasts(List<Investment> investments) throws IOException {
+    var forecasts = forecastService.readForecastsData(investments);
+    for (var forecast : forecasts) {
+      var inv =
+          investments.stream()
+              .filter(i -> i.getId().equals(forecast.getInvestment().getId()))
+              .findFirst();
+      inv.ifPresent(
+          i -> {
+            log.debug("Merging forecast {} into investment {}", forecast.getId(), i.getId());
+            i.addForecast(forecast);
+          });
     }
-
-    var rows = client.readSheet(spreadSheetId, sheetName, READ_SHEET_RANGE);
-    if (rows == null) {
-      log.debug("Investment entries data not found for sheet name \"{}\"", sheetName);
-      return emptyList();
-    }
-
-    var investmentEntries = new ArrayList<InvestmentEntry>();
-    for (var row : rows) {
-      var investmentEntry = investmentEntryAdapter.fromSheetValueRange(row, investment);
-      investmentEntries.add(investmentEntry);
-    }
-    return investmentEntries;
   }
 
   public synchronized void writeInvestmentsData(List<Investment> investments) throws IOException {
@@ -132,11 +121,23 @@ public class GoogleSheetsInvestmentService {
 
     writeInvestmentsList(investments, nonWrittenSheets);
 
-    writeInvestmentEntries(investments, nonWrittenSheets);
+    investmentEntriesService.writeInvestmentEntries(investments, nonWrittenSheets);
+
+    writeAllForecasts(investments);
 
     if (!nonWrittenSheets.isEmpty()) {
       cleanUpSheets(nonWrittenSheets);
     }
+  }
+
+  private void writeAllForecasts(List<Investment> investments) throws IOException {
+    var allForecasts = new ArrayList<Forecast>();
+    for (var investment : investments) {
+      if (investment.getForecasts() != null) {
+        allForecasts.addAll(investment.getForecasts());
+      }
+    }
+    forecastService.writeForecastsData(allForecasts);
   }
 
   private void writeInvestmentsList(
@@ -154,51 +155,16 @@ public class GoogleSheetsInvestmentService {
     nonWrittenSheets.remove(INVESTMENTS_LIST_SHEET_NAME);
   }
 
-  private void writeInvestmentEntries(
-      List<Investment> investments, HashMap<String, Integer> nonWrittenSheets) throws IOException {
-    for (var investment : investments) {
-      var investmentEntriesSheetName = INVESTMENT_SHEET_NAME_PATTERN + investment.getName();
-      if (!existSheet(investmentEntriesSheetName)) {
-        client.createSheet(spreadSheetId, investmentEntriesSheetName);
-      }
-      nonWrittenSheets.remove(investmentEntriesSheetName);
-
-      var entries = investment.getEntries();
-      if (entries == null || entries.isEmpty()) {
-        log.info(
-            "No investment entries found for investment {}, cleaning up sheet",
-            investment.getName());
-        client.clearSheet(spreadSheetId, investmentEntriesSheetName, READ_SHEET_RANGE);
-        continue;
-      }
-
-      writeInvestmentEntriesData(entries, investmentEntriesSheetName);
-    }
-  }
-
-  private void writeInvestmentEntriesData(List<InvestmentEntry> entries, String sheetName)
-      throws IOException {
-    var values = new ArrayList<List<Object>>();
-    values.add(INVESTMENT_ENTRIES_HEADERS);
-
-    for (var entry : entries) {
-      var row = googleSheetsInvestmentEntryAdapter.toSheetValueRange(entry);
-      values.add(row);
-    }
-
-    client.writeToSheet(spreadSheetId, sheetName, WRITE_SHEET_RANGE, values);
-  }
-
   private void cleanUpSheets(HashMap<String, Integer> nonWrittenSheets) throws IOException {
     log.info("Deprecated sheets found, cleaning them up: {}", nonWrittenSheets);
     client.deleteSheets(spreadSheetId, nonWrittenSheets.values().stream().toList());
   }
 
-  private boolean existSheet(String sheetName) {
+  private boolean existInvestmentsListSheet() {
     if (sheetsByName == null) {
       log.error("Sheet names are not loaded");
       throw new IllegalStateException("Sheet names are not loaded");
     }
-    return sheetsByName.containsKey(sheetName);
+    return sheetsByName.containsKey("Investments List");
   }
 }
