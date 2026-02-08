@@ -76,6 +76,12 @@ export default function EditForecastModal({ forecast, entries, onClose, onUpdate
                         ))}
                     </select>
                 </label>
+                <div className="mb-2 text-sm text-gray-600">
+                    Start Date: {(() => {
+                        const entry = entries.find(e => String(e.id) === String(startEntryId));
+                        return entry ? new Date(entry.datetime).toISOString().split('T')[0] : "-";
+                    })()}
+                </div>
                 <label className="block mb-2">Duration (months)
                     <input type="number" className="w-full border rounded p-2 mt-1" value={months} min={1} onChange={e => setMonths(e.target.value)} />
                 </label>

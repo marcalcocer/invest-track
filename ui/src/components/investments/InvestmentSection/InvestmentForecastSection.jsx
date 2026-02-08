@@ -7,7 +7,8 @@ export default function InvestmentForecastSection({
     onDeleteForecast,
     isConfirmingDeleteForecast,
     setIsConfirmingDeleteForecast,
-    onEditForecast
+    onEditForecast,
+    onViewGraph
 }) {
     return (
         <div className="mt-8">
@@ -30,29 +31,48 @@ export default function InvestmentForecastSection({
                                 <th className="border p-2">Neutral %</th>
                                 <th className="border p-2">Optimist %</th>
                                 <th className="border p-2">Actions</th>
+                                <th className="border p-2">Graph</th>
                             </tr>
                         </thead>
                         <tbody>
                             {forecasts.map((f) => (
                                 <tr key={f.id} className="border">
                                     <td className="border p-2 text-center">{f.name}</td>
-                                    <td className="border p-2 text-center">{f.startDate ?? ''}</td>
+                                    <td className="border p-2 text-center">{
+                                        (() => {
+                                            if (f.startEntryId && Array.isArray(f.entriesFromParent)) {
+                                                const entry = f.entriesFromParent.find(e => String(e.id) === String(f.startEntryId));
+                                                return entry ? new Date(entry.datetime).toISOString().split('T')[0] : f.startDate ?? '';
+                                            }
+                                            return f.startDate ?? '';
+                                        })()
+                                    }</td>
                                     <td className="border p-2 text-center">{f.startDate && f.endDate ? Math.max(1, Math.round((new Date(f.endDate).getFullYear() * 12 + new Date(f.endDate).getMonth()) - (new Date(f.startDate).getFullYear() * 12 + new Date(f.startDate).getMonth()))) : ''}</td>
                                     <td className="border p-2 text-center">{f.scenarioRates?.PESSIMIST ?? 0}%</td>
                                     <td className="border p-2 text-center">{f.scenarioRates?.NEUTRAL ?? 0}%</td>
                                     <td className="border p-2 text-center">{f.scenarioRates?.OPTIMIST ?? 0}%</td>
                                     <td className="border p-2 text-center">
+                                        <div className="flex flex-row items-center justify-center gap-2">
+                                            <button
+                                                className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition duration-200"
+                                                onClick={() => onEditForecast(f)}
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition duration-200"
+                                                onClick={() => setIsConfirmingDeleteForecast(f.id)}
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td className="border p-2 text-center">
                                         <button
-                                            className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition duration-200 mr-2"
-                                            onClick={() => onEditForecast(f)}
+                                            className="px-2 py-1 bg-purple-500 text-white text-xs rounded hover:bg-purple-600 transition duration-200"
+                                            onClick={() => onViewGraph(f)}
                                         >
-                                            Edit
-                                        </button>
-                                        <button
-                                            className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition duration-200"
-                                            onClick={() => setIsConfirmingDeleteForecast(f.id)}
-                                        >
-                                            Delete
+                                            View Graph
                                         </button>
                                     </td>
                                 </tr>

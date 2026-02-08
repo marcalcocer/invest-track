@@ -8,6 +8,7 @@ import { formatDatetime } from "@/lib/datetimeFormater";
 import ConfirmDeleteModal from "@/components/modals/ConfirmDeleteModal";
 import UpdateEntryModal from "@/components/modals/UpdateEntryModal";
 import InvestmentGraphModal from "../modals/InvestmentGraphModal";
+import ForecastGraphModal from "../modals/ForecastGraphModal";
 import CreateForecastModal from "../modals/CreateForecastModal";
 import EditForecastModal from "../modals/EditForecastModal";
 import InvestmentForecastSection from "./InvestmentSection/InvestmentForecastSection";
@@ -28,6 +29,7 @@ export default function Investment() {
     const [isLoadingForecasts, setIsLoadingForecasts] = useState(true);
     const [isConfirmingDeleteForecast, setIsConfirmingDeleteForecast] = useState(null);
     const [editingForecast, setEditingForecast] = useState(null);
+    const [selectedForecastForGraph, setSelectedForecastForGraph] = useState(null);
 
     // On mount, get the id from query params and fetch the investment details
     useEffect(() => {
@@ -49,7 +51,11 @@ export default function Investment() {
                 // Fetch forecasts for this investment
                 setIsLoadingForecasts(true);
                 ForecastService.fetchForecasts(inv.id)
-                    .then(setForecasts)
+                    .then((forecastsData) => {
+                        // Attach entries to each forecast for start date calculation
+                        const forecastsWithEntries = forecastsData.map(f => ({ ...f, entriesFromParent: inv.entries }));
+                        setForecasts(forecastsWithEntries);
+                    })
                     .catch(() => setForecasts([]))
                     .finally(() => setIsLoadingForecasts(false));
             } else {
@@ -133,6 +139,14 @@ export default function Investment() {
                     onUpdate={handleUpdateForecast}
                 />
             )}
+            {selectedForecastForGraph && (
+                <ForecastGraphModal
+                    forecast={selectedForecastForGraph}
+                    entries={entries}
+                    investment={investment}
+                    onClose={() => setSelectedForecastForGraph(null)}
+                />
+            )}
             
 
                 <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">{investment.name} - Entries</h2>
@@ -140,7 +154,7 @@ export default function Investment() {
                     {investment.description} ({investment.currency})
                 </p>
                 {/* Mini-summary */}
-                {entries.length > 0 && (
+                {Array.isArray(entries) && entries.length > 0 && (
                 <div className="flex flex-wrap gap-4 items-center justify-center mb-4 text-xs sm:text-sm text-gray-700 bg-gray-50 rounded-lg px-3 py-2 border border-gray-100">
                     <span>Entries: <span className="font-semibold">{entries.length}</span></span>
                     <span>Avg Profit: <span className="font-semibold">{(entries.reduce((acc, e) => acc + (e.profitability ?? 0), 0) / entries.length * 100).toFixed(2)}%</span></span>
@@ -184,6 +198,7 @@ export default function Investment() {
                     isConfirmingDeleteForecast={isConfirmingDeleteForecast}
                     setIsConfirmingDeleteForecast={setIsConfirmingDeleteForecast}
                     onEditForecast={handleEditForecast}
+                    onViewGraph={setSelectedForecastForGraph}
                 />
 
                 {/* Mobile Cards View */}
@@ -207,7 +222,7 @@ export default function Investment() {
                             </tr>
                         </thead>
                         <tbody>
-                            {entries.length > 0 ? (
+                            {Array.isArray(entries) && entries.length > 0 ? (
                                 entries.map((entry, idx) => (
                                     <tr
                                         key={entry.id}
