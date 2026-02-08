@@ -48,16 +48,12 @@ export default function Investment() {
             if (inv) {
                 setInvestment(inv);
                 setEntries(inv.entries);
-                // Fetch forecasts for this investment
+                // Forecasts are now part of the investment object
                 setIsLoadingForecasts(true);
-                ForecastService.fetchForecasts(inv.id)
-                    .then((forecastsData) => {
-                        // Attach entries to each forecast for start date calculation
-                        const forecastsWithEntries = forecastsData.map(f => ({ ...f, entriesFromParent: inv.entries }));
-                        setForecasts(forecastsWithEntries);
-                    })
-                    .catch(() => setForecasts([]))
-                    .finally(() => setIsLoadingForecasts(false));
+                const forecastsData = inv.forecasts || [];
+                const forecastsWithEntries = forecastsData.map(f => ({ ...f, entriesFromParent: inv.entries }));
+                setForecasts(forecastsWithEntries);
+                setIsLoadingForecasts(false);
             } else {
                 window.location.href = "/404";
             }
@@ -92,20 +88,21 @@ export default function Investment() {
             await ForecastService.createForecast(investment.id, forecastData);
             window.location.reload();
         } catch (e) {
-            // Optionally show error
+            console.error('Create forecast error:', e);
         } finally {
             setIsLoadingForecasts(false);
         }
     };
 
     const handleDeleteForecast = async (forecastId) => {
+        console.log('Delete forecast called with:', forecastId, typeof forecastId, 'investmentId:', investment.id);
         setIsConfirmingDeleteForecast(null);
         setIsLoadingForecasts(true);
         try {
-            await ForecastService.deleteForecast(forecastId);
+            await ForecastService.deleteForecast(investment.id, Number(forecastId));
             window.location.reload();
         } catch (e) {
-            // Optionally show error
+            console.error('Delete forecast error:', e);
         } finally {
             setIsLoadingForecasts(false);
         }

@@ -1,19 +1,17 @@
 import { useState } from "react";
-import { ForecastService } from "@/lib/ForecastService";
 
-export function useCreateForecast(investmentId, onForecastsUpdated) {
+export function useCreateForecast(investment, onForecastsUpdated) {
   const [isCreatingForecast, setIsCreatingForecast] = useState(false);
   const [createForecastError, setCreateForecastError] = useState(null);
 
   const createForecast = async (forecastData) => {
-    if (!investmentId) return;
+    if (!investment) return;
     setIsCreatingForecast(true);
     setCreateForecastError(null);
     try {
-      await ForecastService.createForecast(investmentId, forecastData);
+      investment.forecasts = [...(investment.forecasts || []), forecastData];
       if (onForecastsUpdated) {
-        const updated = await ForecastService.fetchForecasts(investmentId);
-        onForecastsUpdated(updated);
+        onForecastsUpdated(investment.forecasts);
       }
     } catch (err) {
       setCreateForecastError(err);

@@ -7,27 +7,10 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import CreateInvestmentModal from '../modals/CreateInvestmentModal';
 import EditInvestmentModal from '../modals/EditInvestmentModal';
 import InvestmentsDetailsListItem from "./InvestmentsDetailsSection/InvestmentsDetailsListItem";
-import { ForecastService } from '@/lib/ForecastService';
 
 export default function InvestmentsDetails({ investments }) {
-  const [investmentsWithForecasts, setInvestmentsWithForecasts] = useState([]);
+  const investmentsWithForecasts = investments;
 
-  useEffect(() => {
-    async function fetchAllForecasts() {
-      const results = await Promise.all(
-        investments.map(async (inv) => {
-          try {
-            const forecasts = await ForecastService.fetchForecasts(inv.id);
-            return { ...inv, forecasts };
-          } catch {
-            return { ...inv, forecasts: [] };
-          }
-        })
-      );
-      setInvestmentsWithForecasts(results);
-    }
-    fetchAllForecasts();
-  }, [investments]);
 
   const [selectedInvestment, setSelectedInvestment] = useState(null);
   const [investmentToDelete, setInvestmentToDelete] = useState(null);
