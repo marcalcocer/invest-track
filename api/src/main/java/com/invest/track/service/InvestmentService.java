@@ -140,6 +140,9 @@ public class InvestmentService {
     log.debug("Creating investment entry {} for investment {}", entry, investment);
 
     try {
+      if (entry.getId() == null) {
+        entry.setId(entryIdGenerator.getAndIncrement());
+      }
       if (entry.getDatetime() == null) {
         var now = LocalDateTime.now();
         log.debug("Setting current datetime to the entry {}", now);
