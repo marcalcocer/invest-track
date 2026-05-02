@@ -4,7 +4,7 @@ import { ForecastService } from "@/lib/ForecastService";
 
 export default function CreateForecastModal({ investment, entries, onClose, onCreate }) {
     const [name, setName] = useState("");
-    const [startEntryId, setStartEntryId] = useState(entries && entries.length > 0 ? String(entries[0].id) : "");
+    const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
     const [months, setMonths] = useState(12);
     const [pessimistRate, setPessimistRate] = useState(0);
     const [neutralRate, setNeutralRate] = useState(0);
@@ -17,8 +17,8 @@ export default function CreateForecastModal({ investment, entries, onClose, onCr
             setError("Name cannot be empty");
             return;
         }
-        if (!startEntryId) {
-            setError("Start entry must be selected");
+        if (!startDate) {
+            setError("Start date must be selected");
             return;
         }
         if (Number(months) < 1) {
@@ -28,20 +28,12 @@ export default function CreateForecastModal({ investment, entries, onClose, onCr
         setIsCreating(true);
         setError("");
         try {
-            // Find the selected start entry
-            const startEntry = entries.find(e => String(e.id) === String(startEntryId));
-            let startDate = startEntry ? startEntry.datetime : null;
-            let endDate = null;
-            if (startDate) {
-                // Parse as ISO string and add months
-                const d = new Date(startDate);
-                d.setMonth(d.getMonth() + Number(months));
-                endDate = d.toISOString().split('T')[0];
-                startDate = new Date(startDate).toISOString().split('T')[0];
-            }
+            const d = new Date(startDate);
+            d.setMonth(d.getMonth() + Number(months));
+            const endDate = d.toISOString().split('T')[0];
+
             if (onCreate) onCreate({
                 name,
-                startEntryId: Number(startEntryId),
                 months: Number(months),
                 startDate,
                 endDate,
@@ -66,14 +58,8 @@ export default function CreateForecastModal({ investment, entries, onClose, onCr
                 <label className="block mb-2">Forecast Name
                     <input className="w-full border rounded p-2 mt-1" value={name} onChange={e => setName(e.target.value)} />
                 </label>
-                <label className="block mb-2">Start Entry
-                    <select className="w-full border rounded p-2 mt-1" value={startEntryId} onChange={e => setStartEntryId(e.target.value)}>
-                        {entries.map(entry => (
-                            <option key={entry.id} value={String(entry.id)}>
-                                {entry.id} - {entry.datetime}
-                            </option>
-                        ))}
-                    </select>
+                <label className="block mb-2">Start Date
+                    <input type="date" className="w-full border rounded p-2 mt-1" value={startDate} onChange={e => setStartDate(e.target.value)} />
                 </label>
                 <label className="block mb-2">Duration (months)
                     <input type="number" className="w-full border rounded p-2 mt-1" value={months} min={1} onChange={e => setMonths(e.target.value)} />

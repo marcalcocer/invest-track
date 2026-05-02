@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Chart from "react-apexcharts";
 import type { ApexOptions } from "apexcharts";
-import { currencyAdapter } from "@/lib/currencyAdapter";
+import { currencyAdapter, numberAdapter } from "@/lib/currencyAdapter";
 import { formatDate } from "@/lib/datetimeFormater";
 
 interface InvestmentEntry {
@@ -200,7 +200,7 @@ export default function InvestmentGraphModal({ investment, onClose, showDetailsB
                         <div className="text-center">
                             <p className="text-xs text-gray-500">Profit</p>
                             <p className="text-xs font-semibold text-gray-700">
-                                {investment.lastEntry ? (100 * investment.lastEntry.profitability).toFixed(2) + "%" : "N/A"}
+                                {investment.lastEntry ? numberAdapter(100 * investment.lastEntry.profitability) + "%" : "N/A"}
                             </p>
                         </div>
                     </div>
@@ -285,7 +285,7 @@ export default function InvestmentGraphModal({ investment, onClose, showDetailsB
                                                         colors: ["#6B7280"],
                                                         fontFamily: 'Outfit, sans-serif'
                                                     },
-                                                    formatter: (value: number) => value.toFixed(1) + "%",
+                                                    formatter: (value: number) => numberAdapter(value, 1) + "%",
                                                 },
                                                 title: {
                                                     text: "%",
@@ -299,7 +299,7 @@ export default function InvestmentGraphModal({ investment, onClose, showDetailsB
                                             tooltip: {
                                                 ...sharedOptions.tooltip,
                                                 y: {
-                                                    formatter: (value: number) => value.toFixed(2) + "%",
+                                                    formatter: (value: number) => numberAdapter(value) + "%",
                                                 },
                                             },
                                         }}
