@@ -1,13 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import InvestmentGraphModal from "../modals/InvestmentGraphModal";
+import CombinedForecastGraphModal from "../modals/CombinedForecastGraphModal";
 import ConfirmDeleteModal from "../modals/ConfirmDeleteModal";
 import { InvestmentService } from '@/lib/InvestmentService';
 import LoadingSpinner from "@/components/LoadingSpinner";
 import CreateInvestmentModal from '../modals/CreateInvestmentModal';
 import EditInvestmentModal from '../modals/EditInvestmentModal';
 import InvestmentsDetailsListItem from "./InvestmentsDetailsSection/InvestmentsDetailsListItem";
+import { ForecastService } from '@/lib/ForecastService';
 
 export default function InvestmentsDetails({ investments }) {
+  const [investmentsWithForecasts, setInvestmentsWithForecasts] = useState([]);
+
+  useEffect(() => {
+    async function fetchAllForecasts() {
+      const results = await Promise.all(
+        investments.map(async (inv) => {
+          try {
+            const forecasts = await ForecastService.fetchForecasts(inv.id);
+            return { ...inv, forecasts };
+          } catch {
+            return { ...inv, forecasts: [] };
+          }
+        })
+      );
+      setInvestmentsWithForecasts(results);
+    }
+    fetchAllForecasts();
+  }, [investments]);
+
   const [selectedInvestment, setSelectedInvestment] = useState(null);
   const [investmentToDelete, setInvestmentToDelete] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -31,14 +52,14 @@ export default function InvestmentsDetails({ investments }) {
     window.location.reload();
   };
 
-  if (isLoading) return <LoadingSpinner />;
+  if (isLoading || investmentsWithForecasts.length === 0) return <LoadingSpinner />;
 
   const handleCreateForecast = () => {
     setShowForecastModalFor(null);
   };
 
-  const activeInvestments = investments.filter(i => !i.endDateTime);
-  const inactiveInvestments = investments.filter(i => i.endDateTime);
+  const activeInvestments = investmentsWithForecasts.filter(i => !i.endDateTime);
+  const inactiveInvestments = investmentsWithForecasts.filter(i => i.endDateTime);
 
   const renderInvestment = (investment) => (
     <InvestmentsDetailsListItem
@@ -110,14 +131,6 @@ export default function InvestmentsDetails({ investments }) {
         />
       )}
 
-      {selectedInvestment && (
-        <InvestmentGraphModal 
-          investment={selectedInvestment} 
-          onClose={() => setSelectedInvestment(null)} 
-          showDetailsButton={true} 
-        />
-      )}
-
       {investmentToDelete && (
         <ConfirmDeleteModal
           entity="investment"
@@ -125,6 +138,21 @@ export default function InvestmentsDetails({ investments }) {
           name={investmentToDelete.name}
           onCancel={() => setInvestmentToDelete(null)}
           onConfirm={handleDelete}
+        />
+      )}
+
+      {selectedInvestment && (
+        <InvestmentGraphModal
+          investment={selectedInvestment}
+          onClose={() => setSelectedInvestment(null)}
+          showDetailsButton={true}
+        />
+      )}
+      {showForecastModalFor && (
+        <CombinedForecastGraphModal
+          investment={showForecastModalFor}
+          forecasts={showForecastModalFor.forecasts || []}
+          onClose={() => setShowForecastModalFor(null)}
         />
       )}
     </div>

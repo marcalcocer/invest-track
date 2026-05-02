@@ -2,9 +2,9 @@ import { useState } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { ForecastService } from "@/lib/ForecastService";
 
-export default function EditForecastModal({ forecast, entries, onClose, onUpdate }) {
+export default function EditForecastModal({ investment, forecast, entries, onClose, onUpdate }) {
     const [name, setName] = useState(forecast.name || "");
-    const [startEntryId, setStartEntryId] = useState(forecast.startEntryId ? String(forecast.startEntryId) : (entries && entries.length > 0 ? String(entries[0].id) : ""));
+    const [startDate, setStartDate] = useState(forecast.startDate || new Date().toISOString().split('T')[0]);
     const [months, setMonths] = useState(forecast.months || 12);
     const [pessimistRate, setPessimistRate] = useState(forecast.scenarioRates?.PESSIMIST ?? 0);
     const [neutralRate, setNeutralRate] = useState(forecast.scenarioRates?.NEUTRAL ?? 0);
@@ -17,8 +17,8 @@ export default function EditForecastModal({ forecast, entries, onClose, onUpdate
             setError("Name cannot be empty");
             return;
         }
-        if (!startEntryId) {
-            setError("Start entry must be selected");
+        if (!startDate) {
+            setError("Start date must be selected");
             return;
         }
         if (Number(months) < 1) {
@@ -28,19 +28,13 @@ export default function EditForecastModal({ forecast, entries, onClose, onUpdate
         setIsUpdating(true);
         setError("");
         try {
-            const startEntry = entries.find(e => String(e.id) === String(startEntryId));
-            let startDate = startEntry ? startEntry.datetime : null;
-            let endDate = null;
-            if (startDate) {
-                const d = new Date(startDate);
-                d.setMonth(d.getMonth() + Number(months));
-                endDate = d.toISOString().split('T')[0];
-                startDate = new Date(startDate).toISOString().split('T')[0];
-            }
+            const d = new Date(startDate);
+            d.setMonth(d.getMonth() + Number(months));
+            const endDate = d.toISOString().split('T')[0];
+
             const updatedForecast = {
                 ...forecast,
                 name,
-                startEntryId: Number(startEntryId),
                 months: Number(months),
                 startDate,
                 endDate,
@@ -50,7 +44,7 @@ export default function EditForecastModal({ forecast, entries, onClose, onUpdate
                     OPTIMIST: Number(optimistRate)
                 }
             };
-            await ForecastService.updateForecast(forecast.id, updatedForecast);
+            await ForecastService.updateForecast(investment.id, forecast.id, updatedForecast);
             if (onUpdate) onUpdate();
         } catch (err) {
             setError("Failed to update forecast. Please try again.");
@@ -67,14 +61,8 @@ export default function EditForecastModal({ forecast, entries, onClose, onUpdate
                 <label className="block mb-2">Forecast Name
                     <input className="w-full border rounded p-2 mt-1" value={name} onChange={e => setName(e.target.value)} />
                 </label>
-                <label className="block mb-2">Start Entry
-                    <select className="w-full border rounded p-2 mt-1" value={startEntryId} onChange={e => setStartEntryId(e.target.value)}>
-                        {entries.map(entry => (
-                            <option key={entry.id} value={String(entry.id)}>
-                                {entry.id} - {entry.datetime}
-                            </option>
-                        ))}
-                    </select>
+                <label className="block mb-2">Start Date
+                    <input type="date" className="w-full border rounded p-2 mt-1" value={startDate} onChange={e => setStartDate(e.target.value)} />
                 </label>
                 <label className="block mb-2">Duration (months)
                     <input type="number" className="w-full border rounded p-2 mt-1" value={months} min={1} onChange={e => setMonths(e.target.value)} />

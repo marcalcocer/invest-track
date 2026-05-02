@@ -4,7 +4,7 @@ import { formatDatetime } from "@/lib/datetimeFormater";
 export default function InvestmentEntriesMobile({ entries, investment, setIsConfirmingDelete }) {
     return (
         <div className="block sm:hidden mt-4 space-y-3">
-            {entries.length > 0 ? (
+            {Array.isArray(entries) && entries.length > 0 ? (
                 entries.map((entry, idx) => (
                     <div key={entry.id ?? `entry-${idx}`} className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
                         <div className="grid grid-cols-2 gap-2 text-sm">

@@ -1,6 +1,7 @@
 package com.invest.track.api.google;
 
 import com.invest.track.model.Forecast;
+import com.invest.track.model.Investment;
 import com.invest.track.model.adapter.ForecastAdapter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,7 +22,8 @@ public class GoogleSheetsForecastService {
   private static final List<Object> FORECASTS_HEADERS =
       List.of("Forecast ID", "Investment ID", "Name", "Start Date", "End Date", "Scenario Rates");
 
-  public synchronized List<Forecast> readForecastsData() throws IOException {
+  public synchronized List<Forecast> readForecastsData(List<Investment> investments)
+      throws IOException {
     log.info("Started reading forecasts data from Google Sheets");
     if (!client.sheetExists(spreadSheetId, FORECASTS_SHEET_NAME)) {
       client.createSheet(spreadSheetId, FORECASTS_SHEET_NAME);
@@ -34,7 +36,7 @@ public class GoogleSheetsForecastService {
     }
     var forecasts = new ArrayList<Forecast>();
     for (var row : rows) {
-      var forecast = forecastAdapter.fromSheetValueRange(row);
+      var forecast = forecastAdapter.fromSheetValueRange(row, investments);
       if (forecast != null) {
         forecasts.add(forecast);
       }

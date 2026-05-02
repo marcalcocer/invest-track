@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
 import { InvestmentService } from "@/lib/InvestmentService";
 import { ForecastService } from "@/lib/ForecastService";
-import { currencyAdapter } from "@/lib/currencyAdapter";
+import { numberAdapter } from "@/lib/currencyAdapter";
 import CreateEntryModal from "@/components/modals/CreateEntryModal";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { formatDatetime } from "@/lib/datetimeFormater";
 import ConfirmDeleteModal from "@/components/modals/ConfirmDeleteModal";
 import UpdateEntryModal from "@/components/modals/UpdateEntryModal";
 import InvestmentGraphModal from "../modals/InvestmentGraphModal";
+import ForecastGraphModal from "../modals/ForecastGraphModal";
 import CreateForecastModal from "../modals/CreateForecastModal";
 import EditForecastModal from "../modals/EditForecastModal";
 import InvestmentForecastSection from "./InvestmentSection/InvestmentForecastSection";
 import InvestmentEntriesMobile from "./InvestmentSection/InvestmentEntriesMobile";
+import InvestmentEntriesTable from "./InvestmentSection/InvestmentEntriesTable";
 
 export default function Investment() {
     const [investment, setInvestment] = useState(null);
@@ -28,6 +30,7 @@ export default function Investment() {
     const [isLoadingForecasts, setIsLoadingForecasts] = useState(true);
     const [isConfirmingDeleteForecast, setIsConfirmingDeleteForecast] = useState(null);
     const [editingForecast, setEditingForecast] = useState(null);
+    const [selectedForecastForGraph, setSelectedForecastForGraph] = useState(null);
 
     // On mount, get the id from query params and fetch the investment details
     useEffect(() => {
@@ -49,7 +52,11 @@ export default function Investment() {
                 // Fetch forecasts for this investment
                 setIsLoadingForecasts(true);
                 ForecastService.fetchForecasts(inv.id)
-                    .then(setForecasts)
+                    .then((forecastsData) => {
+                        // Attach entries to each forecast for start date calculation
+                        const forecastsWithEntries = forecastsData.map(f => ({ ...f, entriesFromParent: inv.entries }));
+                        setForecasts(forecastsWithEntries);
+                    })
                     .catch(() => setForecasts([]))
                     .finally(() => setIsLoadingForecasts(false));
             } else {
@@ -96,7 +103,7 @@ export default function Investment() {
         setIsConfirmingDeleteForecast(null);
         setIsLoadingForecasts(true);
         try {
-            await ForecastService.deleteForecast(forecastId);
+            await ForecastService.deleteForecast(investment.id, forecastId);
             window.location.reload();
         } catch (e) {
             // Optionally show error
@@ -115,7 +122,7 @@ export default function Investment() {
     };
 
     return (
-        <div className="p-4 sm:p-6 max-w-3xl mx-auto">
+        <div className="p-4 sm:p-6 max-w-5xl mx-auto">
             {isDeleting && <LoadingSpinner />}
             {showForecastModal && (
                 <CreateForecastModal
@@ -127,23 +134,32 @@ export default function Investment() {
             )}
             {editingForecast && (
                 <EditForecastModal
+                    investment={investment}
                     forecast={editingForecast}
                     entries={entries}
                     onClose={() => setEditingForecast(null)}
                     onUpdate={handleUpdateForecast}
                 />
             )}
+            {selectedForecastForGraph && (
+                <ForecastGraphModal
+                    forecast={selectedForecastForGraph}
+                    entries={entries}
+                    investment={investment}
+                    onClose={() => setSelectedForecastForGraph(null)}
+                />
+            )}
             
 
-                <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">{investment.name} - Entries</h2>
+                <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">{investment.name}</h2>
                 <p className="text-gray-600 text-sm sm:text-base mb-4">
                     {investment.description} ({investment.currency})
                 </p>
                 {/* Mini-summary */}
-                {entries.length > 0 && (
+                {Array.isArray(entries) && entries.length > 0 && (
                 <div className="flex flex-wrap gap-4 items-center justify-center mb-4 text-xs sm:text-sm text-gray-700 bg-gray-50 rounded-lg px-3 py-2 border border-gray-100">
                     <span>Entries: <span className="font-semibold">{entries.length}</span></span>
-                    <span>Avg Profit: <span className="font-semibold">{(entries.reduce((acc, e) => acc + (e.profitability ?? 0), 0) / entries.length * 100).toFixed(2)}%</span></span>
+                    <span>Avg Profit: <span className="font-semibold">{numberAdapter(entries.reduce((acc, e) => acc + (e.profitability ?? 0), 0) / entries.length * 100)}%</span></span>
                     <span>Last update: <span className="font-semibold">{formatDatetime(Math.max(...entries.map(e => new Date(e.datetime))))}</span></span>
                 </div>
                 )}
@@ -184,6 +200,7 @@ export default function Investment() {
                     isConfirmingDeleteForecast={isConfirmingDeleteForecast}
                     setIsConfirmingDeleteForecast={setIsConfirmingDeleteForecast}
                     onEditForecast={handleEditForecast}
+                    onViewGraph={setSelectedForecastForGraph}
                 />
 
                 {/* Mobile Cards View */}
@@ -193,67 +210,15 @@ export default function Investment() {
                     setIsConfirmingDelete={setIsConfirmingDelete}
                 />
 
+                <h3 className="text-md sm:text-lg font-semibold mb-2 text-center mt-8">Entries</h3>
+
                 {/* Desktop Table View */}
-                <div className="hidden sm:block overflow-x-auto mt-6">
-                    <table className="w-full border-collapse border border-gray-200">
-                        <thead>
-                            <tr className="bg-gray-100">
-                                <th className="border p-2 text-xs sm:text-sm">ID</th>
-                                <th className="border p-2 text-xs sm:text-sm">Date</th>
-                                <th className="border p-2 text-xs sm:text-sm">Total Invested</th>
-                                <th className="border p-2 text-xs sm:text-sm">Profitability</th>
-                                <th className="border p-2 text-xs sm:text-sm">Comments</th>
-                                <th className="border p-2 text-xs sm:text-sm">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {entries.length > 0 ? (
-                                entries.map((entry, idx) => (
-                                    <tr
-                                        key={entry.id}
-                                        className={`border transition-colors ${idx % 2 === 1 ? 'bg-slate-50' : ''} hover:bg-slate-100`}
->
-                                        <td className="border p-2 text-center text-xs sm:text-sm">{entry.id}</td>
-                                        <td className="border p-2 text-center text-xs sm:text-sm">
-                                            {formatDatetime(entry.datetime)}
-                                        </td>
-                                        <td className="border p-2 text-center text-xs sm:text-sm">
-                                            {currencyAdapter(entry.totalInvestedAmount, investment.currency)}
-                                        </td>
-                                        <td className="border p-2 text-center text-xs sm:text-sm">
-                                            {(entry.profitability * 100).toFixed(2)} %
-                                        </td>
-                                        <td className="border p-2 text-center text-xs sm:text-sm">
-                                            {entry.comments || "-"}
-                                        </td>
-                                        <td className="border p-2 text-center">
-                                            <div className="flex flex-row gap-2 justify-center items-center">
-                                                <button
-                                                className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition duration-200"
-                                                onClick={() => setIsUpdatingEntry(entry)}
-                                                >
-                                                Edit
-                                                </button>
-                                                <button
-                                                className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition duration-200"
-                                                onClick={() => setIsConfirmingDelete(entry)}
-                                                >
-                                                Delete
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="6" className="text-center p-4 text-gray-500">
-                                        No entries available
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                <InvestmentEntriesTable
+                    entries={entries}
+                    investment={investment}
+                    setIsConfirmingDelete={setIsConfirmingDelete}
+                    setIsUpdatingEntry={setIsUpdatingEntry}
+                />
 
                 {isCreating && (
                     <CreateEntryModal

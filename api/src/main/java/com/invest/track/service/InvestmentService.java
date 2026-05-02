@@ -1,15 +1,19 @@
 package com.invest.track.service;
 
+import com.invest.track.api.google.GoogleSheetsForecastService;
 import com.invest.track.api.google.GoogleSheetsInvestmentService;
+import com.invest.track.model.Forecast;
 import com.invest.track.model.Investment;
 import com.invest.track.model.InvestmentEntry;
 import com.invest.track.model.Summary;
 import com.invest.track.repository.InvestmentRepository;
 import jakarta.annotation.PostConstruct;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,9 +25,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class InvestmentService {
   private final GoogleSheetsInvestmentService googleSheetsService;
+  private final GoogleSheetsForecastService googleSheetsForecastService;
   private final InvestmentRepository repository;
   private final SummaryService summaryService;
   private final AtomicLong entryIdGenerator = new AtomicLong(1);
+  private final AtomicLong forecastIdGenerator = new AtomicLong(1);
 
   @PostConstruct
   public void init() {
@@ -49,6 +55,23 @@ public class InvestmentService {
       }
       investments.addAll(loadedInvestments);
 
+      var loadedForecasts = googleSheetsForecastService.readForecastsData(investments);
+      log.debug("Loaded {} forecasts from Google Sheets", loadedForecasts.size());
+      for (var forecast : loadedForecasts) {
+        if (forecast.getId() == null) {
+          forecast.setId(forecastIdGenerator.getAndIncrement());
+        } else {
+          forecastIdGenerator.set(Math.max(forecastIdGenerator.get(), forecast.getId() + 1));
+        }
+        if (forecast.getInvestment() != null) {
+          var inv = forecast.getInvestment();
+          if (inv.getForecasts() == null) {
+            inv.setForecasts(new ArrayList<>());
+          }
+          inv.getForecasts().add(forecast);
+        }
+      }
+
       repository.saveAll(investments);
       log.info("Loaded investments successfully!");
     } catch (Exception e) {
@@ -62,27 +85,13 @@ public class InvestmentService {
 
   public Investment createInvestment(Investment investment) {
     List<Investment> investments = getInvestments();
-    if (investments.isEmpty()) {
-      log.error("Failed to load investments list while creating a new one");
-      return null;
-    }
-
     try {
-      investments.add(investment);
       repository.save(investment);
+      googleSheetsService.writeInvestmentsData(getInvestments());
     } catch (Exception e) {
       log.error("Failed to save investment", e);
       return null;
     }
-
-    try {
-      googleSheetsService.writeInvestmentsData(investments);
-    } catch (Exception e) {
-      log.error(
-          "Failed to write investments into Google Sheets while creating an investment due to", e);
-      return null;
-    }
-
     return investment;
   }
 
@@ -121,6 +130,7 @@ public class InvestmentService {
 
     try {
       googleSheetsService.writeInvestmentsData(investments);
+      writeForecasts();
     } catch (Exception e) {
       log.error(
           "Failed to write investments into Google Sheets while deleting an investment due to", e);
@@ -226,6 +236,94 @@ public class InvestmentService {
     }
 
     return entryToDelete;
+  }
+
+  public List<Forecast> getForecasts() {
+    return repository.findAll().stream()
+        .flatMap(inv -> inv.getForecasts() != null ? inv.getForecasts().stream() : Stream.empty())
+        .toList();
+  }
+
+  public Forecast createForecast(Forecast forecast, Long investmentId) {
+    var investment = repository.findById(investmentId);
+    if (investment == null) {
+      log.error("Investment with ID {} not found while creating forecast", investmentId);
+      return null;
+    }
+
+    if (forecast.getId() == null) {
+      forecast.setId(forecastIdGenerator.getAndIncrement());
+    }
+    forecast.setInvestment(investment);
+
+    if (investment.getForecasts() == null) {
+      investment.setForecasts(new ArrayList<>());
+    }
+    investment.getForecasts().add(forecast);
+    repository.save(investment);
+
+    try {
+      writeForecasts();
+    } catch (IOException e) {
+      log.error("Failed to write forecasts to Google Sheets", e);
+      return null;
+    }
+    return forecast;
+  }
+
+  public Forecast updateForecast(Forecast forecast) {
+    var existingForecast = findForecastById(forecast.getId());
+    if (existingForecast == null) {
+      log.error("Forecast with ID {} not found while updating", forecast.getId());
+      return null;
+    }
+
+    existingForecast.setName(forecast.getName());
+    existingForecast.setStartDate(forecast.getStartDate());
+    existingForecast.setEndDate(forecast.getEndDate());
+    existingForecast.setScenarioRates(forecast.getScenarioRates());
+
+    repository.save(existingForecast.getInvestment());
+
+    try {
+      writeForecasts();
+    } catch (IOException e) {
+      log.error("Failed to write forecasts to Google Sheets", e);
+      return null;
+    }
+    return existingForecast;
+  }
+
+  public Forecast deleteForecast(Long id) {
+    var forecast = findForecastById(id);
+    if (forecast == null) {
+      log.error("Forecast with ID {} not found while deleting", id);
+      return null;
+    }
+
+    var investment = forecast.getInvestment();
+    investment.getForecasts().remove(forecast);
+    repository.save(investment);
+
+    try {
+      writeForecasts();
+    } catch (IOException e) {
+      log.error("Failed to write forecasts to Google Sheets", e);
+      return null;
+    }
+    return forecast;
+  }
+
+  private Forecast findForecastById(Long id) {
+    return repository.findAll().stream()
+        .flatMap(inv -> inv.getForecasts() != null ? inv.getForecasts().stream() : Stream.empty())
+        .filter(f -> f.getId().equals(id))
+        .findFirst()
+        .orElse(null);
+  }
+
+  private void writeForecasts() throws IOException {
+    googleSheetsForecastService.writeForecastsData(getForecasts());
   }
 
   public Summary getSummary() {

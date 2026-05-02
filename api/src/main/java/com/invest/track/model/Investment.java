@@ -44,6 +44,7 @@ public class Investment {
   private boolean isReinvested;
 
   @JsonManagedReference private List<InvestmentEntry> entries;
+  @JsonManagedReference private List<Forecast> forecasts;
 
   public boolean isActive() {
     return endDateTime == null || endDateTime.isAfter(LocalDateTime.now());

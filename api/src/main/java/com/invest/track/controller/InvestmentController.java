@@ -3,6 +3,7 @@ package com.invest.track.controller;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
+import com.invest.track.model.Forecast;
 import com.invest.track.model.Investment;
 import com.invest.track.model.InvestmentEntry;
 import com.invest.track.model.Summary;
@@ -140,5 +141,58 @@ public class InvestmentController {
     }
 
     return new ResponseEntity<>(summary, OK);
+  }
+
+  @GetMapping("/forecast/{investmentId}")
+  public ResponseEntity<List<Forecast>> getForecasts(@PathVariable Long investmentId) {
+    log.info("Get forecasts endpoint called for investment {}", investmentId);
+    var forecasts =
+        investmentService.getForecasts().stream()
+            .filter(
+                f -> f.getInvestment() != null && f.getInvestment().getId().equals(investmentId))
+            .toList();
+
+    if (forecasts.isEmpty()) {
+      return ResponseEntity.noContent().build();
+    }
+
+    return new ResponseEntity<>(forecasts, OK);
+  }
+
+  @PostMapping("/forecast/{investmentId}")
+  public ResponseEntity<Forecast> createForecast(
+      @PathVariable Long investmentId, @RequestBody Forecast forecast) {
+    log.info("Create forecast endpoint called for investment {}", investmentId);
+    var saved = investmentService.createForecast(forecast, investmentId);
+
+    if (saved == null) {
+      return ResponseEntity.internalServerError().build();
+    }
+    return new ResponseEntity<>(saved, CREATED);
+  }
+
+  @PutMapping("/forecast/{investmentId}/{forecastId}")
+  public ResponseEntity<Forecast> updateForecast(
+      @PathVariable Long investmentId,
+      @PathVariable Long forecastId,
+      @RequestBody Forecast forecast) {
+    log.info("Update forecast endpoint called for forecast {}", forecastId);
+    forecast.setId(forecastId);
+    var updated = investmentService.updateForecast(forecast);
+    if (updated == null) {
+      return ResponseEntity.internalServerError().build();
+    }
+    return new ResponseEntity<>(updated, OK);
+  }
+
+  @DeleteMapping("/forecast/{investmentId}/{forecastId}")
+  public ResponseEntity<Forecast> deleteForecast(
+      @PathVariable Long investmentId, @PathVariable Long forecastId) {
+    log.info("Delete forecast endpoint called for forecast {}", forecastId);
+    var deleted = investmentService.deleteForecast(forecastId);
+    if (deleted == null) {
+      return ResponseEntity.noContent().build();
+    }
+    return new ResponseEntity<>(deleted, OK);
   }
 }
