@@ -12,7 +12,14 @@ InvestTrack is a personal finance web application for tracking and managing inve
 - 📝 CRUD operations: Create, edit, delete investments and entries
 - 📱 Responsive UI: Built with Tailwind CSS, React, and Astro
 
-### Backend (API)
+### 🔮 Forecasting
+- 📊 Multiple strategies: Pessimist, Neutral, Optimist scenarios per forecast
+- 📅 Arbitrary start dates: Pick any date to begin a forecast
+- 📈 Granular visualization: Compare real results (daily interpolated) with multiple forecast scenarios
+- 🔗 Comparative Analysis: Combined and individual strategy graph views
+- 🛠️ Full CRUD operations: Create, edit, and delete forecasts
+
+## Backend (API)
 - 🔗 RESTful endpoints for investment management
 - 🗃️ Google Sheets integration for data storage and sync
 - Endpoints:
@@ -22,6 +29,10 @@ InvestTrack is a personal finance web application for tracking and managing inve
   - `POST /investments/entry/{id}`: Add entry to investment
   - `DELETE /investments/entry/{investmentId}/{entryId}`: Delete entry
   - `GET /investments/summary`: Investment summary
+  - `GET /investments/forecast/{investmentId}`: Get investment forecasts
+  - `POST /investments/forecast/{investmentId}`: Create forecast
+  - `PUT /investments/forecast/{investmentId}/{forecastId}`: Update forecast
+  - `DELETE /investments/forecast/{investmentId}/{forecastId}`: Delete forecast
   - `GET /heartbeat`: Health check
 
 ## 🛠️ Tech Stack
