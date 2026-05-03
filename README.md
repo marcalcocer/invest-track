@@ -88,5 +88,67 @@ To enable Google Sheets integration, follow these steps:
 
 **Note:** Make sure your Google account has access to the spreadsheet ID set in `application.properties`.
 
+## ⚙️ Local Backend Configuration (CORS)
+To allow the frontend to communicate with the backend when accessing from different IPs (like a smartphone or another computer), you need to configure the allowed origins.
+
+1. Create a file named `application-local.properties` in `api/src/main/resources/`.
+2. Add the following property, including both `localhost` and your local network IP:
+   ```properties
+   cors.allowed-origins=http://localhost:4321,http://192.165.0.2:4321
+   ```
+   *Replace `192.165.0.2` with your computer's local IP address.*
+
+**Note:** This file is already added to `.gitignore`, so your local environment settings won't be committed to the repository.
+
+## 🛠️ Cross-Device Local Access (WSL2)
+
+### Goal
+Access the Astro frontend and Spring Boot backend running inside WSL2 (Ubuntu) from external devices (e.g., smartphone) on the same Wi-Fi network.
+
+### 1. Environment Setup
+- **Host IP (Windows):** e.g., 192.x.x.x (your PC's IP)
+- **Guest IP (WSL2):** Dynamic (e.g., 172.x.x.x)
+- **Frontend:** Astro (Port 4321)
+- **Backend:** Spring Boot (Port 8080)
+
+### 2. Networking Strategy: Port Proxying
+Since WSL2 uses a virtual network, Windows acts as a gateway. Use `netsh` to bridge ports from Windows to WSL2:
+
+**A. Identify WSL2 IP**
+```bash
+hostname -I
+```
+
+**B. Create the Windows Tunnel** (PowerShell as Administrator):
+```powershell
+# Proxy for Frontend (Astro)
+netsh interface portproxy add v4tov4 listenport=4321 listenaddress=0.0.0.0 connectport=4321 connectaddress=[YOUR_WSL_IP]
+# Proxy for Backend (Spring Boot)
+netsh interface portproxy add v4tov4 listenport=8080 listenaddress=0.0.0.0 connectport=8080 connectaddress=[YOUR_WSL_IP]
+```
+
+### 3. Firewall Configuration
+Allow inbound traffic on these ports:
+```powershell
+New-NetFirewallRule -DisplayName "Astro-Dev" -Direction Inbound -LocalPort 4321 -Protocol TCP -Action Allow
+New-NetFirewallRule -DisplayName "Spring-Boot-Dev" -Direction Inbound -LocalPort 8080 -Protocol TCP -Action Allow
+```
+Ensure your Wi-Fi network is set to Private, and check any antivirus settings.
+
+### 4. Application Configuration
+- **Frontend:**
+  - Start dev server with: `npm run dev -- --host 0.0.0.0`
+  - Set API URL to `http://<YOUR_HOST_IP>:8080` in `.env`.
+- **Backend:**
+  - Follow the instructions in the [Local Backend Configuration (CORS)](#️-local-backend-configuration-cors) section to enable access for your Host IP.
+
+### 5. Troubleshooting Checklist
+- Can your phone ping the PC? (`ping <YOUR_HOST_IP>`)
+- Test connection: `Test-NetConnection -ComputerName <YOUR_HOST_IP> -Port 4321`
+- If issues after reboot: `netsh interface portproxy reset`
+
+### 6. Stability Note
+Reserve your PC's IP in your router's DHCP settings to keep it static (e.g., <YOUR_HOST_IP>).
+
 ## 📜 License
 MIT

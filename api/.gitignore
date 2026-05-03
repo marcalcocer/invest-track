@@ -34,3 +34,6 @@ build/
 
 # Credentials folder
 src/main/resources/credentials/
+
+# Local application properties
+src/main/resources/application-local.properties
