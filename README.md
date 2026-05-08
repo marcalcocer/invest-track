@@ -150,5 +150,27 @@ Ensure your Wi-Fi network is set to Private, and check any antivirus settings.
 ### 6. Stability Note
 Reserve your PC's IP in your router's DHCP settings to keep it static (e.g., <YOUR_HOST_IP>).
 
+## 🌐 Reverse Proxy Development (Nginx)
+
+For a more production-like development environment or to use custom domains (e.g., `http://apps.home/invest-track/`), the project is configured to work behind an Nginx reverse proxy.
+
+### 1. Nginx Configuration
+The application is served via Nginx on port 80. The configuration handles:
+- **Frontend:** Proxies `/invest-track/` to the Astro dev server (port 4321).
+- **Backend:** Proxies `/invest-track/api/` to the Spring Boot server (port 8080).
+- **Vite/HMR:** Proxies root-relative assets and WebSocket connections to ensure Hot Module Replacement works through the proxy.
+
+### 2. Astro Configuration (`ui/astro.config.mjs`)
+To support the `/invest-track/` subpath and the proxy:
+- `base: '/invest-track/'`: Ensures Astro generates paths relative to the subpath.
+- `server.allowedHosts`: Includes `apps.home`.
+- `server.hmr`: Configured to use port 80 and a specific path (`invest-track/`) for WebSocket stability.
+
+### 3. Frontend Adaptations
+The UI is built to be "subpath-aware":
+- **Links:** Uses `import.meta.env.BASE_URL` in `Header.astro` for dynamic routing.
+- **Assets:** Uses relative paths for static assets (e.g., `favicon.svg` in `Layout.astro`).
+- **API:** The `API_BASE_URL` in `ui/src/lib/config.js` defaults to `/invest-track/api` to route requests through the proxy.
+
 ## 📜 License
 MIT

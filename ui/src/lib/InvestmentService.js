@@ -1,6 +1,6 @@
 import { API_BASE_URL } from "./config";
 
-const INVESTMENTS_PATH = '/investments';
+const INVESTMENTS_PATH = 'investments';
 
 export const InvestmentService = {
   async fetchInvestments() {

@@ -6,9 +6,15 @@ import react from "@astrojs/react";
 // https://astro.build/config
 export default defineConfig({
   integrations: [tailwind(), react()],
-  base: "/",
+  base: '/invest-track/',
   server: {
     host: true, // Use 0.0.0.0
     port: 4321,
+    allowedHosts: ["apps.home"],
+    hmr: {
+      host: 'apps.home',
+      clientPort: 80,
+      path: 'invest-track/',
+    },
   },
 });

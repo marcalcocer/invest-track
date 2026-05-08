@@ -1,6 +1,6 @@
 import { API_BASE_URL } from "./config";
 
-const FORECASTS_PATH = '/investments/forecast';
+const FORECASTS_PATH = 'investments/forecast';
 
 export const ForecastService = {
   async fetchForecasts(investmentId) {
