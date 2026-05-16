@@ -10,7 +10,8 @@ NC='\033[0m' # No Color
 # 1. Get the current dynamic IP of WSL
 WSL_IP=$(hostname -I | awk '{print $1}')
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LOG_DIR="$SCRIPT_DIR/logs"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+LOG_DIR="$PROJECT_ROOT/logs"
 
 # Create logs directory if it doesn't exist
 mkdir -p "$LOG_DIR"
@@ -26,7 +27,7 @@ powershell.exe -Command "Start-Process powershell -ArgumentList '-Command \"nets
 
 # 3. Configure Nginx
 echo -e "${YELLOW}⚙️  Configuring Nginx...${NC}"
-NGINX_CONF_SRC="$SCRIPT_DIR/nginx/invest-track.conf"
+NGINX_CONF_SRC="$PROJECT_ROOT/nginx/invest-track.conf"
 NGINX_CONF_DEST="/etc/nginx/sites-enabled/invest-track.conf"
 
 if [ -f "$NGINX_CONF_SRC" ]; then
@@ -46,14 +47,14 @@ fi
 # 4. Start the Backend (Spring Boot) in the background
 echo -e "${YELLOW}🟢 Starting Backend (Spring Boot)...${NC}"
 echo -e "${BLUE}   📝 Logs: logs/backend.log${NC}"
-cd "$SCRIPT_DIR/api"
+cd "$PROJECT_ROOT/api"
 ./gradlew bootRun > "$LOG_DIR/backend.log" 2>&1 &
 BACKEND_PID=$!
 
 # 5. Start the Frontend (Astro) in the background
 echo -e "${YELLOW}🟢 Starting Frontend (Astro)...${NC}"
 echo -e "${BLUE}   📝 Logs: logs/frontend.log${NC}"
-cd "$SCRIPT_DIR/ui"
+cd "$PROJECT_ROOT/ui"
 npm run dev -- --host 0.0.0.0 > "$LOG_DIR/frontend.log" 2>&1 &
 FRONTEND_PID=$!
 

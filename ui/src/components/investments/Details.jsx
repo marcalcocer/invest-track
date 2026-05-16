@@ -8,6 +8,7 @@ import CreateInvestmentModal from '../modals/CreateInvestmentModal';
 import EditInvestmentModal from '../modals/EditInvestmentModal';
 import InvestmentsDetailsListItem from "./InvestmentsDetailsSection/InvestmentsDetailsListItem";
 import { ForecastService } from '@/lib/ForecastService';
+import { getInvestmentDetailsUrl } from "@/lib/NavigationUtils";
 
 export default function InvestmentsDetails({ investments }) {
   const [investmentsWithForecasts, setInvestmentsWithForecasts] = useState([]);
@@ -67,7 +68,7 @@ export default function InvestmentsDetails({ investments }) {
       investment={investment}
       onGraph={() => setSelectedInvestment(investment)}
       onForecast={() => setShowForecastModalFor(investment)}
-      onDetails={() => window.location.href = `/investment?id=${investment.id}`}
+      onDetails={() => window.location.href = getInvestmentDetailsUrl(investment.id)}
       onDelete={() => setInvestmentToDelete(investment)}
       onEdit={() => setEditingInvestment(investment)}
     />

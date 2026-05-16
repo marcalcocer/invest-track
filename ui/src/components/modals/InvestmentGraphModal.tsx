@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Chart from "react-apexcharts";
 import type { ApexOptions } from "apexcharts";
 import { currencyAdapter, numberAdapter } from "@/lib/currencyAdapter";
-import { formatDate } from "@/lib/datetimeFormater";
+import BaseModal from "./BaseModal";
+import ModalHeader from "./ModalHeader";
+import InvestmentStats from "../investments/InvestmentStats";
+import ViewDetailsButton from "../investments/ViewDetailsButton";
+import { getCustomTooltip } from "@/lib/ChartUtils";
 
 interface InvestmentEntry {
     datetime: string;
@@ -38,12 +42,9 @@ export default function InvestmentGraphModal({ investment, onClose, showDetailsB
     if (!investment) return null;
 
     const { currency } = investment;
-    const categories = investment.entries.map(entry => formatDate(entry.datetime));
-
-    const formatCurrencyLabel = (value: number) => {
-        const formatted = currencyAdapter(value, currency);
-        return formatted.replace(/[0-9.,\s]/g, "").trim();
-    };
+    
+    const currencyTooltip = useMemo(() => getCustomTooltip((val: number) => currencyAdapter(val, currency)), [currency]);
+    const percentTooltip = useMemo(() => getCustomTooltip((val: number) => numberAdapter(val) + "%"), []);
 
     const sharedOptions: ApexOptions = {
         legend: {
@@ -88,21 +89,16 @@ export default function InvestmentGraphModal({ investment, onClose, showDetailsB
         tooltip: {
             enabled: true,
             x: { format: "dd MMM yyyy" },
-            style: {
-                fontSize: '12px',
-                fontFamily: 'Outfit, sans-serif'
-            }
+            custom: currencyTooltip as any
         },
         xaxis: {
-            type: "category",
-            categories,
-            axisBorder: { show: false },
-            axisTicks: { show: false },
+            type: "datetime",
             labels: {
                 style: {
                     fontSize: '10px',
                     fontFamily: 'Outfit, sans-serif'
-                }
+                },
+                formatter: (val: string) => new Date(val).toLocaleDateString()
             }
         },
         yaxis: {
@@ -114,207 +110,129 @@ export default function InvestmentGraphModal({ investment, onClose, showDetailsB
                 },
                 formatter: (value: number) => currencyAdapter(value, currency),
             },
-            title: {
-                text: formatCurrencyLabel(0),
-                style: {
-                    fontSize: "12px",
-                    color: "#6B7280",
-                    fontFamily: 'Outfit, sans-serif'
-                },
-            },
         },
     };
-
-    const entryData = investment.entries.map(entry => ({
-        date: formatDate(entry.datetime),
-        totalInvestedAmount: entry.totalInvestedAmount,
-        obtained: entry.obtained,
-        benefit: entry.benefit,
-    }));
 
     const seriesInvestedObtained = [
         {
             name: "Total Invested",
-            data: entryData.map(e => e.totalInvestedAmount),
+            data: investment.entries.map(e => ({ x: new Date(e.datetime).getTime(), y: e.totalInvestedAmount })),
         },
         {
             name: "Obtained",
-            data: entryData.map(e => e.obtained),
+            data: investment.entries.map(e => ({ x: new Date(e.datetime).getTime(), y: e.obtained })),
         },
     ];
 
     const seriesBenefit = [
         {
             name: "Benefit",
-            data: entryData.map(e => e.benefit),
+            data: investment.entries.map(e => ({ x: new Date(e.datetime).getTime(), y: e.benefit })),
         },
     ];
 
     const seriesProfitability = [
         {
             name: "Profitability",
-            data: investment.entries.map(entry => entry.profitability * 100),
+            data: investment.entries.map(entry => ({ x: new Date(entry.datetime).getTime(), y: entry.profitability * 100 })),
         },
     ];
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
-            <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto mx-2">
-                {/* Header */}
-                <div className="bg-white p-4 border-b border-gray-200 rounded-t-lg">
-                    <div className="flex justify-between items-start">
-                        <div className="flex-1 min-w-0">
-                            <h2 className="text-lg sm:text-xl font-bold text-gray-800 truncate">{investment.name}</h2>
-                            <p className="text-gray-600 text-xs sm:text-sm truncate">
-                                {investment.description} ({investment.currency})
-                            </p>
-                        </div>
-                        <button 
-                            className="flex-shrink-0 ml-2 text-gray-500 hover:text-gray-800 text-lg"
-                            onClick={onClose}
+        <BaseModal onClose={onClose}>
+            <ModalHeader 
+                title={investment.name}
+                description={investment.description}
+                currency={currency}
+                onClose={onClose}
+            />
+            
+            <div className="p-4">
+                <InvestmentStats investment={investment} currency={currency} />
+                
+                {showDetailsButton && (
+                    <ViewDetailsButton investmentId={investment.id} className="mt-4" />
+                )}
+
+                <div className="mt-8 space-y-6">
+                    {/* Invested vs Obtained */}
+                    <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+                        <h3 
+                            className="text-sm sm:text-base font-semibold text-gray-700 mb-3 cursor-pointer flex justify-between items-center"
+                            onClick={() => setExpandedGraphs(prev => ({...prev, invested: !prev.invested}))}
                         >
-                            ✖
-                        </button>
-                    </div>
-                    
-                    {/* Stats in responsive grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
-                        <div className="text-center">
-                            <p className="text-xs text-gray-500">Initial</p>
-                            <p className="text-xs font-semibold text-gray-700">
-                                {investment.lastEntry ? currencyAdapter(investment.lastEntry.initialInvestedAmount, currency) : "N/A"}
-                            </p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-xs text-gray-500">Total</p>
-                            <p className="text-xs font-semibold text-gray-700">
-                                {investment.lastEntry ? currencyAdapter(investment.lastEntry.totalInvestedAmount, currency) : "N/A"}
-                            </p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-xs text-gray-500">Obtained</p>
-                            <p className="text-xs font-semibold text-gray-700">
-                                {investment.lastEntry ? currencyAdapter(investment.lastEntry.obtained, currency) : "N/A"}
-                            </p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-xs text-gray-500">Profit</p>
-                            <p className="text-xs font-semibold text-gray-700">
-                                {investment.lastEntry ? numberAdapter(100 * investment.lastEntry.profitability) + "%" : "N/A"}
-                            </p>
-                        </div>
+                            <span>Invested vs Obtained</span>
+                            <span>{expandedGraphs.invested ? '▲' : '▼'}</span>
+                        </h3>
+                        {expandedGraphs.invested && (
+                            <Chart
+                                options={{
+                                    ...sharedOptions,
+                                    colors: ["#465FFF", "#9CB9FF"],
+                                }}
+                                series={seriesInvestedObtained}
+                                type="area"
+                                height={250}
+                            />
+                        )}
                     </div>
 
-                    {/* View Details Button */}
-                    {showDetailsButton && (
-                        <div className="mt-4 flex justify-center">
-                            <button
-                                className="px-4 py-2 bg-blue-500 text-white text-sm font-semibold rounded-lg shadow hover:bg-blue-600 transition-colors w-full sm:w-auto"
-                                onClick={() => window.location.href = `/investment?id=${investment.id}`}
-                            >
-                                View Details
-                            </button>
-                        </div>
-                    )}
-                </div>
+                    {/* Benefit */}
+                    <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+                        <h3 
+                            className="text-sm sm:text-base font-semibold text-gray-700 mb-3 cursor-pointer flex justify-between items-center"
+                            onClick={() => setExpandedGraphs(prev => ({...prev, benefit: !prev.benefit}))}
+                        >
+                            <span>Benefit Over Time</span>
+                            <span>{expandedGraphs.benefit ? '▲' : '▼'}</span>
+                        </h3>
+                        {expandedGraphs.benefit && (
+                            <Chart
+                                options={{
+                                    ...sharedOptions,
+                                    colors: ["#10B981"],
+                                }}
+                                series={seriesBenefit}
+                                type="area"
+                                height={250}
+                            />
+                        )}
+                    </div>
 
-                {/* Scrollable content */}
-                <div className="p-4">
-                    {entryData.length > 0 ? (
-                        <div className="space-y-6">
-                            {/* Invested vs Obtained */}
-                            <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
-                                <h3 
-                                    className="text-sm sm:text-base font-semibold text-gray-700 mb-3 cursor-pointer"
-                                    onClick={() => setExpandedGraphs(prev => ({...prev, invested: !prev.invested}))}
-                                >
-                                    Invested vs Obtained {expandedGraphs.invested ? '▲' : '▼'}
-                                </h3>
-                                {expandedGraphs.invested && (
-                                    <Chart
-                                        options={{
-                                            ...sharedOptions,
-                                            colors: ["#465FFF", "#9CB9FF"],
-                                        }}
-                                        series={seriesInvestedObtained}
-                                        type="area"
-                                        height={250}
-                                    />
-                                )}
-                            </div>
-
-                            {/* Benefit */}
-                            <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
-                                <h3 
-                                    className="text-sm sm:text-base font-semibold text-gray-700 mb-3 cursor-pointer"
-                                    onClick={() => setExpandedGraphs(prev => ({...prev, benefit: !prev.benefit}))}
-                                >
-                                    Benefit Over Time {expandedGraphs.benefit ? '▲' : '▼'}
-                                </h3>
-                                {expandedGraphs.benefit && (
-                                    <Chart
-                                        options={{
-                                            ...sharedOptions,
-                                            colors: ["#10B981"],
-                                        }}
-                                        series={seriesBenefit}
-                                        type="area"
-                                        height={250}
-                                    />
-                                )}
-                            </div>
-
-                            {/* Profitability */}
-                            <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
-                                <h3 
-                                    className="text-sm sm:text-base font-semibold text-gray-700 mb-3 cursor-pointer"
-                                    onClick={() => setExpandedGraphs(prev => ({...prev, profitability: !prev.profitability}))}
-                                >
-                                    Profitability Over Time {expandedGraphs.profitability ? '▲' : '▼'}
-                                </h3>
-                                {expandedGraphs.profitability && (
-                                    <Chart
-                                        options={{
-                                            ...sharedOptions,
-                                            colors: ["#F59E0B"],
-                                            yaxis: {
-                                                ...sharedOptions.yaxis,
-                                                labels: {
-                                                    style: { 
-                                                        fontSize: "10px", 
-                                                        colors: ["#6B7280"],
-                                                        fontFamily: 'Outfit, sans-serif'
-                                                    },
-                                                    formatter: (value: number) => numberAdapter(value, 1) + "%",
-                                                },
-                                                title: {
-                                                    text: "%",
-                                                    style: {
-                                                        fontSize: "12px",
-                                                        color: "#6B7280",
-                                                        fontFamily: 'Outfit, sans-serif'
-                                                    },
-                                                },
-                                            },
-                                            tooltip: {
-                                                ...sharedOptions.tooltip,
-                                                y: {
-                                                    formatter: (value: number) => numberAdapter(value) + "%",
-                                                },
-                                            },
-                                        }}
-                                        series={seriesProfitability}
-                                        type="area"
-                                        height={250}
-                                    />
-                                )}
-                            </div>
-                        </div>
-                    ) : (
-                        <p className="text-center text-gray-400 py-8">No investment entries available.</p>
-                    )}
+                    {/* Profitability */}
+                    <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+                        <h3 
+                            className="text-sm sm:text-base font-semibold text-gray-700 mb-3 cursor-pointer flex justify-between items-center"
+                            onClick={() => setExpandedGraphs(prev => ({...prev, profitability: !prev.profitability}))}
+                        >
+                            <span>Profitability Over Time</span>
+                            <span>{expandedGraphs.profitability ? '▲' : '▼'}</span>
+                        </h3>
+                        {expandedGraphs.profitability && (
+                            <Chart
+                                options={{
+                                    ...sharedOptions,
+                                    colors: ["#F59E0B"],
+                                    yaxis: {
+                                        ...sharedOptions.yaxis,
+                                        labels: {
+                                            ...sharedOptions.yaxis?.labels,
+                                            formatter: (value: number) => numberAdapter(value, 1) + "%",
+                                        },
+                                    },
+                                    tooltip: {
+                                        ...sharedOptions.tooltip,
+                                        custom: percentTooltip as any
+                                    },
+                                }}
+                                series={seriesProfitability}
+                                type="area"
+                                height={250}
+                            />
+                        )}
+                    </div>
                 </div>
             </div>
-        </div>
+        </BaseModal>
     );
 }
