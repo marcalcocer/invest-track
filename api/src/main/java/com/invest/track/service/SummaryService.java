@@ -13,6 +13,8 @@ public class SummaryService {
     var obtained = 0.0;
     var benefit = 0.0;
 
+    var initialInvestedAmount = 0.0;
+
     for (Investment investment : investments) {
       if (!investment.isActive() || investment.getLastEntry() == null) {
         continue;
@@ -22,15 +24,25 @@ public class SummaryService {
       investedAmount += lastEntry.getTotalInvestedAmount();
       obtained += lastEntry.getObtained();
       benefit += lastEntry.getBenefit();
+
+      initialInvestedAmount += lastEntry.getInitialInvestedAmount();
     }
 
+    var initialObtained = obtained;
+    var initialBenefit = initialObtained - initialInvestedAmount;
+
     var profitability = calculateProfitability(benefit, investedAmount);
+    var initialProfitability = calculateProfitability(initialBenefit, initialInvestedAmount);
 
     return Summary.builder()
         .investedAmount(investedAmount)
         .obtained(obtained)
         .benefit(benefit)
         .profitability(profitability)
+        .initialInvestedAmount(initialInvestedAmount)
+        .initialObtained(initialObtained)
+        .initialBenefit(initialBenefit)
+        .initialProfitability(initialProfitability)
         .build();
   }
 

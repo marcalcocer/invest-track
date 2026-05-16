@@ -24,6 +24,10 @@ export default function Home() {
           obtained: summaryData.obtained,
           benefit: summaryData.benefit,
           profitability: summaryData.profitability,
+          initialInvestedAmount: summaryData.initialInvestedAmount,
+          initialObtained: summaryData.initialObtained,
+          initialBenefit: summaryData.initialBenefit,
+          initialProfitability: summaryData.initialProfitability,
         });
       } catch (error) {
         console.error('Error fetching data', error);
