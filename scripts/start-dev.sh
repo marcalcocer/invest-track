@@ -25,23 +25,47 @@ echo -e "${BLUE}================================================================
 echo -e "${YELLOW}🌐 Configuring Windows Port Proxy (netsh)...${NC}"
 powershell.exe -Command "Start-Process powershell -ArgumentList '-Command \"netsh interface portproxy delete v4tov4 listenport=80 listenaddress=0.0.0.0; netsh interface portproxy add v4tov4 listenport=80 listenaddress=0.0.0.0 connectport=80 connectaddress=$WSL_IP\"' -Verb RunAs"
 
-# 3. Configure Nginx
-echo -e "${YELLOW}⚙️  Configuring Nginx...${NC}"
-NGINX_CONF_SRC="$PROJECT_ROOT/nginx/invest-track.conf"
-NGINX_CONF_DEST="/etc/nginx/sites-enabled/invest-track.conf"
+# 3. Configure Nginx (Snippets Architecture)
+echo -e "${YELLOW}⚙️  Configuring Nginx Deployment...${NC}"
 
+# Define key paths
+NGINX_SNIPPET_DIR="/etc/nginx/apps.home.d"
+MAIN_CONF_SRC="$HOME/workspace/home-auth/nginx/apps.home.conf"
+MAIN_CONF_DEST="/etc/nginx/sites-enabled/apps.home.conf"
+
+NGINX_CONF_SRC="$PROJECT_ROOT/nginx/invest-track.conf" # Corrected path
+NGINX_CONF_DEST="$NGINX_SNIPPET_DIR/invest-track.conf"
+
+# A. Ensure the dynamic injection directory exists
+sudo mkdir -p "$NGINX_SNIPPET_DIR"
+
+# B. Ensure the core apps.home server is enabled
+if [ ! -f "$MAIN_CONF_DEST" ]; then
+    if [ -f "$MAIN_CONF_SRC" ]; then
+        echo -e "${YELLOW}🔗 Base server configuration missing. Deploying from home-auth...${NC}"
+        sudo cp "$MAIN_CONF_SRC" "$MAIN_CONF_DEST"
+    else
+        echo -e "${RED}❌ Error: Base server configuration not found in Nginx, and home-auth repository is missing at $MAIN_CONF_SRC${NC}"
+        exit 1
+    fi
+fi
+
+# C. Copy the specific invest-track snippet
 if [ -f "$NGINX_CONF_SRC" ]; then
     sudo cp "$NGINX_CONF_SRC" "$NGINX_CONF_DEST"
+    
+    # Validate global syntax before reloading the service
     if sudo nginx -t &>/dev/null; then
         sudo systemctl reload nginx
-        echo -e "${GREEN}✅ Nginx reloaded successfully.${NC}"
+        echo -e "${GREEN}✅ Nginx reloaded successfully with Invest-Track locations.${NC}"
     else
         echo -e "${RED}❌ Nginx configuration test failed!${NC}"
         sudo nginx -t
         exit 1
     fi
 else
-    echo -e "${RED}❌ Error: Nginx config file not found at $NGINX_CONF_SRC${NC}"
+    echo -e "${RED}❌ Error: Nginx snippet not found at $NGINX_CONF_SRC${NC}"
+    exit 1
 fi
 
 # 4. Start the Backend (Spring Boot) in the background
