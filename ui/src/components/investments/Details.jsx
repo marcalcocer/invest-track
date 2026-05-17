@@ -10,7 +10,7 @@ import InvestmentsDetailsListItem from "./InvestmentsDetailsSection/InvestmentsD
 import { ForecastService } from '@/lib/ForecastService';
 import { getInvestmentDetailsUrl } from "@/lib/NavigationUtils";
 
-export default function InvestmentsDetails({ investments }) {
+export default function InvestmentsDetails({ investments, isPrivate }) {
   const [investmentsWithForecasts, setInvestmentsWithForecasts] = useState([]);
 
   useEffect(() => {
@@ -71,6 +71,7 @@ export default function InvestmentsDetails({ investments }) {
       onDetails={() => window.location.href = getInvestmentDetailsUrl(investment.id)}
       onDelete={() => setInvestmentToDelete(investment)}
       onEdit={() => setEditingInvestment(investment)}
+      isPrivate={isPrivate}
     />
   );
 
@@ -147,6 +148,7 @@ export default function InvestmentsDetails({ investments }) {
           investment={selectedInvestment}
           onClose={() => setSelectedInvestment(null)}
           showDetailsButton={true}
+          isPrivate={isPrivate}
         />
       )}
       {showForecastModalFor && (

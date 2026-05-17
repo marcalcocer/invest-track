@@ -3,11 +3,24 @@ import { InvestmentService } from '@/lib/InvestmentService';
 import LoadingSpinner from './LoadingSpinner';
 import InvestmentsDetails from './investments/Details';
 import InvestmentsSummary from './investments/Summary';
+import { getPrivacyMode, PRIVACY_MODE_EVENT } from './PrivacyToggle';
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [investments, setInvestments] = useState([]);
   const [summary, setSummary] = useState({});
+  const [isPrivate, setIsPrivate] = useState(false);
+
+  useEffect(() => {
+    setIsPrivate(getPrivacyMode());
+    
+    const handlePrivacyChange = (e) => {
+      setIsPrivate(e.detail);
+    };
+
+    window.addEventListener(PRIVACY_MODE_EVENT, handlePrivacyChange);
+    return () => window.removeEventListener(PRIVACY_MODE_EVENT, handlePrivacyChange);
+  }, []);
 
   useEffect(() => {
     async function fetchData() {
@@ -45,8 +58,8 @@ export default function Home() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <InvestmentsSummary summary={summary} />
-      <InvestmentsDetails investments={investments} />
+      <InvestmentsSummary summary={summary} isPrivate={isPrivate} />
+      <InvestmentsDetails investments={investments} isPrivate={isPrivate} />
     </div>
   );
 }

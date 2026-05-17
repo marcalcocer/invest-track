@@ -30,9 +30,10 @@ interface InvestmentGraphModalProps {
     investment: Investment | null;
     onClose: () => void;
     showDetailsButton?: boolean;
+    isPrivate?: boolean;
 }
 
-export default function InvestmentGraphModal({ investment, onClose, showDetailsButton }: InvestmentGraphModalProps) {
+export default function InvestmentGraphModal({ investment, onClose, showDetailsButton, isPrivate }: InvestmentGraphModalProps) {
     const [expandedGraphs, setExpandedGraphs] = useState({
         invested: true,
         benefit: true,
@@ -148,7 +149,7 @@ export default function InvestmentGraphModal({ investment, onClose, showDetailsB
             />
             
             <div className="p-4">
-                <InvestmentStats investment={investment} currency={currency} />
+                <InvestmentStats investment={investment} currency={currency} isPrivate={isPrivate} />
                 
                 {showDetailsButton && (
                     <ViewDetailsButton investmentId={investment.id} className="mt-4" />

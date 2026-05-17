@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { currencyAdapter } from "@/lib/currencyAdapter";
+import { formatValueForPrivacy } from "@/lib/currencyAdapter";
 import { WalletIcon, BanknotesIcon, ArrowTrendingUpIcon, ChartBarIcon, ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 
-const SummaryRow = ({ invested, obtained, benefit, profit, title }) => (
+const SummaryRow = ({ invested, obtained, benefit, profit, title, isPrivate }) => (
   <div className="mb-8 last:mb-0">
     {title && (
       <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 text-left ml-1">
@@ -14,7 +14,7 @@ const SummaryRow = ({ invested, obtained, benefit, profit, title }) => (
       <div className="flex flex-col items-center rounded-lg border border-gray-200 bg-gray-50 px-2 py-3 sm:px-3 sm:py-4 text-center">
         <WalletIcon className="w-6 h-6 text-gray-400 mb-1" />
         <dd className="text-base sm:text-lg font-bold text-gray-700">
-          {currencyAdapter(invested)}
+          {formatValueForPrivacy(invested, "EUR", isPrivate)}
         </dd>
         <dt className="order-last text-xs sm:text-sm font-medium text-gray-400 mt-1">
           Invested
@@ -25,7 +25,7 @@ const SummaryRow = ({ invested, obtained, benefit, profit, title }) => (
       <div className="flex flex-col items-center rounded-lg border border-gray-200 bg-gray-50 px-2 py-3 sm:px-3 sm:py-4 text-center">
         <BanknotesIcon className="w-6 h-6 text-gray-400 mb-1" />
         <dd className="text-base sm:text-lg font-bold text-gray-700">
-          {currencyAdapter(obtained)}
+          {formatValueForPrivacy(obtained, "EUR", isPrivate)}
         </dd>
         <dt className="order-last text-xs sm:text-sm font-medium text-gray-500 mt-1">
           Obtained
@@ -36,7 +36,7 @@ const SummaryRow = ({ invested, obtained, benefit, profit, title }) => (
       <div className="flex flex-col items-center rounded-lg border border-gray-200 bg-gray-50 px-2 py-3 sm:px-3 sm:py-4 text-center">
         <ChartBarIcon className="w-6 h-6 text-gray-400 mb-1" />
         <dd className="text-base sm:text-lg font-bold text-gray-700">
-          {currencyAdapter(benefit)}
+          {formatValueForPrivacy(benefit, "EUR", isPrivate)}
         </dd>
         <dt className="order-last text-xs sm:text-sm font-medium text-gray-400 mt-1">
           Benefit
@@ -57,7 +57,7 @@ const SummaryRow = ({ invested, obtained, benefit, profit, title }) => (
   </div>
 );
 
-export default function InvestmentsSummary({ summary }) {
+export default function InvestmentsSummary({ summary, isPrivate }) {
   const [isOrganicExpanded, setIsOrganicExpanded] = useState(false);
 
   return (
@@ -74,6 +74,7 @@ export default function InvestmentsSummary({ summary }) {
         obtained={summary.obtained}
         benefit={summary.benefit}
         profit={summary.profitability}
+        isPrivate={isPrivate}
       />
 
       <div className="mt-8 border-t border-gray-100">
@@ -99,6 +100,7 @@ export default function InvestmentsSummary({ summary }) {
             obtained={summary.initialObtained}
             benefit={summary.initialBenefit}
             profit={summary.initialProfitability}
+            isPrivate={isPrivate}
           />
         </div>
       )}

@@ -24,3 +24,17 @@ export const numberAdapter = (value, fractionDigits = 2) => {
         maximumFractionDigits: fractionDigits
     }).format(num);
 };
+
+/**
+ * Formats a financial value for display, masking it if privacy mode is active.
+ * @param {number} value - The numeric value to format.
+ * @param {string} currency - The currency code (e.g., "EUR", "USD").
+ * @param {boolean} isPrivate - Whether privacy mode is active.
+ * @returns {string} The formatted or masked value.
+ */
+export const formatValueForPrivacy = (value, currency, isPrivate) => {
+    if (isPrivate) {
+        return "******";
+    }
+    return currencyAdapter(value, currency);
+};

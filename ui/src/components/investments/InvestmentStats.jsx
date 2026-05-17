@@ -1,6 +1,6 @@
-import { currencyAdapter, numberAdapter } from "@/lib/currencyAdapter";
+import { currencyAdapter, numberAdapter, formatValueForPrivacy } from "@/lib/currencyAdapter";
 
-export default function InvestmentStats({ investment, currency }) {
+export default function InvestmentStats({ investment, currency, isPrivate }) {
     if (!investment?.lastEntry) return null;
     
     return (
@@ -8,19 +8,19 @@ export default function InvestmentStats({ investment, currency }) {
             <div className="text-center">
                 <p className="text-xs text-gray-500">Initial</p>
                 <p className="text-xs font-semibold text-gray-700">
-                    {currencyAdapter(investment.lastEntry.initialInvestedAmount, currency)}
+                    {formatValueForPrivacy(investment.lastEntry.initialInvestedAmount, currency, isPrivate)}
                 </p>
             </div>
             <div className="text-center">
                 <p className="text-xs text-gray-500">Total</p>
                 <p className="text-xs font-semibold text-gray-700">
-                    {currencyAdapter(investment.lastEntry.totalInvestedAmount, currency)}
+                    {formatValueForPrivacy(investment.lastEntry.totalInvestedAmount, currency, isPrivate)}
                 </p>
             </div>
             <div className="text-center">
                 <p className="text-xs text-gray-500">Obtained</p>
                 <p className="text-xs font-semibold text-gray-700">
-                    {currencyAdapter(investment.lastEntry.obtained, currency)}
+                    {formatValueForPrivacy(investment.lastEntry.obtained, currency, isPrivate)}
                 </p>
             </div>
             <div className="text-center">

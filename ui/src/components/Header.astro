@@ -1,5 +1,6 @@
 ---
 import logo from "@/assets/logo.svg";
+import PrivacyToggle from "./PrivacyToggle";
 
 const base = import.meta.env.BASE_URL;
 const currentPath = Astro.url.pathname;
@@ -15,23 +16,62 @@ const currentPath = Astro.url.pathname;
       </a>
     </div>
 
-    <!-- Hamburger Menu Button -->
-    <button
-      data-collapse-toggle="navbar-default"
-      type="button"
-      class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-      aria-controls="navbar-default"
-      aria-expanded="false"
-    >
-      <span class="sr-only">Open main menu</span>
-      <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
-        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
-      </svg>
-    </button>
+    <!-- Right-aligned Desktop Nav and Privacy Toggle -->
+    <div class="hidden w-full md:flex md:w-auto md:items-center space-x-3 rtl:space-x-reverse">
+      <PrivacyToggle client:load class="mr-4" /> {/* Eye button left of nav links */}
+      <ul class="font-medium flex flex-col p-4 md:p-0 mt-4 md:mt-0 md:flex-row md:space-x-8 rtl:space-x-reverse md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+        <!-- Home Link -->
+        <li>
+          <a
+            href={base}
+            class={`block py-2 px-3 rounded-sm md:p-0 ${
+              currentPath === base || currentPath === base.slice(0, -1)
+                ? "text-white bg-blue-700 md:bg-transparent md:text-blue-700 dark:text-white md:dark:text-blue-500"
+                : "text-gray-900 hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white"
+            }`}
+            aria-current={currentPath === base || currentPath === base.slice(0, -1) ? "page" : undefined}
+          >
+            Home
+          </a>
+        </li>
 
-    <!-- Navigation Links -->
-    <div class="hidden w-full md:block md:w-auto" id="navbar-default">
-      <ul class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+        <!-- About Link -->
+        <li>
+          <a
+            href={`${base}about`}
+            class={`block py-2 px-3 rounded-sm md:p-0 ${
+              currentPath === `${base}about` || currentPath === `${base}about/`
+                ? "text-white bg-blue-700 md:bg-transparent md:text-blue-700 dark:text-white md:dark:text-blue-500"
+                : "text-gray-900 hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white"
+            }`}
+            aria-current={currentPath === `${base}about` || currentPath === `${base}about/` ? "page" : undefined}
+          >
+            About
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Mobile Menu Button and Mobile Privacy Toggle -->
+    <div class="flex items-center md:hidden space-x-3 rtl:space-x-reverse">
+      <PrivacyToggle client:load />
+      <button
+        data-collapse-toggle="navbar-default"
+        type="button"
+        class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+        aria-controls="navbar-default"
+        aria-expanded="false"
+      >
+        <span class="sr-only">Open main menu</span>
+        <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile Navigation Links (collapsible) -->
+    <div class="hidden w-full md:hidden" id="navbar-default">
+      <ul class="font-medium flex flex-col p-4 mt-4 border border-gray-100 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
         <!-- Home Link -->
         <li>
           <a
@@ -71,7 +111,7 @@ const currentPath = Astro.url.pathname;
   document.addEventListener('DOMContentLoaded', function() {
     const hamburgerButton = document.querySelector('[data-collapse-toggle="navbar-default"]');
     const navbar = document.getElementById('navbar-default');
-    
+
     if (hamburgerButton && navbar) {
       hamburgerButton.addEventListener('click', function() {
         navbar.classList.toggle('hidden');

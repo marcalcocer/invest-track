@@ -1,7 +1,7 @@
-import { currencyAdapter } from "@/lib/currencyAdapter";
+import { currencyAdapter, formatValueForPrivacy } from "@/lib/currencyAdapter";
 import { formatDate } from "@/lib/datetimeFormater";
 
-export default function InvestmentListItem({ investment, onGraph, onForecast, onDetails, onDelete, onEdit }) {
+export default function InvestmentListItem({ investment, onGraph, onForecast, onDetails, onDelete, onEdit, isPrivate }) {
     const lastEntry = investment.lastEntry;
     return (
         <li
@@ -21,10 +21,10 @@ export default function InvestmentListItem({ investment, onGraph, onForecast, on
                     Profit: <span className="font-medium text-green-600">{lastEntry?.profitability != null ? (100 * lastEntry.profitability).toFixed(2) : "-"}%</span>
                 </p>
                 <p className="text-xs sm:text-sm text-gray-500">
-                    Obtained: <span className="font-medium text-blue-600">{lastEntry?.obtained != null ? currencyAdapter(lastEntry.obtained, investment.currency) : "-"}</span>
+                    Obtained: <span className="font-medium text-blue-600">{formatValueForPrivacy(lastEntry?.obtained, investment.currency, isPrivate)}</span>
                 </p>
                 <p className="text-xs sm:text-sm text-gray-500">
-                    Benefit: <span className="font-medium text-purple-600">{lastEntry?.benefit != null ? currencyAdapter(lastEntry.benefit, investment.currency) : "-"}</span>
+                    Benefit: <span className="font-medium text-purple-600">{formatValueForPrivacy(lastEntry?.benefit, investment.currency, isPrivate)}</span>
                 </p>
             </div>
             {/* Action Buttons in Dedicated Grid Cell */}
