@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { InvestmentService } from '@/lib/InvestmentService';
 import LoadingSpinner from './LoadingSpinner';
+import AIMessage from './AIMessage';
 import InvestmentsDetails from './investments/Details';
 import InvestmentsSummary from './investments/Summary';
 import { getPrivacyMode, PRIVACY_MODE_EVENT } from './PrivacyToggle';
@@ -58,6 +59,7 @@ export default function Home() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
+      <AIMessage />
       <InvestmentsSummary summary={summary} isPrivate={isPrivate} />
       <InvestmentsDetails investments={investments} isPrivate={isPrivate} />
     </div>

@@ -1,11 +1,10 @@
 // @ts-check
 import { defineConfig } from "astro/config";
-import tailwind from "@astrojs/tailwind";
 import react from "@astrojs/react";
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [tailwind(), react()],
+  integrations: [react()],
   base: '/invest-track/',
   server: {
     host: true, // Use 0.0.0.0
@@ -14,7 +13,13 @@ export default defineConfig({
     hmr: {
       host: 'apps.home',
       clientPort: 80,
-      path: 'invest-track/',
+    },
+  },
+  vite: {
+    server: {
+      proxy: {
+        '/ollama/api/': 'http://localhost:5000',
+      },
     },
   },
 });
