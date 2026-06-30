@@ -1,7 +1,10 @@
 ---
+import Layout from "../layouts/Layout.astro";
 import InvestmentPage from "../components/investments/Investment.jsx";
 import Header from "@/components/Header.astro";
 ---
 
-<Header />
-<InvestmentPage client:only="react" />
+<Layout>
+  <Header />
+  <InvestmentPage client:only="react" />
+</Layout>
