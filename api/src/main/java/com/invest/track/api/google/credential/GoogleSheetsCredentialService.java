@@ -71,12 +71,23 @@ public class GoogleSheetsCredentialService {
 
     var resPath = getResourcesFileDataStoreFactory();
 
-    // Build flow and trigger user authorization request.
+    // Build flow and check for existing credential.
     var flow =
         new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, jsonFactory, clientSecrets, SCOPES)
             .setDataStoreFactory(resPath)
             .setAccessType("offline")
             .build();
+
+    var existingCredential = flow.loadCredential("user");
+    if (existingCredential != null) {
+      try {
+        existingCredential.refreshToken();
+        log.info("Loaded existing Google Sheets credential from store");
+        return existingCredential;
+      } catch (IOException e) {
+        log.info("Stored credential expired, re-authenticating...");
+      }
+    }
 
     Runtime.getRuntime().addShutdownHook(new GoogleLocalServerReceiverShutdownHook(receiver));
 

@@ -27,6 +27,7 @@ function faviconPlugin() {
 
 // https://astro.build/config
 export default defineConfig({
+  devToolbar: { enabled: false },
   integrations: [react()],
   base: '/invest-track/',
   server: {

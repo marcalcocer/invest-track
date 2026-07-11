@@ -1,5 +1,4 @@
 ---
-import logo from "@/assets/logo.svg";
 import PrivacyToggle from "./PrivacyToggle";
 
 const base = import.meta.env.BASE_URL;
@@ -11,7 +10,7 @@ const currentPath = Astro.url.pathname;
     <!-- Logo Section -->
     <div class="flex items-center space-x-3 rtl:space-x-reverse">
       <a href={base} class="flex items-center space-x-2">
-        <img src={logo.src} class="h-8" />
+        <img src={`${base}logo.svg`} class="h-8" />
         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">InvestTrack</span>
       </a>
     </div>
