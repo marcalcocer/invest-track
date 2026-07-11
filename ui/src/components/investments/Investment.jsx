@@ -151,8 +151,8 @@ export default function Investment() {
             )}
             
 
-                <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">{investment.name}</h2>
-                <p className="text-gray-600 text-sm sm:text-base mb-4">
+                <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-center sm:text-left">{investment.name}</h2>
+                <p className="text-gray-600 text-sm sm:text-base mb-4 text-center sm:text-left">
                     {investment.description} ({investment.currency})
                 </p>
                 {/* Mini-summary */}
@@ -164,7 +164,7 @@ export default function Investment() {
                 </div>
                 )}
 
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-0 justify-between mt-4 sm:mt-6">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-0 items-center sm:justify-between mt-4 sm:mt-6">
                     <button
                         className="px-3 py-2 sm:px-4 sm:py-2 bg-green-500 text-white text-sm rounded shadow hover:bg-green-600 transition duration-200"
                         onClick={() => setIsCreating(true)}
@@ -203,14 +203,14 @@ export default function Investment() {
                     onViewGraph={setSelectedForecastForGraph}
                 />
 
+                <h3 className="text-md sm:text-lg font-semibold mb-2 text-center mt-8">Entries</h3>
+
                 {/* Mobile Cards View */}
                 <InvestmentEntriesMobile
                     entries={entries}
                     investment={investment}
                     setIsConfirmingDelete={setIsConfirmingDelete}
                 />
-
-                <h3 className="text-md sm:text-lg font-semibold mb-2 text-center mt-8">Entries</h3>
 
                 {/* Desktop Table View */}
                 <InvestmentEntriesTable

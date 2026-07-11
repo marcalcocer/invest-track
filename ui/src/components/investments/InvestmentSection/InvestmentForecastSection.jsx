@@ -20,7 +20,7 @@ export default function InvestmentForecastSection({
                     <span className="text-gray-500 text-center">No forecasts available</span>
                 </div>
             ) : (
-                <div className="mt-4">
+                <div className="mt-4 overflow-x-auto">
                     <table className="mx-auto border-collapse border border-gray-200 text-xs sm:text-sm">
                         <thead>
                             <tr className="bg-gray-100">

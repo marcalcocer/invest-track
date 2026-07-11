@@ -83,7 +83,7 @@ public class AdapterUtils {
   }
 
   public LocalDateTime parseDateTime(Object value) {
-    var str = parseString(value);
+    var str = parseString(value).trim();
     if (str.isEmpty()) {
       return null;
     }
