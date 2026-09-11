@@ -7,8 +7,8 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# 1. Get the current dynamic IP of WSL
-WSL_IP=$(hostname -I | awk '{print $1}')
+# 1. Get the machine IP
+MACHINE_IP=$(hostname -I | awk '{print $1}')
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 LOG_DIR="$PROJECT_ROOT/logs"
@@ -18,14 +18,9 @@ mkdir -p "$LOG_DIR"
 
 echo -e "${BLUE}==================================================================${NC}"
 echo -e "${BLUE} 🚀 Bootstrapping Invest Track Environment...${NC}"
-echo -e "${BLUE} 🌐 Current WSL IP: $WSL_IP${NC}"
 echo -e "${BLUE}==================================================================${NC}"
 
-# 2. Automate Windows Port Proxy (PowerShell)
-echo -e "${YELLOW}🌐 Configuring Windows Port Proxy (netsh)...${NC}"
-powershell.exe -Command "Start-Process powershell -ArgumentList '-Command \"netsh interface portproxy delete v4tov4 listenport=80 listenaddress=0.0.0.0; netsh interface portproxy add v4tov4 listenport=80 listenaddress=0.0.0.0 connectport=80 connectaddress=$WSL_IP\"' -Verb RunAs"
-
-# 3. Configure Nginx (Snippets Architecture)
+# 2. Configure Nginx (Snippets Architecture)
 echo -e "${YELLOW}⚙️  Configuring Nginx Deployment...${NC}"
 
 # Define key paths
@@ -68,21 +63,21 @@ else
     exit 1
 fi
 
-# 4. Start the Backend (Spring Boot) in the background
+# 3. Start the Backend (Spring Boot) in the background
 echo -e "${YELLOW}🟢 Starting Backend (Spring Boot)...${NC}"
 echo -e "${BLUE}   📝 Logs: logs/backend.log${NC}"
 cd "$PROJECT_ROOT/api"
 ./gradlew bootRun > "$LOG_DIR/backend.log" 2>&1 &
 BACKEND_PID=$!
 
-# 5. Start the Frontend (Astro) in the background
+# 4. Start the Frontend (Astro) in the background
 echo -e "${YELLOW}🟢 Starting Frontend (Astro)...${NC}"
 echo -e "${BLUE}   📝 Logs: logs/frontend.log${NC}"
 cd "$PROJECT_ROOT/ui"
 npm run dev -- --host 0.0.0.0 > "$LOG_DIR/frontend.log" 2>&1 &
 FRONTEND_PID=$!
 
-# 6. Trap Ctrl+C (SIGINT) to kill both processes cleanly when you exit
+# 5. Trap Ctrl+C (SIGINT) to kill both processes cleanly when you exit
 function cleanup {
     echo -e "\n${RED}🛑 Stopping servers...${NC}"
     [ -n "$BACKEND_PID" ] && kill $BACKEND_PID 2>/dev/null
@@ -91,7 +86,7 @@ function cleanup {
 }
 trap cleanup SIGINT SIGTERM
 
-# 7. Health Check (Wait for servers to be ready)
+# 6. Health Check (Wait for servers to be ready)
 echo -e "${YELLOW}⏳ Waiting for servers to start...${NC}"
 MAX_RETRIES=60
 RETRY_COUNT=0
@@ -134,6 +129,6 @@ echo -e "${GREEN} 💓 Heartbeat:   http://apps.home/invest-track/api/heartbeat$
 echo -e "${BLUE}==================================================================${NC}"
 echo -e "${YELLOW}💡 Tip: Use 'tail -f logs/backend.log' to see live backend output.${NC}"
 
-# 8. Wait for the background processes to keep the script running
+# 7. Wait for the background processes to keep the script running
 wait $BACKEND_PID
 wait $FRONTEND_PID
