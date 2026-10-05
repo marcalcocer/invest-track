@@ -282,6 +282,7 @@ public class InvestmentService {
     existingForecast.setStartDate(forecast.getStartDate());
     existingForecast.setEndDate(forecast.getEndDate());
     existingForecast.setScenarioRates(forecast.getScenarioRates());
+    existingForecast.setMonthlyContribution(forecast.getMonthlyContribution());
 
     repository.save(existingForecast.getInvestment());
 

@@ -195,6 +195,7 @@ export default function Investment() {
                 <InvestmentForecastSection
                     key={forecasts.map(f => f.id).join('-')}
                     forecasts={forecasts}
+                    investment={investment}
                     isLoadingForecasts={isLoadingForecasts}
                     onDeleteForecast={handleDeleteForecast}
                     isConfirmingDeleteForecast={isConfirmingDeleteForecast}

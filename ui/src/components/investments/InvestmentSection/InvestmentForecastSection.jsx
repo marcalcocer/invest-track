@@ -1,8 +1,11 @@
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ConfirmDeleteModal from "@/components/modals/ConfirmDeleteModal";
+import { currencyAdapter } from "@/lib/currencyAdapter";
+import { ForecastUtils } from "@/lib/ForecastUtils";
 
 export default function InvestmentForecastSection({
     forecasts,
+    investment,
     isLoadingForecasts,
     onDeleteForecast,
     isConfirmingDeleteForecast,
@@ -27,9 +30,10 @@ export default function InvestmentForecastSection({
                                 <th className="border p-2 whitespace-nowrap">Name</th>
                                 <th className="border p-2 whitespace-nowrap">Start Date</th>
                                 <th className="border p-2 whitespace-nowrap">Months</th>
-                                <th className="border p-2 whitespace-nowrap">Pessimist %</th>
-                                <th className="border p-2 whitespace-nowrap">Neutral %</th>
-                                <th className="border p-2 whitespace-nowrap">Optimist %</th>
+                                <th className="border p-2 whitespace-nowrap">Pessimist %/mo</th>
+                                <th className="border p-2 whitespace-nowrap">Neutral %/mo</th>
+                                <th className="border p-2 whitespace-nowrap">Optimist %/mo</th>
+                                <th className="border p-2 whitespace-nowrap">Contribution /mo</th>
                                 <th className="border p-2 whitespace-nowrap">Actions</th>
                                 <th className="border p-2 whitespace-nowrap">Graph</th>
                             </tr>
@@ -47,10 +51,11 @@ export default function InvestmentForecastSection({
                                             return f.startDate ?? '';
                                         })()
                                     }</td>
-                                    <td className="border p-2 text-center whitespace-nowrap">{f.startDate && f.endDate ? Math.max(1, Math.round((new Date(f.endDate).getFullYear() * 12 + new Date(f.endDate).getMonth()) - (new Date(f.startDate).getFullYear() * 12 + new Date(f.startDate).getMonth()))) : ''}</td>
+                                    <td className="border p-2 text-center whitespace-nowrap">{f.startDate && f.endDate ? ForecastUtils.monthsBetween(f.startDate, f.endDate) : ''}</td>
                                     <td className="border p-2 text-center whitespace-nowrap">{f.scenarioRates?.PESSIMIST ?? 0}%</td>
                                     <td className="border p-2 text-center whitespace-nowrap">{f.scenarioRates?.NEUTRAL ?? 0}%</td>
                                     <td className="border p-2 text-center whitespace-nowrap">{f.scenarioRates?.OPTIMIST ?? 0}%</td>
+                                    <td className="border p-2 text-center whitespace-nowrap">{currencyAdapter(f.monthlyContribution ?? 0, investment?.currency)}</td>
                                     <td className="border p-2 text-center whitespace-nowrap">
                                         <div className="flex flex-row items-center justify-center gap-2">
                                             <button

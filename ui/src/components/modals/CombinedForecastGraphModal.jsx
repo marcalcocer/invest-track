@@ -6,7 +6,7 @@ import { ForecastUtils } from "@/lib/ForecastUtils";
 import BaseModal from "./BaseModal";
 import ModalHeader from "./ModalHeader";
 import ViewDetailsButton from "../investments/ViewDetailsButton";
-import { getCustomTooltip } from "@/lib/ChartUtils";
+import { getCustomTooltip, getTodayAnnotation } from "@/lib/ChartUtils";
 
 export default function CombinedForecastGraphModal({ investment, forecasts, onClose }) {
     // Prepare real data
@@ -58,6 +58,7 @@ export default function CombinedForecastGraphModal({ investment, forecasts, onCl
                         },
                         stroke: { width: 2 },
                         legend: { show: true },
+                        annotations: getTodayAnnotation(),
                         tooltip: {
                             enabled: true,
                             x: { format: 'dd MMM yyyy' },

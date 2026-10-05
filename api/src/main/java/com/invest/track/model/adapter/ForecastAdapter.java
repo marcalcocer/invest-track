@@ -26,6 +26,8 @@ public class ForecastAdapter {
     var startDate = adapterUtils.parseLocalDate(valueRange.get(3));
     var endDate = adapterUtils.parseLocalDate(valueRange.get(4));
     var scenarioRates = parseScenarioRates(adapterUtils.parseString(valueRange.get(5)));
+    var monthlyContribution =
+        parseMonthlyContribution(valueRange.size() > 6 ? valueRange.get(6) : null);
     return Forecast.builder()
         .id(id)
         .investment(
@@ -37,6 +39,7 @@ public class ForecastAdapter {
         .startDate(startDate)
         .endDate(endDate)
         .scenarioRates(scenarioRates)
+        .monthlyContribution(monthlyContribution)
         .build();
   }
 
@@ -47,7 +50,23 @@ public class ForecastAdapter {
         forecast.getName() != null ? forecast.getName() : "",
         adapterUtils.formatLocalDate(forecast.getStartDate()),
         adapterUtils.formatLocalDate(forecast.getEndDate()),
-        formatScenarioRates(forecast.getScenarioRates()));
+        formatScenarioRates(forecast.getScenarioRates()),
+        forecast.getMonthlyContribution() != null ? forecast.getMonthlyContribution() : 0.0);
+  }
+
+  private Double parseMonthlyContribution(Object value) {
+    // Same convention as the scenario rates: the decimal separator is normalized,
+    // because the value is written back as a plain number on every save
+    var str = adapterUtils.parseString(value).trim();
+    if (str.isEmpty()) {
+      return 0.0;
+    }
+    try {
+      return Double.parseDouble(str.replace(",", "."));
+    } catch (NumberFormatException e) {
+      log.warn("Failed to parse monthly contribution \"{}\", defaulting to 0", str);
+      return 0.0;
+    }
   }
 
   private Map<Forecast.ForecastScenario, Double> parseScenarioRates(String str) {

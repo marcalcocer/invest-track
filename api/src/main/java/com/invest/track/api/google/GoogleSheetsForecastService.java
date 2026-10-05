@@ -17,10 +17,17 @@ public class GoogleSheetsForecastService {
   private final ForecastAdapter forecastAdapter;
 
   private static final String FORECASTS_SHEET_NAME = "Forecasts";
-  private static final String READ_SHEET_RANGE = "A2:F";
-  private static final String WRITE_SHEET_RANGE = "A1:F";
+  private static final String READ_SHEET_RANGE = "A2:G";
+  private static final String WRITE_SHEET_RANGE = "A1:G";
   private static final List<Object> FORECASTS_HEADERS =
-      List.of("Forecast ID", "Investment ID", "Name", "Start Date", "End Date", "Scenario Rates");
+      List.of(
+          "Forecast ID",
+          "Investment ID",
+          "Name",
+          "Start Date",
+          "End Date",
+          "Scenario Rates",
+          "Monthly Contribution");
 
   public synchronized List<Forecast> readForecastsData(List<Investment> investments)
       throws IOException {

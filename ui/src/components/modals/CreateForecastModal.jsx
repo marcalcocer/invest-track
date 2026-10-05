@@ -1,6 +1,7 @@
 import { useState } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { ForecastService } from "@/lib/ForecastService";
+import { ForecastUtils } from "@/lib/ForecastUtils";
 
 export default function CreateForecastModal({ investment, entries, onClose, onCreate }) {
     const [name, setName] = useState("");
@@ -9,6 +10,7 @@ export default function CreateForecastModal({ investment, entries, onClose, onCr
     const [pessimistRate, setPessimistRate] = useState(0);
     const [neutralRate, setNeutralRate] = useState(0);
     const [optimistRate, setOptimistRate] = useState(0);
+    const [monthlyContribution, setMonthlyContribution] = useState(0);
     const [isCreating, setIsCreating] = useState(false);
     const [error, setError] = useState("");
 
@@ -25,12 +27,14 @@ export default function CreateForecastModal({ investment, entries, onClose, onCr
             setError("Duration (months) must be at least 1");
             return;
         }
+        if (Number(monthlyContribution) < 0) {
+            setError("Monthly contribution cannot be negative");
+            return;
+        }
         setIsCreating(true);
         setError("");
         try {
-            const d = new Date(startDate);
-            d.setMonth(d.getMonth() + Number(months));
-            const endDate = d.toISOString().split('T')[0];
+            const endDate = ForecastUtils.addMonths(startDate, Number(months));
 
             if (onCreate) onCreate({
                 name,
@@ -41,7 +45,8 @@ export default function CreateForecastModal({ investment, entries, onClose, onCr
                     PESSIMIST: Number(pessimistRate),
                     NEUTRAL: Number(neutralRate),
                     OPTIMIST: Number(optimistRate)
-                }
+                },
+                monthlyContribution: Number(monthlyContribution)
             });
         } catch (err) {
             setError("Failed to create forecast. Please try again.");
@@ -66,17 +71,22 @@ export default function CreateForecastModal({ investment, entries, onClose, onCr
                 </label>
                 <div className="mb-2">
                     <label className="block">Pessimist Monthly Growth Rate (%)
-                        <input type="number" className="w-full border rounded p-2 mt-1" value={pessimistRate} onChange={e => setPessimistRate(e.target.value)} />
+                        <input type="number" step="any" className="w-full border rounded p-2 mt-1" value={pessimistRate} onChange={e => setPessimistRate(e.target.value)} />
                     </label>
                 </div>
                 <div className="mb-2">
                     <label className="block">Neutral Monthly Growth Rate (%)
-                        <input type="number" className="w-full border rounded p-2 mt-1" value={neutralRate} onChange={e => setNeutralRate(e.target.value)} />
+                        <input type="number" step="any" className="w-full border rounded p-2 mt-1" value={neutralRate} onChange={e => setNeutralRate(e.target.value)} />
+                    </label>
+                </div>
+                <div className="mb-2">
+                    <label className="block">Optimist Monthly Growth Rate (%)
+                        <input type="number" step="any" className="w-full border rounded p-2 mt-1" value={optimistRate} onChange={e => setOptimistRate(e.target.value)} />
                     </label>
                 </div>
                 <div className="mb-4">
-                    <label className="block">Optimist Monthly Growth Rate (%)
-                        <input type="number" className="w-full border rounded p-2 mt-1" value={optimistRate} onChange={e => setOptimistRate(e.target.value)} />
+                    <label className="block">Monthly Contribution (added every month)
+                        <input type="number" step="any" min={0} className="w-full border rounded p-2 mt-1" value={monthlyContribution} onChange={e => setMonthlyContribution(e.target.value)} />
                     </label>
                 </div>
                 <div className="flex justify-end gap-2">

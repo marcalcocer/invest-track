@@ -1,3 +1,25 @@
+/**
+ * Vertical line marking the current date, used to tell apart the real history
+ * from the projected period in the forecast graphs.
+ */
+export const getTodayAnnotation = (label = "Today") => {
+    return {
+        xaxis: [
+            {
+                x: Date.now(),
+                borderColor: "#6b7280",
+                strokeDashArray: 4,
+                label: {
+                    text: label,
+                    borderColor: "#6b7280",
+                    style: { color: "#fff", background: "#6b7280", fontSize: "11px" },
+                    position: "left"
+                }
+            }
+        ]
+    };
+};
+
 export const getCustomTooltip = (valueFormatter) => {
     return function({ series, seriesIndex, dataPointIndex, w }) {
         const hoveredX = w.config.series[seriesIndex].data[dataPointIndex].x;

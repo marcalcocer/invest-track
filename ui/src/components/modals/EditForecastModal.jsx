@@ -1,14 +1,17 @@
 import { useState } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { ForecastService } from "@/lib/ForecastService";
+import { ForecastUtils } from "@/lib/ForecastUtils";
 
 export default function EditForecastModal({ investment, forecast, entries, onClose, onUpdate }) {
     const [name, setName] = useState(forecast.name || "");
     const [startDate, setStartDate] = useState(forecast.startDate || new Date().toISOString().split('T')[0]);
-    const [months, setMonths] = useState(forecast.months || 12);
+    // The duration is not persisted, it is derived from the forecast period
+    const [months, setMonths] = useState(ForecastUtils.monthsBetween(forecast.startDate, forecast.endDate));
     const [pessimistRate, setPessimistRate] = useState(forecast.scenarioRates?.PESSIMIST ?? 0);
     const [neutralRate, setNeutralRate] = useState(forecast.scenarioRates?.NEUTRAL ?? 0);
     const [optimistRate, setOptimistRate] = useState(forecast.scenarioRates?.OPTIMIST ?? 0);
+    const [monthlyContribution, setMonthlyContribution] = useState(forecast.monthlyContribution ?? 0);
     const [isUpdating, setIsUpdating] = useState(false);
     const [error, setError] = useState("");
 
@@ -25,12 +28,14 @@ export default function EditForecastModal({ investment, forecast, entries, onClo
             setError("Duration (months) must be at least 1");
             return;
         }
+        if (Number(monthlyContribution) < 0) {
+            setError("Monthly contribution cannot be negative");
+            return;
+        }
         setIsUpdating(true);
         setError("");
         try {
-            const d = new Date(startDate);
-            d.setMonth(d.getMonth() + Number(months));
-            const endDate = d.toISOString().split('T')[0];
+            const endDate = ForecastUtils.addMonths(startDate, Number(months));
 
             const updatedForecast = {
                 ...forecast,
@@ -42,7 +47,8 @@ export default function EditForecastModal({ investment, forecast, entries, onClo
                     PESSIMIST: Number(pessimistRate),
                     NEUTRAL: Number(neutralRate),
                     OPTIMIST: Number(optimistRate)
-                }
+                },
+                monthlyContribution: Number(monthlyContribution)
             };
             await ForecastService.updateForecast(investment.id, forecast.id, updatedForecast);
             if (onUpdate) onUpdate();
@@ -69,17 +75,22 @@ export default function EditForecastModal({ investment, forecast, entries, onClo
                 </label>
                 <div className="mb-2">
                     <label className="block">Pessimist Monthly Growth Rate (%)
-                        <input type="number" className="w-full border rounded p-2 mt-1" value={pessimistRate} onChange={e => setPessimistRate(e.target.value)} />
+                        <input type="number" step="any" className="w-full border rounded p-2 mt-1" value={pessimistRate} onChange={e => setPessimistRate(e.target.value)} />
                     </label>
                 </div>
                 <div className="mb-2">
                     <label className="block">Neutral Monthly Growth Rate (%)
-                        <input type="number" className="w-full border rounded p-2 mt-1" value={neutralRate} onChange={e => setNeutralRate(e.target.value)} />
+                        <input type="number" step="any" className="w-full border rounded p-2 mt-1" value={neutralRate} onChange={e => setNeutralRate(e.target.value)} />
+                    </label>
+                </div>
+                <div className="mb-2">
+                    <label className="block">Optimist Monthly Growth Rate (%)
+                        <input type="number" step="any" className="w-full border rounded p-2 mt-1" value={optimistRate} onChange={e => setOptimistRate(e.target.value)} />
                     </label>
                 </div>
                 <div className="mb-4">
-                    <label className="block">Optimist Monthly Growth Rate (%)
-                        <input type="number" className="w-full border rounded p-2 mt-1" value={optimistRate} onChange={e => setOptimistRate(e.target.value)} />
+                    <label className="block">Monthly Contribution (added every month)
+                        <input type="number" step="any" min={0} className="w-full border rounded p-2 mt-1" value={monthlyContribution} onChange={e => setMonthlyContribution(e.target.value)} />
                     </label>
                 </div>
                 <div className="flex justify-end gap-2">

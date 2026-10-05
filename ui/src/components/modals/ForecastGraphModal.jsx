@@ -4,7 +4,7 @@ import { currencyAdapter } from "@/lib/currencyAdapter";
 import { ForecastUtils } from "@/lib/ForecastUtils";
 import BaseModal from "./BaseModal";
 import ModalHeader from "./ModalHeader";
-import { getCustomTooltip } from "@/lib/ChartUtils";
+import { getCustomTooltip, getTodayAnnotation } from "@/lib/ChartUtils";
 
 export default function ForecastGraphModal({ forecast, entries, onClose, investment }) {
     const [visibleScenarios, setVisibleScenarios] = useState({ PESSIMIST: true, NEUTRAL: true, OPTIMIST: true });
@@ -66,6 +66,7 @@ export default function ForecastGraphModal({ forecast, entries, onClose, investm
                         },
                         stroke: { width: 2 },
                         legend: { show: true },
+                        annotations: getTodayAnnotation(),
                         tooltip: {
                             enabled: true,
                             x: { format: 'dd MMM yyyy' },

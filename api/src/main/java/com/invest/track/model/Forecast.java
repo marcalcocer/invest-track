@@ -26,7 +26,12 @@ public class Forecast {
 
   private LocalDate startDate;
   private LocalDate endDate;
+
+  /** Monthly scenario growth rates expressed as percentages (e.g. 0.5 means 0.5% per month). */
   private Map<ForecastScenario, Double> scenarioRates;
+
+  /** Amount expected to be added to the investment every month during the forecast. */
+  private Double monthlyContribution;
 
   public enum ForecastScenario {
     PESSIMIST,

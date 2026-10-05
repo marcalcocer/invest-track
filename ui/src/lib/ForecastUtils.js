@@ -1,7 +1,45 @@
 /**
  * Utility functions for Forecast calculations and graphing.
  */
+
+// The projection compounds on a fixed 30 day "month", so a monthly growth rate
+// and a monthly contribution are both prorated over this amount of days.
+const DAYS_PER_MONTH = 30;
+
 export const ForecastUtils = {
+    /**
+     * Adds calendar months to an ISO date (YYYY-MM-DD) and returns a new ISO date.
+     * The arithmetic is done on the date parts, so it does not depend on the
+     * timezone, and it is clamped to the end of the month: adding a month to
+     * the 31st lands on the 28th or 29th instead of overflowing into the next one.
+     */
+    addMonths(isoDate, months) {
+        var parts = String(isoDate).split("-").map(Number);
+        if (parts.length !== 3 || !parts.every(Number.isFinite)) return null;
+
+        const [year, month, day] = parts;
+        var shifted = new Date(Date.UTC(year, month - 1 + Number(months), 1));
+        var lastDayOfMonth = new Date(Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth() + 1, 0)).getUTCDate();
+
+        return new Date(Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), Math.min(day, lastDayOfMonth)))
+            .toISOString()
+            .slice(0, 10);
+    },
+
+    /**
+     * Whole months between two ISO dates, so monthsBetween(addMonths(start, n)) === n.
+     * A forecast always lasts at least one month.
+     */
+    monthsBetween(startIsoDate, endIsoDate) {
+        var start = String(startIsoDate).split("-").map(Number);
+        var end = String(endIsoDate).split("-").map(Number);
+        if (start.length !== 3 || end.length !== 3) return 1;
+        if (!start.every(Number.isFinite) || !end.every(Number.isFinite)) return 1;
+
+        const months = (end[0] - start[0]) * 12 + (end[1] - start[1]);
+        return Math.max(1, months);
+    },
+
     /**
      * Finds the entry closest to the target date.
      * If equidistant, the earlier entry is preferred.
@@ -65,39 +103,61 @@ export const ForecastUtils = {
     },
 
     /**
+     * Real value of an entry: the current value of the position (obtained),
+     * which already includes the accumulated benefit. Falls back to the
+     * invested amount when obtained is not available.
+     */
+    getEntryValue(entry) {
+        if (!entry) return 0;
+        return entry.obtained ?? entry.totalInvestedAmount ?? 0;
+    },
+
+    /**
+     * Converts a monthly growth percentage (e.g. 0.471 for 0.471% per month)
+     * into its daily compounded equivalent.
+     */
+    toDailyRate(monthlyRatePercentage) {
+        const monthlyRate = Number(monthlyRatePercentage) / 100;
+        // A rate of -100% or worse cannot be compounded any further
+        if (monthlyRate <= -1) return -1;
+        return Math.pow(1 + monthlyRate, 1 / DAYS_PER_MONTH) - 1;
+    },
+
+    /**
      * Generates a series of data points for a forecast scenario,
      * including the visual bridge from the nearest entry.
+     * The projection starts from the real value of the position (obtained) and
+     * applies the monthly growth rate plus the monthly contribution.
      * Calculations are performed daily for high granularity.
      */
     generateScenarioData(forecast, scenario, entries) {
-        const nearestEntry = this.findNearestEntry(forecast.startDate, entries);
-        const baselineValue = nearestEntry ? nearestEntry.totalInvestedAmount : 0;
-        
-        let data = [];
-        if (nearestEntry) {
-            // Visual Bridge: start from nearest entry
-            data.push({ x: new Date(nearestEntry.datetime).getTime(), y: Number(baselineValue.toFixed(2)) });
-        }
-        
-        let lastValue = baselineValue;
         const start = new Date(forecast.startDate);
         const end = new Date(forecast.endDate);
-        
-        // Calculate daily rate from monthly rate: (1 + monthlyRate)^(1/30) - 1
-        // monthlyRate is provided as a percentage (e.g., 2.5)
-        const monthlyRateDecimal = (forecast.scenarioRates?.[scenario] ?? 0) / 100;
-        const dailyRate = Math.pow(1 + monthlyRateDecimal, 1 / 30) - 1;
+        const nearestEntry = this.findNearestEntry(forecast.startDate, entries);
+        const baselineValue = this.getEntryValue(nearestEntry);
+
+        let data = [];
+        if (nearestEntry && new Date(nearestEntry.datetime) <= start) {
+            // Visual Bridge: anchor on the real value of the nearest entry
+            data.push({ x: new Date(nearestEntry.datetime).getTime(), y: Number(baselineValue.toFixed(2)) });
+        }
+
+        let lastValue = baselineValue;
 
         // Start of forecast
         data.push({ x: start.getTime(), y: Number(lastValue.toFixed(2)) });
+
+        // scenarioRates are monthly percentages (e.g. 0.471 means 0.471% per month)
+        const dailyRate = this.toDailyRate(forecast.scenarioRates?.[scenario] ?? 0);
+        const dailyContribution = (forecast.monthlyContribution ?? 0) / DAYS_PER_MONTH;
 
         let current = new Date(start);
         // Increment daily
         while (current < end) {
             current.setDate(current.getDate() + 1);
             if (current > end) break;
-            
-            lastValue = lastValue * (1 + dailyRate);
+
+            lastValue = lastValue * (1 + dailyRate) + dailyContribution;
             data.push({ x: current.getTime(), y: Number(lastValue.toFixed(2)) });
         }
         return data;
