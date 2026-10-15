@@ -83,7 +83,7 @@ export default function CreateEntryModal({ investment, onClose, onCreate }) {
 
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md mx-2">
+            <div className="bg-white dark:bg-slate-800 dark:text-slate-100 p-6 rounded-lg shadow-lg w-full max-w-md mx-2">
                 <h2 className="text-xl font-semibold mb-4">Create New Entry</h2>
 
                 {/* Datetime*/}

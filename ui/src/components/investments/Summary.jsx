@@ -61,9 +61,9 @@ export default function InvestmentsSummary({ summary, isPrivate }) {
   const [isOrganicExpanded, setIsOrganicExpanded] = useState(false);
 
   return (
-    <section className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-8 mb-6 mx-auto max-w-screen-lg font-sans">
+    <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-8 mb-6 mx-auto max-w-screen-lg font-sans">
       <div className="mx-auto max-w-2xl text-center">
-        <h2 className="text-xl font-bold text-gray-900 sm:text-2xl lg:text-3xl mb-8 text-center">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 sm:text-2xl lg:text-3xl mb-8 text-center">
           Summary
         </h2>
       </div>

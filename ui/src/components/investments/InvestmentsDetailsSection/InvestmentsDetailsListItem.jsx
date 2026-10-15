@@ -5,7 +5,7 @@ export default function InvestmentListItem({ investment, onGraph, onForecast, on
     const lastEntry = investment.lastEntry;
     return (
         <li
-            className="group bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 border border-slate-200 p-4 sm:p-6 flex flex-col sm:flex-row gap-4 lg:gap-6 items-stretch font-sans"
+            className="group bg-white dark:bg-slate-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 border border-slate-200 dark:border-slate-700 p-4 sm:p-6 flex flex-col sm:flex-row gap-4 lg:gap-6 items-stretch font-sans"
         >
             {/* Name & Description */}
             <div className="flex-1 flex flex-col justify-center text-center sm:text-left border-b sm:border-b-0 sm:border-r border-gray-100 pr-0 sm:pr-6 mb-4 sm:mb-0">

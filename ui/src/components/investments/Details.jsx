@@ -78,7 +78,7 @@ export default function InvestmentsDetails({ investments, isPrivate }) {
   return (
     <div className="px-3 sm:px-4 lg:px-6 py-8 sm:py-12">
       {/* Main title adjusted */}
-      <h2 className="text-xl font-bold text-gray-900 sm:text-2xl lg:text-3xl text-center">
+      <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 sm:text-2xl lg:text-3xl text-center">
         Investments Details
       </h2>
 

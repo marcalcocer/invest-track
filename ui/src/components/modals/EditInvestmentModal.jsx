@@ -41,7 +41,7 @@ export default function EditInvestmentModal({ investment, onClose, onUpdate }) {
                 </div>
             )}
             <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-40">
-                <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
+                <div className="bg-white dark:bg-slate-800 dark:text-slate-100 p-6 rounded shadow-lg w-full max-w-md">
                     <h2 className="text-lg font-bold mb-4">Edit Investment</h2>
                     <div className="mb-3">
                         <label className="block text-sm font-medium mb-1">Name</label>

@@ -11,6 +11,7 @@ InvestTrack is a personal finance web application for tracking and managing inve
 - 📈 Interactive charts: Visualize performance and benefit
 - 📝 CRUD operations: Create, edit, delete investments and entries
 - 📱 Responsive UI: Built with Tailwind CSS, React, and Astro
+- 🌗 Theme switch: Light, dark, or system (follows the OS setting), remembered in the browser via the toggle next to the privacy button
 
 ### 🔮 Forecasting
 - 📊 Multiple strategies: Pessimist, Neutral, Optimist scenarios per forecast

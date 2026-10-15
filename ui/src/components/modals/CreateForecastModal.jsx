@@ -57,7 +57,7 @@ export default function CreateForecastModal({ investment, entries, onClose, onCr
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+            <div className="bg-white dark:bg-slate-800 dark:text-slate-100 rounded-lg shadow-lg p-6 w-full max-w-md">
                 <h2 className="text-xl font-bold mb-4">Create Forecast</h2>
                 {error && <div className="text-red-600 mb-2">{error}</div>}
                 <label className="block mb-2">Forecast Name

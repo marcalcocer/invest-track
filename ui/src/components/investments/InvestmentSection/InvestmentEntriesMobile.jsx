@@ -6,7 +6,7 @@ export default function InvestmentEntriesMobile({ entries, investment, setIsConf
         <div className="block sm:hidden mt-4 space-y-3">
             {Array.isArray(entries) && entries.length > 0 ? (
                 entries.map((entry, idx) => (
-                    <div key={entry.id ?? `entry-${idx}`} className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <div key={entry.id ?? `entry-${idx}`} className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4">
                         <div className="grid grid-cols-2 gap-2 text-sm">
                             <div>
                                 <span className="font-medium text-gray-500">ID:</span>
@@ -40,7 +40,7 @@ export default function InvestmentEntriesMobile({ entries, investment, setIsConf
                     </div>
                 ))
             ) : (
-                <div className="text-center p-4 text-gray-500 bg-white border border-slate-200 rounded-xl shadow-sm">
+                <div className="text-center p-4 text-gray-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm">
                     No entries available
                 </div>
             )}

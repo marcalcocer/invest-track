@@ -1,6 +1,6 @@
 export default function ModalHeader({ title, description, currency, onClose }) {
     return (
-        <div className="bg-white p-4 border-b border-gray-200 rounded-t-lg">
+        <div className="bg-white dark:bg-slate-800 dark:text-slate-100 p-4 border-b border-gray-200 dark:border-slate-700 rounded-t-lg">
             <div className="flex justify-between items-start">
                 <div className="flex-1 min-w-0">
                     <h2 className="text-lg sm:text-xl font-bold text-gray-800 truncate">{title}</h2>

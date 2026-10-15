@@ -11,8 +11,20 @@ import '../styles/global.css';
     <link rel="icon" type="image/x-icon" href="/invest-track/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     <title>InvestTrack</title>
+    <script is:inline>
+      // Mirrors resolveTheme/applyTheme in src/lib/theme.js; runs before paint to avoid a theme flash.
+      (function () {
+        var pref = 'system';
+        try {
+          pref = localStorage.getItem('theme') || 'system';
+        } catch (e) {}
+        var dark = pref === 'dark' || (pref !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', dark);
+        document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+      })();
+    </script>
   </head>
-  <body class="bg-slate-50 text-slate-900">
+  <body class="bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100">
     <slot />
   </body>
 </html>

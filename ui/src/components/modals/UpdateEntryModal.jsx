@@ -27,7 +27,7 @@ export default function UpdateEntryModal({ entry, onClose, onUpdate }) {
     };
     return (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+            <div className="bg-white dark:bg-slate-800 dark:text-slate-100 rounded-lg shadow-lg p-6 w-full max-w-md">
                 <h3 className="text-lg font-bold mb-4">Update Entry #{entry.id}</h3>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
