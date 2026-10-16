@@ -14,12 +14,12 @@ export const ForecastUtils = {
      * the 31st lands on the 28th or 29th instead of overflowing into the next one.
      */
     addMonths(isoDate, months) {
-        var parts = String(isoDate).split("-").map(Number);
+        const parts = String(isoDate).split("-").map(Number);
         if (parts.length !== 3 || !parts.every(Number.isFinite)) return null;
 
         const [year, month, day] = parts;
-        var shifted = new Date(Date.UTC(year, month - 1 + Number(months), 1));
-        var lastDayOfMonth = new Date(Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth() + 1, 0)).getUTCDate();
+        const shifted = new Date(Date.UTC(year, month - 1 + Number(months), 1));
+        const lastDayOfMonth = new Date(Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth() + 1, 0)).getUTCDate();
 
         return new Date(Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), Math.min(day, lastDayOfMonth)))
             .toISOString()
@@ -31,8 +31,8 @@ export const ForecastUtils = {
      * A forecast always lasts at least one month.
      */
     monthsBetween(startIsoDate, endIsoDate) {
-        var start = String(startIsoDate).split("-").map(Number);
-        var end = String(endIsoDate).split("-").map(Number);
+        const start = String(startIsoDate).split("-").map(Number);
+        const end = String(endIsoDate).split("-").map(Number);
         if (start.length !== 3 || end.length !== 3) return 1;
         if (!start.every(Number.isFinite) || !end.every(Number.isFinite)) return 1;
 
