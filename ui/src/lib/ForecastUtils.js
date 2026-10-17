@@ -31,7 +31,7 @@ export const ForecastUtils = {
      * A forecast always lasts at least one month.
      */
     monthsBetween(startIsoDate, endIsoDate) {
-        const start = String(startIsoDate).split("-").map(Number);
+        var start = String(startIsoDate).split("-").map(Number);
         var end = String(endIsoDate).split("-").map(Number);
         if (start.length !== 3 || end.length !== 3) return 1;
         if (!start.every(Number.isFinite) || !end.every(Number.isFinite)) return 1;
