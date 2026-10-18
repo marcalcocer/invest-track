@@ -17,6 +17,14 @@ describe("datetimeFormater.formatDate", () => {
         const result = formatDate(localIso(2024, 2, 9, 8, 15));
         assert.equal(result, "09-03-2024");
     });
+
+    it("returns an empty string for an invalid string", () => {
+        assert.equal(formatDate("not-a-date"), "");
+    });
+
+    it("returns an empty string for undefined", () => {
+        assert.equal(formatDate(undefined), "");
+    });
 });
 
 describe("datetimeFormater.formatDatetime", () => {
@@ -33,6 +41,14 @@ describe("datetimeFormater.formatDatetime", () => {
     it("accepts an ISO string input", () => {
         const result = formatDatetime(localIso(2024, 2, 9, 8, 15));
         assert.equal(result, "09-03-2024 08:15");
+    });
+
+    it("returns an empty string for an invalid string", () => {
+        assert.equal(formatDatetime("not-a-date"), "");
+    });
+
+    it("returns an empty string for undefined", () => {
+        assert.equal(formatDatetime(undefined), "");
     });
 });
 
