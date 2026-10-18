@@ -14,12 +14,12 @@ export const ForecastUtils = {
      * the 31st lands on the 28th or 29th instead of overflowing into the next one.
      */
     addMonths(isoDate, months) {
-        var parts = String(isoDate).split("-").map(Number);
+        const parts = String(isoDate).split("-").map(Number);
         if (parts.length !== 3 || !parts.every(Number.isFinite)) return null;
 
         const [year, month, day] = parts;
-        var shifted = new Date(Date.UTC(year, month - 1 + Number(months), 1));
-        var lastDayOfMonth = new Date(Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth() + 1, 0)).getUTCDate();
+        const shifted = new Date(Date.UTC(year, month - 1 + Number(months), 1));
+        const lastDayOfMonth = new Date(Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth() + 1, 0)).getUTCDate();
 
         return new Date(Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), Math.min(day, lastDayOfMonth)))
             .toISOString()
