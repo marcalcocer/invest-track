@@ -1,18 +1,21 @@
-export const formatDate = (datetime) => {
-    const dateObj = new Date(datetime);
-    const day = String(dateObj.getDate()).padStart(2, "0");
-    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-    const year = dateObj.getFullYear();
-    return `${day}-${month}-${year}`;
-};
+const pad = (value) => String(value).padStart(2, "0");
 
+const toDayMonthYear = (dateObj) =>
+    `${pad(dateObj.getDate())}-${pad(dateObj.getMonth() + 1)}-${dateObj.getFullYear()}`;
+
+/**
+ * Formats a date as dd-MM-yyyy in local time.
+ * @param {Date|string|number} datetime a Date, ISO string or timestamp
+ * @returns {string} the formatted date
+ */
+export const formatDate = (datetime) => toDayMonthYear(new Date(datetime));
+
+/**
+ * Formats a date as dd-MM-yyyy HH:mm in local time.
+ * @param {Date|string|number} datetime a Date, ISO string or timestamp
+ * @returns {string} the formatted date and time
+ */
 export const formatDatetime = (datetime) => {
     const dateObj = new Date(datetime);
-    const day = String(dateObj.getDate()).padStart(2, "0");
-    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-    const year = dateObj.getFullYear();
-    const hours = String(dateObj.getHours()).padStart(2, "0");
-    const minutes = String(dateObj.getMinutes()).padStart(2, "0");
-    return `${day}-${month}-${year} ${hours}:${minutes}`;
+    return `${toDayMonthYear(dateObj)} ${pad(dateObj.getHours())}:${pad(dateObj.getMinutes())}`;
 };
-
