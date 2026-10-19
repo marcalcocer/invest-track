@@ -24,14 +24,17 @@ export default function PrivacyToggle() {
 
     return (
         <button
+            type="button"
             onClick={togglePrivacy}
-            className="p-2 text-gray-500 hover:text-gray-700 focus:outline-none transition-colors duration-200"
+            className="p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
             title={isPrivate ? "Show values" : "Hide values"}
+            aria-label={isPrivate ? "Show values" : "Hide values"}
+            aria-pressed={isPrivate}
         >
             {isPrivate ? (
-                <EyeSlashIcon className="w-6 h-6" />
+                <EyeSlashIcon className="w-5 h-5" />
             ) : (
-                <EyeIcon className="w-6 h-6" />
+                <EyeIcon className="w-5 h-5" />
             )}
         </button>
     );

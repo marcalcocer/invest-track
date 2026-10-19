@@ -38,3 +38,16 @@ export const formatValueForPrivacy = (value, currency, isPrivate) => {
     }
     return currencyAdapter(value, currency);
 };
+
+/**
+ * Formats a ratio (0.1234 -> "12.34%") for display, masking it if privacy mode is active.
+ * @param {number} value - The ratio to format.
+ * @param {boolean} isPrivate - Whether privacy mode is active.
+ * @returns {string} The formatted or masked percentage.
+ */
+export const formatPercentForPrivacy = (value, isPrivate) => {
+    if (isPrivate) {
+        return "******";
+    }
+    return `${(100 * value).toFixed(2)}%`;
+};
