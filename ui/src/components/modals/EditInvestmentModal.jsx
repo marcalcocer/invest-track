@@ -36,17 +36,17 @@ export default function EditInvestmentModal({ investment, onClose, onUpdate }) {
     return (
         <>
             {isUpdating && (
-                <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
+                <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50">
                     <LoadingSpinner />
                 </div>
             )}
-            <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-40">
-                <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
+            <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-40">
+                <div className="bg-card text-card-foreground border border-border p-6 rounded shadow-lg w-full max-w-md">
                     <h2 className="text-lg font-bold mb-4">Edit Investment</h2>
                     <div className="mb-3">
                         <label className="block text-sm font-medium mb-1">Name</label>
                         <input
-                            className="w-full border p-2"
+                            className="w-full border border-border bg-background text-foreground placeholder:text-muted-foreground rounded p-2 focus:outline-none focus:ring-2 focus:ring-ring"
                             placeholder="Name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
@@ -55,7 +55,7 @@ export default function EditInvestmentModal({ investment, onClose, onUpdate }) {
                     <div className="mb-3">
                         <label className="block text-sm font-medium mb-1">Description</label>
                         <textarea
-                            className="w-full border p-2"
+                            className="w-full border border-border bg-background text-foreground placeholder:text-muted-foreground rounded p-2 focus:outline-none focus:ring-2 focus:ring-ring"
                             placeholder="Description"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
@@ -64,23 +64,23 @@ export default function EditInvestmentModal({ investment, onClose, onUpdate }) {
                     <div className="mb-3">
                         <label className="block text-sm font-medium mb-1">Currency</label>
                         <input
-                            className="w-full border p-2"
+                            className="w-full border border-border bg-background text-foreground placeholder:text-muted-foreground rounded p-2 focus:outline-none focus:ring-2 focus:ring-ring"
                             placeholder="Currency"
                             value={currency}
                             onChange={(e) => setCurrency(e.target.value)}
                         />
                     </div>
-                    {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
+                    {error && <div className="text-danger text-sm mb-2">{error}</div>}
                     <div className="flex justify-end gap-2 mt-4">
                         <button
-                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                            className="px-4 py-2 bg-muted text-foreground border border-border rounded hover:bg-muted/70"
                             onClick={onClose}
                             disabled={isUpdating}
                         >
                             Cancel
                         </button>
                         <button
-                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                            className="px-4 py-2 bg-primary text-primary-foreground rounded hover:opacity-90"
                             onClick={handleSubmit}
                             disabled={isUpdating}
                         >

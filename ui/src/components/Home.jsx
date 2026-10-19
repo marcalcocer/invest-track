@@ -1,10 +1,24 @@
 import { useEffect, useState } from 'react';
 import { InvestmentService } from '@/lib/InvestmentService';
-import LoadingSpinner from './LoadingSpinner';
+import Skeleton from './ui/Skeleton';
 import AIMessage from './AIMessage';
 import InvestmentsDetails from './investments/Details';
 import InvestmentsSummary from './investments/Summary';
 import { getPrivacyMode, PRIVACY_MODE_EVENT } from './PrivacyToggle';
+
+function HomeSkeleton() {
+  return (
+    <div className="px-4 py-6 sm:px-6 max-w-6xl mx-auto" role="status" aria-label="Loading your investments">
+      <Skeleton className="h-7 w-40 mb-5" />
+      <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 mb-8">
+        {[0, 1, 2, 3].map((key) => (
+          <Skeleton key={key} className="h-28 rounded-token" />
+        ))}
+      </div>
+      <Skeleton className="h-64 rounded-token" />
+    </div>
+  );
+}
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
@@ -25,7 +39,6 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchData() {
-      console.log('Fetching data...');
       try {
         const [investData, summaryData] = await Promise.all([
           InvestmentService.fetchInvestments(),
@@ -54,14 +67,17 @@ export default function Home() {
   }, []);
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <HomeSkeleton />;
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="px-4 py-6 sm:px-6 max-w-6xl mx-auto">
       <AIMessage />
       <InvestmentsSummary summary={summary} isPrivate={isPrivate} />
-      <InvestmentsDetails investments={investments} isPrivate={isPrivate} />
+      {/* Details still use light-only chart styling until their own phase. */}
+      <div className="rounded-token border border-border bg-card text-card-foreground shadow-sm">
+        <InvestmentsDetails investments={investments} isPrivate={isPrivate} />
+      </div>
     </div>
   );
 }

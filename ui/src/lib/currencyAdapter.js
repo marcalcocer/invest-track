@@ -38,3 +38,13 @@ export const formatValueForPrivacy = (value, currency, isPrivate) => {
     }
     return currencyAdapter(value, currency);
 };
+
+/**
+ * Formats a ratio (0.1234 -> "12.34%") for display. Percentages are not monetary
+ * values, so they are never masked by privacy mode.
+ * @param {number} value - The ratio to format.
+ * @returns {string} The formatted percentage.
+ */
+export const formatPercent = (value) => {
+    return `${(100 * value).toFixed(2)}%`;
+};

@@ -1,12 +1,14 @@
 import { useState, useMemo } from "react";
 import Chart from "react-apexcharts";
 import type { ApexOptions } from "apexcharts";
-import { currencyAdapter, numberAdapter } from "@/lib/currencyAdapter";
+import { formatValueForPrivacy, numberAdapter } from "@/lib/currencyAdapter";
 import BaseModal from "./BaseModal";
 import ModalHeader from "./ModalHeader";
 import InvestmentStats from "../investments/InvestmentStats";
 import ViewDetailsButton from "../investments/ViewDetailsButton";
 import { getCustomTooltip } from "@/lib/ChartUtils";
+import { withChartDefaults } from "@/lib/chartTheme";
+import { useIsDarkMode } from "@/lib/useIsDarkMode";
 
 interface InvestmentEntry {
     datetime: string;
@@ -39,12 +41,16 @@ export default function InvestmentGraphModal({ investment, onClose, showDetailsB
         benefit: true,
         profitability: true
     });
+    const isDark = useIsDarkMode();
 
     if (!investment) return null;
 
     const { currency } = investment;
     
-    const currencyTooltip = useMemo(() => getCustomTooltip((val: number) => currencyAdapter(val, currency)), [currency]);
+    const currencyTooltip = useMemo(
+        () => getCustomTooltip((val: number) => formatValueForPrivacy(val, currency, isPrivate)),
+        [currency, isPrivate]
+    );
     const percentTooltip = useMemo(() => getCustomTooltip((val: number) => numberAdapter(val) + "%"), []);
 
     const sharedOptions: ApexOptions = {
@@ -59,11 +65,6 @@ export default function InvestmentGraphModal({ investment, onClose, showDetailsB
             fontFamily: "Outfit, sans-serif",
             height: 250,
             type: "line",
-            toolbar: { 
-                show: false,
-                tools: { download: false }
-            },
-            zoom: { enabled: false }
         },
         stroke: {
             curve: "straight",
@@ -105,11 +106,10 @@ export default function InvestmentGraphModal({ investment, onClose, showDetailsB
         yaxis: {
             labels: {
                 style: { 
-                    fontSize: "10px", 
-                    colors: ["#6B7280"],
+                    fontSize: "10px",
                     fontFamily: 'Outfit, sans-serif'
                 },
-                formatter: (value: number) => currencyAdapter(value, currency),
+                formatter: (value: number) => formatValueForPrivacy(value, currency, isPrivate),
             },
         },
     };
@@ -157,9 +157,9 @@ export default function InvestmentGraphModal({ investment, onClose, showDetailsB
 
                 <div className="mt-8 space-y-6">
                     {/* Invested vs Obtained */}
-                    <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
-                        <h3 
-                            className="text-sm sm:text-base font-semibold text-gray-700 mb-3 cursor-pointer flex justify-between items-center"
+                    <div className="bg-muted rounded-lg p-3 sm:p-4">
+                        <h3
+                            className="text-sm sm:text-base font-semibold text-foreground mb-3 cursor-pointer flex justify-between items-center"
                             onClick={() => setExpandedGraphs(prev => ({...prev, invested: !prev.invested}))}
                         >
                             <span>Invested vs Obtained</span>
@@ -167,10 +167,10 @@ export default function InvestmentGraphModal({ investment, onClose, showDetailsB
                         </h3>
                         {expandedGraphs.invested && (
                             <Chart
-                                options={{
+                                options={withChartDefaults({
                                     ...sharedOptions,
                                     colors: ["#465FFF", "#9CB9FF"],
-                                }}
+                                }, isDark)}
                                 series={seriesInvestedObtained}
                                 type="area"
                                 height={250}
@@ -179,9 +179,9 @@ export default function InvestmentGraphModal({ investment, onClose, showDetailsB
                     </div>
 
                     {/* Benefit */}
-                    <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
-                        <h3 
-                            className="text-sm sm:text-base font-semibold text-gray-700 mb-3 cursor-pointer flex justify-between items-center"
+                    <div className="bg-muted rounded-lg p-3 sm:p-4">
+                        <h3
+                            className="text-sm sm:text-base font-semibold text-foreground mb-3 cursor-pointer flex justify-between items-center"
                             onClick={() => setExpandedGraphs(prev => ({...prev, benefit: !prev.benefit}))}
                         >
                             <span>Benefit Over Time</span>
@@ -189,10 +189,10 @@ export default function InvestmentGraphModal({ investment, onClose, showDetailsB
                         </h3>
                         {expandedGraphs.benefit && (
                             <Chart
-                                options={{
+                                options={withChartDefaults({
                                     ...sharedOptions,
                                     colors: ["#10B981"],
-                                }}
+                                }, isDark)}
                                 series={seriesBenefit}
                                 type="area"
                                 height={250}
@@ -201,9 +201,9 @@ export default function InvestmentGraphModal({ investment, onClose, showDetailsB
                     </div>
 
                     {/* Profitability */}
-                    <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
-                        <h3 
-                            className="text-sm sm:text-base font-semibold text-gray-700 mb-3 cursor-pointer flex justify-between items-center"
+                    <div className="bg-muted rounded-lg p-3 sm:p-4">
+                        <h3
+                            className="text-sm sm:text-base font-semibold text-foreground mb-3 cursor-pointer flex justify-between items-center"
                             onClick={() => setExpandedGraphs(prev => ({...prev, profitability: !prev.profitability}))}
                         >
                             <span>Profitability Over Time</span>
@@ -211,7 +211,7 @@ export default function InvestmentGraphModal({ investment, onClose, showDetailsB
                         </h3>
                         {expandedGraphs.profitability && (
                             <Chart
-                                options={{
+                                options={withChartDefaults({
                                     ...sharedOptions,
                                     colors: ["#F59E0B"],
                                     yaxis: {
@@ -225,7 +225,7 @@ export default function InvestmentGraphModal({ investment, onClose, showDetailsB
                                         ...sharedOptions.tooltip,
                                         custom: percentTooltip as any
                                     },
-                                }}
+                                }, isDark)}
                                 series={seriesProfitability}
                                 type="area"
                                 height={250}

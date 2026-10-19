@@ -38,28 +38,28 @@ export default function CreateInvestmentModal({ onClose, onCreate }) {
     return (
         <>
             {isCreating && (
-                <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
+                <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50">
                     <LoadingSpinner />
                 </div>
             )}
-            <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-40">
-                <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
+            <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-40">
+                <div className="bg-card text-card-foreground border border-border p-6 rounded shadow-lg w-full max-w-md">
                     <h2 className="text-lg font-bold mb-4">Create New Investment</h2>
 
                     <input
-                        className="w-full border p-2 mb-3"
+                        className="w-full border border-border bg-background text-foreground placeholder:text-muted-foreground rounded p-2 mb-3 focus:outline-none focus:ring-2 focus:ring-ring"
                         placeholder="Name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                     />
                     <textarea
-                        className="w-full border p-2 mb-3"
+                        className="w-full border border-border bg-background text-foreground placeholder:text-muted-foreground rounded p-2 mb-3 focus:outline-none focus:ring-2 focus:ring-ring"
                         placeholder="Description"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                     />
                     <select
-                        className="w-full border p-2 mb-3"
+                        className="w-full border border-border bg-background text-foreground placeholder:text-muted-foreground rounded p-2 mb-3 focus:outline-none focus:ring-2 focus:ring-ring"
                         value={currency}
                         onChange={(e) => setCurrency(e.target.value)}
                     >
@@ -67,13 +67,13 @@ export default function CreateInvestmentModal({ onClose, onCreate }) {
                         <option value="USD">USD</option>
                     </select>
 
-                    {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+                    {error && <p className="text-danger text-sm mb-2">{error}</p>}
 
                     <div className="flex justify-end gap-2">
-                        <button className="bg-gray-300 px-4 py-2 rounded" onClick={onClose}>
+                        <button className="bg-muted text-foreground border border-border px-4 py-2 rounded" onClick={onClose}>
                             Cancel
                         </button>
-                        <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600" onClick={handleSubmit}>
+                        <button className="bg-primary text-primary-foreground px-4 py-2 rounded hover:opacity-90" onClick={handleSubmit}>
                             Create
                         </button>
                     </div>

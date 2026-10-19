@@ -10,6 +10,8 @@ InvestTrack is a personal finance web application designed to help you monitor a
 - **CRUD operations**: Create, edit, and delete investments and entries.
 - **Modals**: User-friendly modals for creating investments, adding entries, confirming deletions, and viewing charts.
 - **Responsive UI**: Built with Tailwind CSS for a modern look and mobile support.
+- **Light and dark themes**: Switch from the header; your choice is saved in the browser.
+- **Privacy mode**: Hide monetary values from the header toggle. Percentages and profitability stay visible.
 
 ## 🛠️ Tech Stack
 - [Astro](https://astro.build/)
@@ -59,17 +61,19 @@ PUBLIC_API_URL=http://192.123.1.23:8080/investments
 
 ## 📦 Folder Overview
 - `src/components/` — UI elements, investment cards, modals (create, delete, graph, entry)
+- `src/components/ui/` — Reusable UI primitives (Button, Card, Badge, Skeleton)
 - `src/pages/` — Main pages: Home, About, Investment details, 404
-- `src/lib/` — Utility functions for currency formatting, date formatting, and API service
+- `src/lib/` — Utility functions for currency formatting, date formatting, theme handling, and API service
 - `src/layouts/` — Main layout wrapper
 - `public/` — Static assets (images, favicon)
 
 ## 🧩 Main UI Components
 - **Home.jsx**: Dashboard with summary and investment details
-- **Header.astro**: Navigation bar
+- **Header.astro**: Navigation bar with a mobile menu, the privacy toggle and the theme toggle
+- **PrivacyToggle.jsx** / **ThemeToggle.jsx**: Header controls for privacy mode and light/dark theme
 - **LoadingSpinner.jsx**: Loading indicator
 - **Investments/Details.jsx**: List and actions for investments
-- **Investments/Summary.jsx**: Summary stats
+- **Investments/Summary.jsx**: KPI cards for total and organic investments
 - **Investments/Investment.jsx**: Investment entry management
 - **Modals**: CreateInvestmentModal, CreateEntryModal, ConfirmDeleteModal, InvestmentGraphModal
 

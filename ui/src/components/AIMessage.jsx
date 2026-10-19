@@ -56,16 +56,16 @@ export default function AIMessage() {
   if (isLoading) {
     return (
       <div className="flex justify-center gap-1.5 py-6">
-        <span className="w-2 h-2 bg-stone-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-        <span className="w-2 h-2 bg-stone-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-        <span className="w-2 h-2 bg-stone-400 rounded-full animate-bounce" />
+        <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce [animation-delay:-0.3s]" />
+        <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce [animation-delay:-0.15s]" />
+        <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
       </div>
     );
   }
 
   return (
     <div className="text-center py-6 px-4">
-      <p className="text-lg text-stone-300 italic leading-relaxed">
+      <p className="text-lg text-muted-foreground italic leading-relaxed">
         <span className="text-cyan-500">&ldquo;</span>
         {displayedText}
         {displayedText.length < fullText.length && (

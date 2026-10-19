@@ -1,6 +1,6 @@
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ConfirmDeleteModal from "@/components/modals/ConfirmDeleteModal";
-import { currencyAdapter } from "@/lib/currencyAdapter";
+import { formatValueForPrivacy } from "@/lib/currencyAdapter";
 import { ForecastUtils } from "@/lib/ForecastUtils";
 
 export default function InvestmentForecastSection({
@@ -11,7 +11,8 @@ export default function InvestmentForecastSection({
     isConfirmingDeleteForecast,
     setIsConfirmingDeleteForecast,
     onEditForecast,
-    onViewGraph
+    onViewGraph,
+    isPrivate
 }) {
     return (
         <div className="mt-8">
@@ -20,29 +21,29 @@ export default function InvestmentForecastSection({
                 <div className="py-4"><LoadingSpinner /></div>
             ) : forecasts.length === 0 ? (
                 <div className="flex justify-center items-center py-8">
-                    <span className="text-gray-500 text-center">No forecasts available</span>
+                    <span className="text-muted-foreground text-center">No forecasts available</span>
                 </div>
             ) : (
                 <div className="mt-4 overflow-x-auto">
-                    <table className="mx-auto border-collapse border border-gray-200 text-xs sm:text-sm">
+                    <table className="mx-auto border-collapse border border-border text-foreground text-xs sm:text-sm">
                         <thead>
-                            <tr className="bg-gray-100">
-                                <th className="border p-2 whitespace-nowrap">Name</th>
-                                <th className="border p-2 whitespace-nowrap">Start Date</th>
-                                <th className="border p-2 whitespace-nowrap">Months</th>
-                                <th className="border p-2 whitespace-nowrap">Pessimist %/mo</th>
-                                <th className="border p-2 whitespace-nowrap">Neutral %/mo</th>
-                                <th className="border p-2 whitespace-nowrap">Optimist %/mo</th>
-                                <th className="border p-2 whitespace-nowrap">Contribution /mo</th>
-                                <th className="border p-2 whitespace-nowrap">Actions</th>
-                                <th className="border p-2 whitespace-nowrap">Graph</th>
+                            <tr className="bg-muted text-foreground">
+                                <th className="border border-border p-2 whitespace-nowrap">Name</th>
+                                <th className="border border-border p-2 whitespace-nowrap">Start Date</th>
+                                <th className="border border-border p-2 whitespace-nowrap">Months</th>
+                                <th className="border border-border p-2 whitespace-nowrap">Pessimist %/mo</th>
+                                <th className="border border-border p-2 whitespace-nowrap">Neutral %/mo</th>
+                                <th className="border border-border p-2 whitespace-nowrap">Optimist %/mo</th>
+                                <th className="border border-border p-2 whitespace-nowrap">Contribution /mo</th>
+                                <th className="border border-border p-2 whitespace-nowrap">Actions</th>
+                                <th className="border border-border p-2 whitespace-nowrap">Graph</th>
                             </tr>
                         </thead>
                         <tbody>
                             {forecasts.map((f) => (
-                                <tr key={f.id} className="border">
-                                    <td className="border p-2 text-center whitespace-nowrap">{f.name}</td>
-                                    <td className="border p-2 text-center whitespace-nowrap">{
+                                <tr key={f.id} className="border border-border bg-card">
+                                    <td className="border border-border p-2 text-center whitespace-nowrap">{f.name}</td>
+                                    <td className="border border-border p-2 text-center whitespace-nowrap">{
                                         (() => {
                                             if (f.startEntryId && Array.isArray(f.entriesFromParent)) {
                                                 const entry = f.entriesFromParent.find(e => String(e.id) === String(f.startEntryId));
@@ -51,30 +52,30 @@ export default function InvestmentForecastSection({
                                             return f.startDate ?? '';
                                         })()
                                     }</td>
-                                    <td className="border p-2 text-center whitespace-nowrap">{f.startDate && f.endDate ? ForecastUtils.monthsBetween(f.startDate, f.endDate) : ''}</td>
-                                    <td className="border p-2 text-center whitespace-nowrap">{f.scenarioRates?.PESSIMIST ?? 0}%</td>
-                                    <td className="border p-2 text-center whitespace-nowrap">{f.scenarioRates?.NEUTRAL ?? 0}%</td>
-                                    <td className="border p-2 text-center whitespace-nowrap">{f.scenarioRates?.OPTIMIST ?? 0}%</td>
-                                    <td className="border p-2 text-center whitespace-nowrap">{currencyAdapter(f.monthlyContribution ?? 0, investment?.currency)}</td>
-                                    <td className="border p-2 text-center whitespace-nowrap">
+                                    <td className="border border-border p-2 text-center whitespace-nowrap">{f.startDate && f.endDate ? ForecastUtils.monthsBetween(f.startDate, f.endDate) : ''}</td>
+                                    <td className="border border-border p-2 text-center whitespace-nowrap">{f.scenarioRates?.PESSIMIST ?? 0}%</td>
+                                    <td className="border border-border p-2 text-center whitespace-nowrap">{f.scenarioRates?.NEUTRAL ?? 0}%</td>
+                                    <td className="border border-border p-2 text-center whitespace-nowrap">{f.scenarioRates?.OPTIMIST ?? 0}%</td>
+                                    <td className="border border-border p-2 text-center whitespace-nowrap">{formatValueForPrivacy(f.monthlyContribution ?? 0, investment?.currency, isPrivate)}</td>
+                                    <td className="border border-border p-2 text-center whitespace-nowrap">
                                         <div className="flex flex-row items-center justify-center gap-2">
                                             <button
-                                                className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition duration-200"
+                                                className="px-2 py-1 bg-primary text-primary-foreground text-xs rounded hover:opacity-90 transition duration-200"
                                                 onClick={() => onEditForecast(f)}
                                             >
                                                 Edit
                                             </button>
                                             <button
-                                                className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition duration-200"
+                                                className="px-2 py-1 bg-danger text-white text-xs rounded hover:opacity-90 transition duration-200"
                                                 onClick={() => setIsConfirmingDeleteForecast(f.id)}
                                             >
                                                 Delete
                                             </button>
                                         </div>
                                     </td>
-                                    <td className="border p-2 text-center whitespace-nowrap">
+                                    <td className="border border-border p-2 text-center whitespace-nowrap">
                                         <button
-                                            className="px-2 py-1 bg-purple-500 text-white text-xs rounded hover:bg-purple-600 transition duration-200"
+                                            className="px-2 py-1 bg-primary/80 text-primary-foreground text-xs rounded hover:bg-primary transition duration-200"
                                             onClick={() => onViewGraph(f)}
                                         >
                                             View Graph
