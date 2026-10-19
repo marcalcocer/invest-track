@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { formatValueForPrivacy, formatPercentForPrivacy } from "@/lib/currencyAdapter";
+import { formatValueForPrivacy, formatPercent } from "@/lib/currencyAdapter";
 import { cn } from "@/lib/cn";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
@@ -59,14 +59,12 @@ const SummaryRow = ({ invested, obtained, benefit, profit, title, isPrivate }) =
       <KpiCard
         label="Profit"
         icon={ArrowTrendingUpIcon}
-        value={formatPercentForPrivacy(profit, isPrivate)}
+        value={formatPercent(profit)}
         valueClassName={signClass(profit)}
         badge={
-          !isPrivate && (
-            <Badge variant={signVariant(profit)} className="mt-2">
-              {profit > 0 ? "Gain" : profit < 0 ? "Loss" : "Break-even"}
-            </Badge>
-          )
+          <Badge variant={signVariant(profit)} className="mt-2">
+            {profit > 0 ? "Gain" : profit < 0 ? "Loss" : "Break-even"}
+          </Badge>
         }
       />
     </div>

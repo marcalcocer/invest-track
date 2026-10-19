@@ -78,7 +78,7 @@ export default function InvestmentsDetails({ investments, isPrivate }) {
   return (
     <div className="px-3 sm:px-4 lg:px-6 py-8 sm:py-12">
       {/* Main title adjusted */}
-      <h2 className="text-xl font-bold text-gray-900 sm:text-2xl lg:text-3xl text-center">
+      <h2 className="text-xl font-bold text-foreground sm:text-2xl lg:text-3xl text-center">
         Investments Details
       </h2>
 
@@ -90,7 +90,7 @@ export default function InvestmentsDetails({ investments, isPrivate }) {
       <div className="mt-6 sm:mt-8 flex justify-center">
         <button
           onClick={() => setIsModalOpen(true)}
-          className="px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium bg-green-500 text-white rounded-md shadow hover:bg-green-600 transition duration-200"
+          className="px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium bg-primary text-primary-foreground rounded-md shadow hover:opacity-90 transition duration-200"
         >
           Create Investment
         </button>
@@ -99,7 +99,7 @@ export default function InvestmentsDetails({ investments, isPrivate }) {
       {/* Toggle Inactive Investments - more compact */}
       <div className="my-8 sm:my-12 text-center">
         <button
-          className="px-3 py-2 text-xs sm:text-sm font-medium bg-gray-200 text-gray-700 border border-gray-400 rounded hover:bg-gray-300 transition duration-200"
+          className="px-3 py-2 text-xs sm:text-sm font-medium bg-muted text-foreground border border-border rounded hover:bg-muted/70 transition duration-200"
           onClick={() => setShowInactive(!showInactive)}
         >
           {showInactive ? 'Hide Inactive' : 'Show Inactive'}
@@ -109,7 +109,7 @@ export default function InvestmentsDetails({ investments, isPrivate }) {
       {showInactive && (
         <div>
           {/* Inactive investments title adjusted */}
-          <h3 className="text-lg sm:text-xl font-semibold text-gray-800 text-center mb-3 sm:mb-4">
+          <h3 className="text-lg sm:text-xl font-semibold text-foreground text-center mb-3 sm:mb-4">
             Inactive Investments
           </h3>
           <ul className="space-y-6 sm:space-y-8">
@@ -156,6 +156,7 @@ export default function InvestmentsDetails({ investments, isPrivate }) {
           investment={showForecastModalFor}
           forecasts={showForecastModalFor.forecasts || []}
           onClose={() => setShowForecastModalFor(null)}
+          isPrivate={isPrivate}
         />
       )}
     </div>

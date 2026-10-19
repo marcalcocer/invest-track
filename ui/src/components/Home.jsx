@@ -75,7 +75,7 @@ export default function Home() {
       <AIMessage />
       <InvestmentsSummary summary={summary} isPrivate={isPrivate} />
       {/* Details still use light-only chart styling until their own phase. */}
-      <div className="rounded-token border border-border bg-white text-slate-900 shadow-sm">
+      <div className="rounded-token border border-border bg-card text-card-foreground shadow-sm">
         <InvestmentsDetails investments={investments} isPrivate={isPrivate} />
       </div>
     </div>

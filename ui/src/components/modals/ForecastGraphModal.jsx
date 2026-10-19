@@ -1,15 +1,22 @@
 import { useState, useMemo } from "react";
 import Chart from "react-apexcharts";
-import { currencyAdapter } from "@/lib/currencyAdapter";
+import { formatValueForPrivacy } from "@/lib/currencyAdapter";
 import { ForecastUtils } from "@/lib/ForecastUtils";
 import BaseModal from "./BaseModal";
 import ModalHeader from "./ModalHeader";
 import { getCustomTooltip, getTodayAnnotation } from "@/lib/ChartUtils";
+import { withChartDefaults } from "@/lib/chartTheme";
+import { useIsDarkMode } from "@/lib/useIsDarkMode";
 
-export default function ForecastGraphModal({ forecast, entries, onClose, investment }) {
+export default function ForecastGraphModal({ forecast, entries, onClose, investment, isPrivate }) {
     const [visibleScenarios, setVisibleScenarios] = useState({ PESSIMIST: true, NEUTRAL: true, OPTIMIST: true });
-    
-    const customTooltip = useMemo(() => getCustomTooltip((val) => currencyAdapter(val, investment?.currency)), [investment?.currency]);
+
+    const customTooltip = useMemo(
+        () => getCustomTooltip((val) => formatValueForPrivacy(val, investment?.currency, isPrivate)),
+        [investment?.currency, isPrivate]
+    );
+
+    const isDark = useIsDarkMode();
 
     if (!forecast) return null;
 
@@ -46,12 +53,10 @@ export default function ForecastGraphModal({ forecast, entries, onClose, investm
                     </div>
                 </div>
                 <Chart
-                    options={{
-                        chart: { 
-                            type: "line", 
-                            height: 350, 
-                            zoom: { autoScaleYaxis: true },
-                            toolbar: { show: false }
+                    options={withChartDefaults({
+                        chart: {
+                            type: "line",
+                            height: 350
                         },
                         xaxis: { 
                             type: 'datetime',
@@ -61,7 +66,7 @@ export default function ForecastGraphModal({ forecast, entries, onClose, investm
                         },
                         yaxis: {
                             labels: {
-                                formatter: (value) => currencyAdapter(value, investment?.currency)
+                                formatter: (value) => formatValueForPrivacy(value, investment?.currency, isPrivate)
                             }
                         },
                         stroke: { width: 2 },
@@ -72,7 +77,7 @@ export default function ForecastGraphModal({ forecast, entries, onClose, investm
                             x: { format: 'dd MMM yyyy' },
                             custom: customTooltip
                         },
-                    }}
+                    }, isDark)}
                     series={[
                         {
                             name: "Real",

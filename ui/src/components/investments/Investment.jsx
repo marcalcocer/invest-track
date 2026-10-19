@@ -14,8 +14,10 @@ import EditForecastModal from "../modals/EditForecastModal";
 import InvestmentForecastSection from "./InvestmentSection/InvestmentForecastSection";
 import InvestmentEntriesMobile from "./InvestmentSection/InvestmentEntriesMobile";
 import InvestmentEntriesTable from "./InvestmentSection/InvestmentEntriesTable";
+import { usePrivacyMode } from "@/lib/usePrivacyMode";
 
 export default function Investment() {
+    const isPrivate = usePrivacyMode();
     const [investment, setInvestment] = useState(null);
     const [entries, setEntries] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -146,18 +148,19 @@ export default function Investment() {
                     forecast={selectedForecastForGraph}
                     entries={entries}
                     investment={investment}
+                    isPrivate={isPrivate}
                     onClose={() => setSelectedForecastForGraph(null)}
                 />
             )}
             
 
                 <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-center sm:text-left">{investment.name}</h2>
-                <p className="text-gray-600 text-sm sm:text-base mb-4 text-center sm:text-left">
+                <p className="text-muted-foreground text-sm sm:text-base mb-4 text-center sm:text-left">
                     {investment.description} ({investment.currency})
                 </p>
                 {/* Mini-summary */}
                 {Array.isArray(entries) && entries.length > 0 && (
-                <div className="flex flex-wrap gap-4 items-center justify-center mb-4 text-xs sm:text-sm text-gray-700 bg-gray-50 rounded-lg px-3 py-2 border border-gray-100">
+                <div className="flex flex-wrap gap-4 items-center justify-center mb-4 text-xs sm:text-sm text-muted-foreground bg-muted rounded-lg px-3 py-2 border border-border">
                     <span>Entries: <span className="font-semibold">{entries.length}</span></span>
                     <span>Avg Profit: <span className="font-semibold">{numberAdapter(entries.reduce((acc, e) => acc + (e.profitability ?? 0), 0) / entries.length * 100)}%</span></span>
                     <span>Last update: <span className="font-semibold">{formatDatetime(Math.max(...entries.map(e => new Date(e.datetime))))}</span></span>
@@ -166,25 +169,25 @@ export default function Investment() {
 
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-0 items-center sm:justify-between mt-4 sm:mt-6">
                     <button
-                        className="px-3 py-2 sm:px-4 sm:py-2 bg-green-500 text-white text-sm rounded shadow hover:bg-green-600 transition duration-200"
+                        className="px-3 py-2 sm:px-4 sm:py-2 bg-success text-white text-sm rounded shadow hover:opacity-90 transition duration-200"
                         onClick={() => setIsCreating(true)}
                     >
                         Create Entry
                     </button>
                     <button
-                        className="px-3 py-2 sm:px-4 sm:py-2 bg-blue-500 text-white text-sm rounded shadow hover:bg-blue-600 transition duration-200"
+                        className="px-3 py-2 sm:px-4 sm:py-2 bg-primary text-primary-foreground text-sm rounded shadow hover:opacity-90 transition duration-200"
                         onClick={() => setShowGraphModal(true)}
                     >
                         Graph
                     </button>
                     <button
-                        className="px-3 py-2 sm:px-4 sm:py-2 bg-purple-500 text-white text-sm rounded shadow hover:bg-purple-600 transition duration-200"
+                        className="px-3 py-2 sm:px-4 sm:py-2 bg-primary/80 text-primary-foreground text-sm rounded shadow hover:bg-primary transition duration-200"
                         onClick={() => setShowForecastModal(true)}
                     >
                         Create Forecast
                     </button>
                     <button
-                        className="px-3 py-2 sm:px-4 sm:py-2 bg-gray-500 text-white text-sm rounded shadow hover:bg-gray-600 transition duration-200"
+                        className="px-3 py-2 sm:px-4 sm:py-2 bg-muted text-foreground border border-border text-sm rounded shadow hover:bg-muted/70 transition duration-200"
                         onClick={() => window.history.back()}
                     >
                         Back
@@ -202,6 +205,7 @@ export default function Investment() {
                     setIsConfirmingDeleteForecast={setIsConfirmingDeleteForecast}
                     onEditForecast={handleEditForecast}
                     onViewGraph={setSelectedForecastForGraph}
+                    isPrivate={isPrivate}
                 />
 
                 <h3 className="text-md sm:text-lg font-semibold mb-2 text-center mt-8">Entries</h3>
@@ -211,6 +215,7 @@ export default function Investment() {
                     entries={entries}
                     investment={investment}
                     setIsConfirmingDelete={setIsConfirmingDelete}
+                    isPrivate={isPrivate}
                 />
 
                 {/* Desktop Table View */}
@@ -219,6 +224,7 @@ export default function Investment() {
                     investment={investment}
                     setIsConfirmingDelete={setIsConfirmingDelete}
                     setIsUpdatingEntry={setIsUpdatingEntry}
+                    isPrivate={isPrivate}
                 />
 
                 {isCreating && (
@@ -263,6 +269,7 @@ export default function Investment() {
                     investment={investment}
                     onClose={() => setShowGraphModal(false)}
                     showDetailsButton={false}
+                    isPrivate={isPrivate}
                 />
             )}
         </div>

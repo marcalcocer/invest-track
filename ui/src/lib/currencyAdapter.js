@@ -40,14 +40,11 @@ export const formatValueForPrivacy = (value, currency, isPrivate) => {
 };
 
 /**
- * Formats a ratio (0.1234 -> "12.34%") for display, masking it if privacy mode is active.
+ * Formats a ratio (0.1234 -> "12.34%") for display. Percentages are not monetary
+ * values, so they are never masked by privacy mode.
  * @param {number} value - The ratio to format.
- * @param {boolean} isPrivate - Whether privacy mode is active.
- * @returns {string} The formatted or masked percentage.
+ * @returns {string} The formatted percentage.
  */
-export const formatPercentForPrivacy = (value, isPrivate) => {
-    if (isPrivate) {
-        return "******";
-    }
+export const formatPercent = (value) => {
     return `${(100 * value).toFixed(2)}%`;
 };

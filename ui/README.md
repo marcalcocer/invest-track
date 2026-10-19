@@ -11,7 +11,7 @@ InvestTrack is a personal finance web application designed to help you monitor a
 - **Modals**: User-friendly modals for creating investments, adding entries, confirming deletions, and viewing charts.
 - **Responsive UI**: Built with Tailwind CSS for a modern look and mobile support.
 - **Light and dark themes**: Switch from the header; your choice is saved in the browser.
-- **Privacy mode**: Hide monetary values and profit figures from the header toggle.
+- **Privacy mode**: Hide monetary values from the header toggle. Percentages and profitability stay visible.
 
 ## 🛠️ Tech Stack
 - [Astro](https://astro.build/)

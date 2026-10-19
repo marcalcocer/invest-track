@@ -82,12 +82,12 @@ export default function CreateEntryModal({ investment, onClose, onCreate }) {
     }
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md mx-2">
+        <div className="fixed inset-0 bg-black/60 flex justify-center items-center">
+            <div className="bg-card text-card-foreground border border-border p-6 rounded-lg shadow-lg w-full max-w-md mx-2">
                 <h2 className="text-xl font-semibold mb-4">Create New Entry</h2>
 
                 {/* Datetime*/}
-                <label className="block text-gray-700">Datetime:</label>
+                <label className="block text-foreground">Datetime:</label>
                 <div className="flex items-center mb-2">
                     <input
                         type="checkbox"
@@ -95,22 +95,22 @@ export default function CreateEntryModal({ investment, onClose, onCreate }) {
                         onChange={(e) => setUseNow(e.target.checked)}
                         className="mr-2"
                     />
-                    <span className="text-gray-700">Use current time (Now)</span>
+                    <span className="text-foreground">Use current time (Now)</span>
                 </div>
                 {!useNow && (
                     <input
                         type="datetime-local"
-                        className="w-full border p-2 rounded mb-4"
+                        className="w-full border border-border bg-background text-foreground p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-ring"
                         value={datetime}
                         onChange={(e) => setDatetime(e.target.value)}
                     />
                 )}
 
-                <hr className="my-4" />
+                <hr className="my-4 border-border" />
 
                 {/* Chooser for input type */}
                 <div className="mb-4">
-                    <span className="text-gray-700">Input type:</span>
+                    <span className="text-foreground">Input type:</span>
                     <div className="mt-2 grid grid-cols-1 gap-2">
                         <label className="mr-4">
                             <input
@@ -137,79 +137,79 @@ export default function CreateEntryModal({ investment, onClose, onCreate }) {
                     </div>
                 </div>
 
-                <hr className="my-4" />
+                <hr className="my-4 border-border" />
 
                 {inputType === "manual" ? (
                     <>
-                        <label className="block text-gray-700">Initial Invested Amount</label>
+                        <label className="block text-foreground">Initial Invested Amount</label>
                         <input
                             type="number"
                             step="0.01"
-                            className="w-full border p-2 rounded mb-4"
+                            className="w-full border border-border bg-background text-foreground p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-ring"
                             value={initialInvestedAmount}
                             onChange={(e) => setInitialInvestedAmount(e.target.value)}
                         />
 
-                        <label className="block text-gray-700">Reinvested Amount</label>
+                        <label className="block text-foreground">Reinvested Amount</label>
                         <input
                             type="number"
                             step="0.01"
-                            className="w-full border p-2 rounded mb-4"
+                            className="w-full border border-border bg-background text-foreground p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-ring"
                             value={reinvestedAmount}
                             onChange={(e) => setReinvestedAmount(e.target.value)}
                         />
                     </>
                 ) : (
                     <>
-                        <label className="block text-gray-700">Total Invested Amount</label>
+                        <label className="block text-foreground">Total Invested Amount</label>
                         <input
                             type="number"
                             step="0.01"
-                            className="w-full border p-2 rounded mb-4"
+                            className="w-full border border-border bg-background text-foreground p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-ring"
                             value={totalInvestedAmount}
                             onChange={(e) => setTotalInvestedAmount(e.target.value)}
                         />
                     </>
                 )}
 
-                <label className="block text-gray-700">Profitability (%)</label>
+                <label className="block text-foreground">Profitability (%)</label>
                 <input
                     type="number"
                     step="0.01"
-                    className="w-full border p-2 rounded mb-4"
+                    className="w-full border border-border bg-background text-foreground p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-ring"
                     value={profitability}
                     onChange={(e) => setProfitability(e.target.value)}
                 />
 
-                <label className="block text-gray-700">Comments:</label>
+                <label className="block text-foreground">Comments:</label>
                 <input
                     type="text"
-                    className="w-full border p-2 rounded mb-4"
+                    className="w-full border border-border bg-background text-foreground p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-ring"
                     value={comments}
                     onChange={(e) => setComments(e.target.value)}
                 />
 
-                <div className="bg-gray-100 rounded-lg">
+                <div className="bg-muted rounded-lg p-3 mb-4">
                     {inputType === "total" && (
                         <span>
-                            <p className="text-gray-700"><strong>Initial Invested Amount:</strong> {currencyAdapter(initialInvestedAmount, investment.currency)}</p>
-                            <p className="text-gray-700"><strong>Reinvested Amount:</strong> {currencyAdapter(reinvestedAmount, investment.currency)}</p>
+                            <p className="text-foreground"><strong>Initial Invested Amount:</strong> {currencyAdapter(initialInvestedAmount, investment.currency)}</p>
+                            <p className="text-foreground"><strong>Reinvested Amount:</strong> {currencyAdapter(reinvestedAmount, investment.currency)}</p>
                         </span>
                     )}
-                    <p className="text-gray-700"><strong>Total Invested Amount:</strong> {currencyAdapter(totalInvestedAmount, investment.currency)}</p>
-                    <p className="text-gray-700"><strong>Obtained:</strong> {currencyAdapter(obtained, investment.currency)}</p>
-                    <p className="text-gray-700"><strong>Benefit:</strong> {currencyAdapter(benefit, investment.currency)}</p>
+                    <p className="text-foreground"><strong>Total Invested Amount:</strong> {currencyAdapter(totalInvestedAmount, investment.currency)}</p>
+                    <p className="text-foreground"><strong>Obtained:</strong> {currencyAdapter(obtained, investment.currency)}</p>
+                    <p className="text-foreground"><strong>Benefit:</strong> {currencyAdapter(benefit, investment.currency)}</p>
                 </div>
 
                 <div className="flex justify-end space-x-2 ">
                     <button
-                        className="px-4 py-2 bg-gray-400 text-white rounded"
+                        className="px-4 py-2 bg-muted text-foreground border border-border rounded"
                         onClick={onClose}
                     >
                         Cancel
                     </button>
                     <button
-                        className="px-4 py-2 bg-green-500 text-white rounded"
+                        className="px-4 py-2 bg-primary text-primary-foreground rounded"
                         onClick={handleCreate}
                     >
                         Create

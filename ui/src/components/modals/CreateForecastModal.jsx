@@ -56,42 +56,42 @@ export default function CreateForecastModal({ investment, entries, onClose, onCr
     };
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
+            <div className="bg-card text-card-foreground border border-border rounded-lg shadow-lg p-6 w-full max-w-md">
                 <h2 className="text-xl font-bold mb-4">Create Forecast</h2>
-                {error && <div className="text-red-600 mb-2">{error}</div>}
+                {error && <div className="text-danger mb-2">{error}</div>}
                 <label className="block mb-2">Forecast Name
-                    <input className="w-full border rounded p-2 mt-1" value={name} onChange={e => setName(e.target.value)} />
+                    <input className="w-full border border-border bg-background text-foreground rounded p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-ring" value={name} onChange={e => setName(e.target.value)} />
                 </label>
                 <label className="block mb-2">Start Date
-                    <input type="date" className="w-full border rounded p-2 mt-1" value={startDate} onChange={e => setStartDate(e.target.value)} />
+                    <input type="date" className="w-full border border-border bg-background text-foreground rounded p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-ring" value={startDate} onChange={e => setStartDate(e.target.value)} />
                 </label>
                 <label className="block mb-2">Duration (months)
-                    <input type="number" className="w-full border rounded p-2 mt-1" value={months} min={1} onChange={e => setMonths(e.target.value)} />
+                    <input type="number" className="w-full border border-border bg-background text-foreground rounded p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-ring" value={months} min={1} onChange={e => setMonths(e.target.value)} />
                 </label>
                 <div className="mb-2">
                     <label className="block">Pessimist Monthly Growth Rate (%)
-                        <input type="number" step="any" className="w-full border rounded p-2 mt-1" value={pessimistRate} onChange={e => setPessimistRate(e.target.value)} />
+                        <input type="number" step="any" className="w-full border border-border bg-background text-foreground rounded p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-ring" value={pessimistRate} onChange={e => setPessimistRate(e.target.value)} />
                     </label>
                 </div>
                 <div className="mb-2">
                     <label className="block">Neutral Monthly Growth Rate (%)
-                        <input type="number" step="any" className="w-full border rounded p-2 mt-1" value={neutralRate} onChange={e => setNeutralRate(e.target.value)} />
+                        <input type="number" step="any" className="w-full border border-border bg-background text-foreground rounded p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-ring" value={neutralRate} onChange={e => setNeutralRate(e.target.value)} />
                     </label>
                 </div>
                 <div className="mb-2">
                     <label className="block">Optimist Monthly Growth Rate (%)
-                        <input type="number" step="any" className="w-full border rounded p-2 mt-1" value={optimistRate} onChange={e => setOptimistRate(e.target.value)} />
+                        <input type="number" step="any" className="w-full border border-border bg-background text-foreground rounded p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-ring" value={optimistRate} onChange={e => setOptimistRate(e.target.value)} />
                     </label>
                 </div>
                 <div className="mb-4">
                     <label className="block">Monthly Contribution (added every month)
-                        <input type="number" step="any" min={0} className="w-full border rounded p-2 mt-1" value={monthlyContribution} onChange={e => setMonthlyContribution(e.target.value)} />
+                        <input type="number" step="any" min={0} className="w-full border border-border bg-background text-foreground rounded p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-ring" value={monthlyContribution} onChange={e => setMonthlyContribution(e.target.value)} />
                     </label>
                 </div>
                 <div className="flex justify-end gap-2">
-                    <button className="px-4 py-2 rounded bg-gray-200" onClick={onClose} disabled={isCreating}>Cancel</button>
-                    <button className="px-4 py-2 rounded bg-blue-600 text-white" onClick={handleSubmit} disabled={isCreating}>
+                    <button className="px-4 py-2 rounded bg-muted text-foreground border border-border" onClick={onClose} disabled={isCreating}>Cancel</button>
+                    <button className="px-4 py-2 rounded bg-primary text-primary-foreground" onClick={handleSubmit} disabled={isCreating}>
                         {isCreating ? <LoadingSpinner size={4} /> : "Create"}
                     </button>
                 </div>

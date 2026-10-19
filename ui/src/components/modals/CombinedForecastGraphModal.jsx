@@ -1,14 +1,16 @@
 import { useMemo, useState } from "react";
 import Chart from "react-apexcharts";
 import ForecastGraphModal from "./ForecastGraphModal";
-import { currencyAdapter } from "@/lib/currencyAdapter";
+import { formatValueForPrivacy } from "@/lib/currencyAdapter";
 import { ForecastUtils } from "@/lib/ForecastUtils";
 import BaseModal from "./BaseModal";
 import ModalHeader from "./ModalHeader";
 import ViewDetailsButton from "../investments/ViewDetailsButton";
 import { getCustomTooltip, getTodayAnnotation } from "@/lib/ChartUtils";
+import { withChartDefaults } from "@/lib/chartTheme";
+import { useIsDarkMode } from "@/lib/useIsDarkMode";
 
-export default function CombinedForecastGraphModal({ investment, forecasts, onClose }) {
+export default function CombinedForecastGraphModal({ investment, forecasts, onClose, isPrivate }) {
     // Prepare real data
     const realData = useMemo(() => ForecastUtils.interpolateRealData(investment.entries.map(e => ({...e, totalInvestedAmount: e.obtained}))), [investment]);
 
@@ -24,7 +26,11 @@ export default function CombinedForecastGraphModal({ investment, forecasts, onCl
     );
 
     const [selectedForecast, setSelectedForecast] = useState(null);
-    const customTooltip = useMemo(() => getCustomTooltip((val) => currencyAdapter(val, investment?.currency)), [investment?.currency]);
+    const isDark = useIsDarkMode();
+    const customTooltip = useMemo(
+        () => getCustomTooltip((val) => formatValueForPrivacy(val, investment?.currency, isPrivate)),
+        [investment?.currency, isPrivate]
+    );
 
     return (
         <BaseModal onClose={onClose} maxWidth="max-w-4xl">
@@ -38,12 +44,10 @@ export default function CombinedForecastGraphModal({ investment, forecasts, onCl
                 <ViewDetailsButton investmentId={investment.id} className="mb-6" />
                 
                 <Chart
-                    options={{
-                        chart: { 
-                            type: "line", 
-                            height: 350, 
-                            zoom: { autoScaleYaxis: true },
-                            toolbar: { show: false }
+                    options={withChartDefaults({
+                        chart: {
+                            type: "line",
+                            height: 350
                         },
                         xaxis: { 
                             type: 'datetime',
@@ -53,7 +57,7 @@ export default function CombinedForecastGraphModal({ investment, forecasts, onCl
                         },
                         yaxis: {
                             labels: {
-                                formatter: (value) => currencyAdapter(value, investment?.currency)
+                                formatter: (value) => formatValueForPrivacy(value, investment?.currency, isPrivate)
                             }
                         },
                         stroke: { width: 2 },
@@ -64,7 +68,7 @@ export default function CombinedForecastGraphModal({ investment, forecasts, onCl
                             x: { format: 'dd MMM yyyy' },
                             custom: customTooltip
                         },
-                    }}
+                    }, isDark)}
                     series={[
                         {
                             name: "Real",
@@ -81,7 +85,7 @@ export default function CombinedForecastGraphModal({ investment, forecasts, onCl
                         {forecasts.map(forecast => (
                             <li key={forecast.id || forecast.name}>
                                 <button
-                                    className="px-3 py-1 bg-blue-100 hover:bg-blue-200 rounded text-blue-800 text-sm"
+                                    className="px-3 py-1 bg-primary/15 hover:bg-primary/25 rounded text-primary text-sm"
                                     onClick={() => setSelectedForecast(forecast)}
                                 >
                                     {forecast.name}
@@ -96,6 +100,7 @@ export default function CombinedForecastGraphModal({ investment, forecasts, onCl
                     forecast={selectedForecast}
                     entries={investment.entries}
                     investment={investment}
+                    isPrivate={isPrivate}
                     onClose={() => setSelectedForecast(null)}
                 />
             )}
